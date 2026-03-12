@@ -1,0 +1,72 @@
+<header
+  class="bg-white top-0 z-50 w-full h-[75px] px-[3%] flex items-center justify-between transition duration-300 text-white"
+>
+  <!-- Left: Logo & Navigation -->
+  <div class="flex items-center gap-8">
+    <img
+      src="/assets/img/Netflix_2015_logo.svg"
+      alt="Netflix Logo"
+      class="h-6"
+    />
+    <ul class="flex gap-6 text-[16px] font-semibold text-blue-600">
+      <li><a routerLink="/home" routerLinkActive="active">หน้าหลัก</a></li>
+      <li><a routerLink="/tv-program">รายการทีวี</a></li>
+      <li><a routerLink="/movies">ภาพยนตร์</a></li>
+      <li><a routerLink="/games">เกม</a></li>
+      <li><a routerLink="/new-hot">มาใหม่และกำลังฮิต</a></li>
+      <li><a routerLink="/my-list">รายการของฉัน</a></li>
+      <li><a routerLink="/language">เลือกดูตามภาษา</a></li>
+    </ul>
+  </div>
+
+<!--  &lt;!&ndash; Right: Icons & Profile &ndash;&gt;-->
+<!--  <div class="flex items-center gap-4">-->
+<!--    <mat-icon>search</mat-icon>-->
+<!--    <mat-icon>notifications</mat-icon>-->
+<!--    <button-->
+<!--      [matMenuTriggerFor]="menu"-->
+<!--      aria-label="Open profile menu"-->
+<!--      class="flex items-center"-->
+<!--    >-->
+<!--      <img-->
+<!--        src="https://occ-0-8018-64.1.nflxso.net/dnm/api/v6/vN7bi_My87NPKvsBoib006Llxzg/AAAABTfUlmnFRKf_OEUhru2aqso39FKxONTd5Dt_sWnNj5wAg4bbMBZ8sgZupTfnB9IQ8tmWcrzRiyZsCp1bLKb_n7VrnTw3_Ovw7Q.png?r=bd7"-->
+<!--        alt="Profile"-->
+<!--        class="w-8 h-8 rounded mr-2"-->
+<!--      />-->
+<!--      <mat-icon>arrow_drop_down</mat-icon>-->
+<!--    </button>-->
+<!--    <mat-menu-->
+<!--      #menu="matMenu"-->
+<!--      xPosition="before"-->
+<!--      class="!bg-black/90 mt-5 w-[230px] border-[1px] border-stone-600 !rounded-none"-->
+<!--    >-->
+<!--      <button mat-menu-item class="!text-white !mb-4">-->
+<!--        @for (profile of profile; track $index) {-->
+<!--          <buttons mat-menu-item [routerLink]="profile.path"-->
+<!--          ><div class="!text-white flex flex-row items-center gap-4 mb-2">-->
+<!--            <img [src]="profile.src" alt="profile" class="w-9 rounded" />-->
+<!--            <a class="hover:underline text-xs">{{ profile.name }}</a>-->
+<!--          </div>-->
+<!--          </buttons>-->
+<!--        } @for (item of profilelinks; track $index) {-->
+<!--        <button mat-menu-item [routerLink]="item.path" class="!min-h-0">-->
+<!--          <div class="!text-white flex flex-row gap-3 items-center">-->
+<!--            <span class="material-icons-outlined text-3xl text-stone-300">-->
+<!--              {{ item.key }}-->
+<!--            </span>-->
+<!--            <a class="hover:underline text-sm">{{ item.name }}</a>-->
+<!--          </div>-->
+<!--        </button>-->
+<!--      }-->
+<!--      </button>-->
+<!--      <div-->
+<!--        class="flex items-center justify-center border-t-[1px] border-stone-600 !h-10 !w-full pt-[8px]"-->
+<!--      >-->
+<!--        <a class="hover:underline text-sm text-white cursor-pointer"-->
+<!--        >ออกจากระบบของ Netflix</a-->
+<!--        >-->
+<!--        >-->
+<!--      </div>-->
+<!--    </mat-menu>-->
+<!--  </div>-->
+</header>
