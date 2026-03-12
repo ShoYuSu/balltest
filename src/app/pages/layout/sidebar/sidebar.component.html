@@ -1,5 +1,5 @@
 <div
-  class="bg-white h-screen w-64 border-r border-gray-200 px-6 py-2 flex flex-col transition duration-300 shadow-sm"
+  class="bg-white h-screen w-64 border-r border-gray-200 px-4 py-2 flex flex-col transition duration-300 shadow-sm"
 >
   <div class="flex items-center mb-4">
     <img
@@ -10,28 +10,18 @@
   </div>
 
   <nav>
-    <ul class="flex flex-col gap-4 text-[16px] font-semibold text-blue-600">
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/home" routerLinkActive="active" class="block py-2">หน้าหลัก</a>
+    <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
+      <li class="py-3 px-4 text-black !rounded-lg hover:bg-orange-400 hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-orange-400 text-white rounded-lg " >
+        <a routerLink="/home" class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> home_and_garden </span> หน้าหลัก</a>
       </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/all-students" class="block py-2">นักศึกษาทั้งหมด</a>
-      </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/movies" class="block py-2">ภาพยนตร์</a>
-      </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/games" class="block py-2">เกม</a>
-      </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/new-hot" class="block py-2">มาใหม่และกำลังฮิต</a>
-      </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/my-list" class="block py-2">รายการของฉัน</a>
-      </li>
-      <li class="hover:translate-x-1 transition-transform">
-        <a routerLink="/language" class="block py-2">เลือกดูตามภาษา</a>
-      </li>
+      <li class="py-3 px-4 text-black !rounded-lg hover:bg-orange-400 hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-orange-400 text-white rounded-lg " >
+        <a routerLink="/all-students" class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> group </span> นักศึกษาทั้งหมด</a>
+      </li> <li class="py-3 px-4 text-black !rounded-lg hover:bg-orange-400 hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-orange-400 text-white rounded-lg " >
+      <a routerLink="/plo-assessment" class="flex items-center">
+        <span class="material-symbols-outlined icon-filled pr-2"> home </span> ประเมิน PLO</a>
+    </li>
     </ul>
   </nav>
 </div>

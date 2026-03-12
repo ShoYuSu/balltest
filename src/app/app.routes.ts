@@ -17,6 +17,10 @@ export const routes: Routes = [
 
       },
       {
+        path: 'plo-assessment',
+        loadComponent: () => import('./pages/plo-assessment/plo-assessment').then((m) => m.PloAssessment)
+      },
+      {
         path: '**',
         redirectTo: 'home',
       },
