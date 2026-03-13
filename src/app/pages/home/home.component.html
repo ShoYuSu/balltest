@@ -1,2 +1,11 @@
-<p>home works!</p>
+<h2>รายชื่อนักศึกษา (Angular Latest Version)</h2>
 
+<div class="student-list">
+  @for (student of students(); track student.id) {
+    <div class="card">
+      <strong>{{ student.name }}</strong> - {{ student.major }}
+    </div>
+  } @empty {
+    <p>ไม่มีข้อมูลในฐานข้อมูลเลยครับ</p>
+  }
+</div>
