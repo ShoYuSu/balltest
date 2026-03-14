@@ -1,0 +1,81 @@
+<div class="relative min-h-screen flex flex-col md:flex-row overflow-hidden font-sans">
+
+  <div class="w-[60%]  bg-white flex flex-col items-center justify-center p-10 md:p-20">
+    <img
+      src="assets/img/siam_logo.jpg"
+      alt="Siam University Logo"
+      class="w-[500px]  mb-6"
+    />
+  </div>
+
+  <div class="w-full  bg-[#3b2d24] flex flex-col items-center justify-center p-10 md:p-20 text-white">
+
+    <div class="flex justify-center items-center gap-6 mb-8">
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-gray-100 p-2 shadow-inner">
+        <img src="assets/img/small_logo_s.png" alt="S Logo" class="w-10 h-10 object-contain">
+      </div>
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-gray-100 p-2 shadow-inner">
+        <img src="assets/img/small_logo_g.png" alt="G Logo" class="w-10 h-10 object-contain">
+      </div>
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-gray-100 p-2 shadow-inner">
+        <img src="assets/img/small_logo_faculty.png" alt="Faculty Logo" class="w-10 h-10 object-contain">
+      </div>
+    </div>
+
+    <div class="text-center mb-10 max-w-lg">
+      <p class="text-2xl font-semibold mb-1">ระบบที่ปรึกษานักศึกษา มหาวิทยาลัยสยาม</p>
+      <p class="text-xl font-normal text-gray-200">(Siam University Student Advising System)</p>
+    </div>
+
+    <div class="w-full max-w-md bg-[#2d221c] rounded-lg overflow-hidden shadow-2xl">
+
+      <div class="bg-primary p-4 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+        <span class="text-lg font-medium text-white">เข้าสู่ระบบ ( นักศึกษา / บุคลากร )</span>
+      </div>
+
+      <form action="#" method="POST" class="p-8 space-y-5">
+
+        <div class="flex flex-col">
+          <input
+            type="email"
+            name="name"
+            placeholder="Email"
+            class="w-full px-4 py-3 bg-white rounded-lg text-black text-lg placeholder:text-gray-400 focus:ring-2 focus:ring-primary outline-none transition"
+            required
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="w-full px-4 py-3 bg-white rounded-lg text-black text-lg placeholder:text-gray-400 focus:ring-2 focus:ring-primary  outline-none transition"
+            required
+          />
+        </div>
+
+        <div class="flex justify-center pt-2">
+          <button
+            type="submit"
+            class="bg-primary  rounded-lg text-white px-8 py-3 text-lg font-bold flex items-center gap-2 hover:bg-orange-400 transition shadow-lg"
+          >
+            Log in
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </svg>
+          </button>
+        </div>
+
+        <p class="text-center text-gray-400 text-sm mt-5">
+          * ใช้บัญชีอีเมลที่ออกโดยมหาวิทยาลัยเท่านั้น
+        </p>
+
+      </form>
+    </div>
+
+  </div>
+</div>

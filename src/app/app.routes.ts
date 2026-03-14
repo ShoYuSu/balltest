@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './pages/layout/main-layout/main-layout.component';
+import { LoginComponent } from './pages/login/login.component';
 
 export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent),
+  },
   {
     path: '',
     component: MainLayoutComponent,
@@ -14,11 +19,11 @@ export const routes: Routes = [
         path: 'all-students',
         loadComponent: () =>
           import('./pages/all-students/all-students.component').then((m) => m.AllStudentsComponent),
-
       },
       {
         path: 'plo-assessment',
-        loadComponent: () => import('./pages/plo-assessment/plo-assessment').then((m) => m.PloAssessment)
+        loadComponent: () =>
+          import('./pages/plo-assessment/plo-assessment').then((m) => m.PloAssessment),
       },
       {
         path: '**',
