@@ -1,14 +1,14 @@
 <div class="relative min-h-screen flex flex-col md:flex-row overflow-hidden font-sans">
 
-  <div class="w-[60%]  bg-white flex flex-col items-center justify-center p-10 md:p-20">
+  <div class="w-[60%] bg-white flex flex-col items-center justify-center p-10 md:p-20">
     <img
       src="assets/img/siam_logo.jpg"
       alt="Siam University Logo"
-      class="w-[500px]  mb-6"
+      class="w-[500px] mb-6"
     />
   </div>
 
-  <div class="w-full  bg-[#3b2d24] flex flex-col items-center justify-center p-10 md:p-20 text-white">
+  <div class="w-full bg-[#3b2d24] flex flex-col items-center justify-center p-10 md:p-20 text-white">
 
     <div class="flex justify-center items-center gap-6 mb-8">
       <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-gray-100 p-2 shadow-inner">
@@ -36,35 +36,40 @@
         <span class="text-lg font-medium text-white">เข้าสู่ระบบ ( นักศึกษา / บุคลากร )</span>
       </div>
 
-      <form action="#" method="POST" class="p-8 space-y-5">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="p-8 space-y-5">
 
         <div class="flex flex-col">
           <input
             type="email"
-            name="name"
+            formControlName="email"
             placeholder="Email"
             class="w-full px-4 py-3 bg-white rounded-lg text-black text-lg placeholder:text-gray-400 focus:ring-2 focus:ring-primary outline-none transition"
-            required
           />
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <span class="text-red-400 text-xs mt-1">กรุณากรอกอีเมลให้ถูกต้อง</span>
+          }
         </div>
 
         <div class="flex flex-col">
           <input
             type="password"
-            name="password"
+            formControlName="password"
             placeholder="Password"
-            class="w-full px-4 py-3 bg-white rounded-lg text-black text-lg placeholder:text-gray-400 focus:ring-2 focus:ring-primary  outline-none transition"
-            required
+            class="w-full px-4 py-3 bg-white rounded-lg text-black text-lg placeholder:text-gray-400 focus:ring-2 focus:ring-primary outline-none transition"
           />
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <span class="text-red-400 text-xs mt-1">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</span>
+          }
         </div>
 
         <div class="flex justify-center pt-2">
           <button
             type="submit"
-            class="bg-primary  rounded-lg text-white px-8 py-3 text-lg font-bold flex items-center gap-2 hover:bg-orange-400 transition shadow-lg"
+            [disabled]="loginForm.invalid || loading"
+            class="bg-primary rounded-lg text-white px-8 py-3 text-lg font-bold flex items-center gap-2 hover:bg-orange-400 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Log in
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            {{ loading ? 'กำลังตรวจสอบ...' : 'Log in' }}
+            <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
             </svg>
           </button>
