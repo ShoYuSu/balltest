@@ -51,4 +51,9 @@ export class SupabaseService {
   async getTableData(tableName: string) {
     return await this.supabase.from(tableName).select('*');
   }
+  //เช็ค user ว่าล็อคอินอยู่ไหม
+  async getCurrentUser() {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    return user;
+  }
 }
