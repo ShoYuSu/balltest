@@ -45,15 +45,25 @@ export class SupabaseService {
     return null; // เดี๋ยวพี่สอนวิธีทำแบบละเอียดตอนเริ่มเขียนหน้า UI ครับ
   }
 
-  // --- ระบบจัดการข้อมูล (Database) ---
 
-  // ตัวอย่าง: ดึงข้อมูลจากตาราง (เดี๋ยวเราค่อยมาเขียนเพิ่มกัน)
-  async getTableData(tableName: string) {
-    return await this.supabase.from(tableName).select('*');
-  }
+
   //เช็ค user ว่าล็อคอินอยู่ไหม
   async getCurrentUser() {
     const { data: { user } } = await this.supabase.auth.getUser();
     return user;
   }
+  // src/app/supabase.ts
+
+  async getUserProfile(userId: string) {
+    return await this.supabase
+      .from('profiles')
+      .select(`
+      *,
+      student_details(*),
+      teacher_details(*)
+    `) //  ดึงข้อมูลทุกอย่างจากทั้งตารางนักศึกษาและอาจารย์มาพร้อมกัน
+      .eq('id', userId)
+      .single();
+  }
+
 }
