@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core'; // เพิ่ม signal และ computed
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environment';
 
@@ -8,62 +8,67 @@ import { environment } from '../environments/environment';
 export class SupabaseService {
   private supabase: SupabaseClient;
 
-  constructor() {
-    // สร้างการเชื่อมต่อกับ Supabase โดยดึงค่าจาก environment
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
-  // ฟังก์ชันสำหรับดึงรายชื่อนักศึกษาทั้งหมด
-  async getStudents() {
-    const { data, error } = await this.supabase
-      .from('students_test') // ชื่อตารางที่เราสร้างเมื่อกี้
-      .select('*'); // ดึงทุก Column
+  //  สร้าง Signal เป็น "ถังเก็บข้อมูล" ประจำแอป
+  // ใครอยากได้ข้อมูล Profile ก็มาดูที่ตัวแปรนี้ได้เลย
+  userProfile = signal<any>(null);
 
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+
+    // (Optional) ถ้าอยากให้มันโหลดข้อมูลออโต้ตอนเปิดแอป
+    this.initializeAuth();
+  }
+
+  // ฟังก์ชันพิเศษสำหรับเช็ค Auth และโหลด Profile ทันที
+  private async initializeAuth() {
+    const user = await this.getCurrentUser();
+    if (user) {
+      await this.refreshUserProfile(user.id);
+    }
+  }
+
+  //  ฟังก์ชันดึงข้อมูล Profile แล้วเก็บลงถัง (Signal)
+  async refreshUserProfile(userId: string) {
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('*, student_details(*), teacher_details(*)')
+      .eq('id', userId)
+      .single();
+
+    if (!error) {
+      this.userProfile.set(data); // เก็บข้อมูลลง Signal
+    }
     return { data, error };
   }
 
-
-  // 1. สมัครสมาชิกใหม่ (Sign Up)
+  // 1. สมัครสมาชิก
   async signUp(email: string, password: string) {
     return await this.supabase.auth.signUp({ email, password });
   }
 
-  // 2. เข้าสู่ระบบ (Sign In)
+  // 2. เข้าสู่ระบบ (อัปเดต: ให้โหลด Profile ทันทีที่ล็อกอินสำเร็จ)
   async signIn(email: string, password: string) {
-    return await this.supabase.auth.signInWithPassword({ email, password });
+    const response = await this.supabase.auth.signInWithPassword({ email, password });
+    if (response.data.user) {
+      await this.refreshUserProfile(response.data.user.id);
+    }
+    return response;
   }
 
-  // 3. ออกจากระบบ (Sign Out)
+  // 3. ออกจากระบบ (อัปเดต: ล้างข้อมูลในถังทิ้งด้วย)
   async signOut() {
-    return await this.supabase.auth.signOut();
+    await this.supabase.auth.signOut();
+    this.userProfile.set(null); // ล้างข้อมูล Profile ในแอป
   }
 
-  // 4. ดึงข้อมูล User ปัจจุบัน (ดูว่าใครล็อคอินอยู่)
-  get user(): User | null {
-    // ดึงข้อมูลจาก Session ปัจจุบัน
-    const session = this.supabase.auth.getSession();
-    // ถ้าอยากได้ข้อมูลแบบ Real-time แนะนำให้ใช้ auth.onAuthStateChange ในอนาคต
-    return null; // เดี๋ยวพี่สอนวิธีทำแบบละเอียดตอนเริ่มเขียนหน้า UI ครับ
-  }
-
-
-
-  //เช็ค user ว่าล็อคอินอยู่ไหม
   async getCurrentUser() {
-    const { data: { user } } = await this.supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
     return user;
   }
-  // src/app/supabase.ts
 
-  async getUserProfile(userId: string) {
-    return await this.supabase
-      .from('profiles')
-      .select(`
-      *,
-      student_details(*),
-      teacher_details(*)
-    `) //  ดึงข้อมูลทุกอย่างจากทั้งตารางนักศึกษาและอาจารย์มาพร้อมกัน
-      .eq('id', userId)
-      .single();
+  async getStudents() {
+    return await this.supabase.from('students_test').select('*');
   }
-
 }

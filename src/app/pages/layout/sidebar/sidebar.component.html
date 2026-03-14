@@ -8,7 +8,7 @@
       class="h-16"
     />
   </div>
-
+  @if (supabaseService.userProfile()?.role === 'teacher') {
   <nav>
     <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
       <li routerLink="/home" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
@@ -24,4 +24,22 @@
     </li>
     </ul>
   </nav>
+  }
+  @if (supabaseService.userProfile()?.role === 'student') {
+    <nav>
+      <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
+        <li routerLink="personal-data" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+          <a  class="flex items-center">
+            <span class="material-symbols-outlined icon-filled pr-2"> home </span> ข้อมูลส่วนตัว </a>
+        </li>
+        <li routerLink="study-results" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+          <a  class="flex items-center">
+            <span class="material-symbols-outlined icon-filled pr-2"> group </span> ผลการเรียน </a>
+        </li> <li routerLink="plo-evaluation" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> assignment </span> การประเมิน PLO</a>
+      </li>
+      </ul>
+    </nav>
+  }
 </div>

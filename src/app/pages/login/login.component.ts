@@ -11,11 +11,11 @@ import { CommonModule } from '@angular/common';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
+
 export class LoginComponent {
   private supabaseService = inject(SupabaseService);
   private router = inject(Router);
 
-  // สร้างฟอร์มและตั้งค่าการตรวจสอบ (Validation)
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
@@ -24,7 +24,6 @@ export class LoginComponent {
   loading = false;
 
   async onLogin() {
-    // ถ้าฟอร์มยังไม่ถูกต้อง ห้ามกดส่ง
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -34,13 +33,28 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     try {
+      // 1. เรียกใช้ signIn ที่เราแก้ใหม่ (ซึ่งมันจะโหลด Profile ลง Signal ให้เสร็จสรรพ)
       const { data, error } = await this.supabaseService.signIn(email!, password!);
 
       if (error) {
         alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message);
       } else {
-        // เข้าสู่ระบบสำเร็จ ย้ายไปหน้า home
-        this.router.navigate(['/home']);
+        // 2. ดึงค่า Role จาก Signal ใน Service มาเช็คทางแยก
+        // มึงต้องแน่ใจนะว่าใน Database มึงใส่ role เป็น 'teacher' หรือ 'student' (ตัวเล็กหมด)
+        const userProfile = this.supabaseService.userProfile();
+        const role = userProfile?.role;
+
+        console.log('Login สำเร็จ! Role ของมึงคือ:', role);
+
+        // 3. ทำทางแยก (Conditional Routing)
+        if (role === 'teacher') {
+          this.router.navigate(['/home']); // หน้าของอาจารย์
+        } else if (role === 'student') {
+          this.router.navigate(['/personal-data']); // หน้าของนักเรียน
+        } else {
+          // เผื่อกรณีไม่มี Role หรือ Role ผิดพลาด ให้ไปหน้ากลางๆ ไว้ก่อน
+          this.router.navigate(['/home']);
+        }
       }
     } catch (err) {
       console.error('Unexpected error:', err);

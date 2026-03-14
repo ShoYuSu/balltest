@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core'; // ใช้ Signal
 import { RouterModule } from '@angular/router';
-import { SupabaseService } from '../../supabase';
+import { SupabaseService } from '../../../supabase';
 
 
 @Component({

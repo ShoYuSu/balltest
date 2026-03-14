@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { SupabaseService} from '../../../supabase';
 
 @Component({
   selector: 'app-sidebar',
@@ -7,4 +8,6 @@ import { RouterModule } from '@angular/router';
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
 })
-export class SidebarComponent {}
+export class SidebarComponent {
+  public supabaseService = inject(SupabaseService);
+}
