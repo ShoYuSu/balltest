@@ -1,6 +1,73 @@
+
 # AdvisorSystem
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.2.
+This project was generated using Angular CLI version 21.2.2.
+
+
+## 1.ดาวโหลด หรือ อัพเดท Docker Desktop , Node.js , Git
+## 2.หลังจาก clone โค้ดมาแล้วให้รัน
+```bash
+  npm install
+```
+## 2.เปิด Docker Desktop แล้วรัน
+```bash
+  npx supabase start
+```
+ พอมันรันเสร็จ มันจะพ่นตาราง URL และ Keys ออกมาในเครื่อง (ซึ่ง Keys จะไม่เหมือนกับเครื่องของแต่ละคน แต่ไม่เป็นไร ให้จดเป็นของตัวเอง) 
+
+## 3. เติมกุญแจ 
+
+นี่คือจุดที่สำคัญที่สุด! ต้องเปิดไฟล์ `src/environments/environment.ts` แล้วทำแบบนี้:
+
+- ไปก๊อป **`Project URL`** จากหน้าจอดำ มาแปะใน `supabaseUrl`
+- ไปก๊อป **`pub key`** จากหน้าจอดำ มาแปะใน `supabaseKey`
+
+
+ **ตัวอย่าง**
+    
+    `export const environment = {
+      supabaseUrl: 'http://127.0.0.1:54321', 
+      supabaseKey: 'eyJhbGciOiJIUzI1NiI...', 
+    };`
+
+
+## 4. "รันแอป" (Start the App)
+```bash
+ng serv
+```
+หรือ 
+```bash
+npm start
+```
+
+## 5. ห้ามเอา ไฟล์ environment..ts   เข้า github หรือ push เด็ดขาด
+
+## หลังจากสร้างโปรเจค
+
+## ดูด database
+```bash
+npx supabase db diff --local -f update_tables
+```
+## ดูดข้อมูลใน local
+
+```bash
+docker exec supabase_db_advisor-system pg_dump -U postgres --data-only --column-inserts --table=auth.users --table=auth.identities --table=public.* | Select-String -Pattern "^\\" -NotMatch | Out-File -Encoding UTF8 supabase/seed.sql
+```
+
+## reset database
+```bash
+npx supabase db reset
+```
+
+## ลง could
+```bash
+npx supabase login
+```
+
+```bash
+npx supabase db push
+```
+
 
 ## Development server
 
