@@ -16,6 +16,7 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
+      //teacher
       {
         path: 'home',
         loadComponent: () =>
@@ -39,6 +40,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
+      //student
       {
         path: 'personal-data',
         loadComponent: () =>
@@ -65,6 +67,16 @@ export const routes: Routes = [
           ),
         canActivate: [authGuard],
         data: { role: 'student' },
+      },
+      //admin
+      {
+        path: 'system-dashboard',
+        loadComponent: () =>
+          import('./pages/admin/system-dashboard/system-dashboard.component').then(
+            (m) => m.SystemDashboardComponent,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
       },
       {
         path: '**',

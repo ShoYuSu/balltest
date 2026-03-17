@@ -42,4 +42,14 @@
       </ul>
     </nav>
   }
+  @if (supabaseService.userProfile()?.role === 'admin') {
+    <nav>
+      <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
+        <li routerLink="/system-dashboard" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+          <a  class="flex items-center">
+            <span class="material-symbols-outlined icon-filled pr-2"> dashboard </span> ภาพรวมระบบ</a>
+        </li>
+      </ul>
+    </nav>
+  }
 </div>

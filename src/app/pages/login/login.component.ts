@@ -48,12 +48,12 @@ export class LoginComponent {
 
         // 3. ทำทางแยก (Conditional Routing)
         if (role === 'teacher') {
-          this.router.navigate(['/home']); // หน้าของอาจารย์
+          await this.router.navigate(['/home']); // หน้าของอาจารย์
         } else if (role === 'student') {
-          this.router.navigate(['/personal-data']); // หน้าของนักเรียน
-        } else {
-          // เผื่อกรณีไม่มี Role หรือ Role ผิดพลาด ให้ไปหน้ากลางๆ ไว้ก่อน
-          this.router.navigate(['/home']);
+          await this.router.navigate(['/personal-data']); // หน้าของนักเรียน
+        } else if (role === 'admin') {
+          //
+          await this.router.navigate(['/system-dashboard']); // หน้า admin
         }
       }
     } catch (err) {

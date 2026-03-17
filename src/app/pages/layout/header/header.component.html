@@ -6,7 +6,7 @@
     >
       <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white shrink-0">
         @if (supabaseService.userProfile().full_name) {
-          {{ supabaseService.userProfile().full_name[0] | uppercase }}
+
         } @else {
           <span class="material-symbols-outlined">person</span>
         }
@@ -25,7 +25,11 @@
           <span class="text-[12px] text-blue-600 font-bold rounded-full ">
            รหัสนักศึกษา {{ supabaseService.userProfile().student_details?.student_code || 'N/A' }}
           </span>
-        }
+        }  @else if (supabaseService.userProfile().role === 'admin') {
+        <span class="text-[12px] text-blue-600 font-bold rounded-full ">
+           ผู้ดูแลระบบ
+          </span>
+      }
       </div>
 
       <span
