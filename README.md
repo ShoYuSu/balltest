@@ -51,7 +51,7 @@ npx supabase db diff --local -f update_tables
 ## ดูดข้อมูลใน local
 
 ```bash
-docker exec supabase_db_advisor-system pg_dump -U postgres --data-only --column-inserts --table=auth.users --table=auth.identities --table=public.* | Select-String -Pattern "^\\" -NotMatch | Out-File -Encoding UTF8 supabase/seed.sql
+npx supabase db dump --local --data-only --use-copy=false -f supabase/seed.sql
 ```
 
 ## reset database
