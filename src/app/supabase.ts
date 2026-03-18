@@ -29,14 +29,27 @@ export class SupabaseService {
 
   //  ฟังก์ชันดึงข้อมูล Profile แล้วเก็บลงถัง (Signal)
   async refreshUserProfile(userId: string) {
+    // สั่งให้ Supabase ไปหยิบข้อมูลจากตารางที่เชื่อมกันผ่าน Foreign Key
     const { data, error } = await this.supabase
       .from('profiles')
-      .select('*, student_details(*), teacher_details(*)')
+      .select(
+        `
+      *,
+      student_details (
+        student_code,
+        year_level,
+        major_id
+      ),
+      teacher_details (
+        major_id
+      )
+    `,
+      )
       .eq('id', userId)
-      .single();
+      .single<UserProfile>();
 
     if (!error) {
-      this.userProfile.set(data); // เก็บข้อมูลลง Signal
+      this.userProfile.set(data);
     }
     return { data, error };
   }
@@ -46,12 +59,16 @@ export class SupabaseService {
     return await this.supabase.auth.signUp({ email, password });
   }
 
-  // 2. เข้าสู่ระบบ (อัปเดต: ให้โหลด Profile ทันทีที่ล็อกอินสำเร็จ)
+  // 2. เข้าสู่ระบบ (คืนค่ากลับไปที่ Component ให้ไวที่สุด)
   async signIn(email: string, password: string) {
+    // ไม่ต้อง await refreshUserProfile ในนี้ เพราะมันทำให้ Response รวมช้าลง
     const response = await this.supabase.auth.signInWithPassword({ email, password });
+
     if (response.data.user) {
-      await this.refreshUserProfile(response.data.user.id);
+      // โหลด Profile ใส่ Signal ไว้เฉยๆ ไม่ต้องขัดจังหวะการคืนค่า Response
+      this.refreshUserProfile(response.data.user.id);
     }
+
     return response;
   }
 
@@ -72,3 +89,21 @@ export class SupabaseService {
     return await this.supabase.from('students_test').select('*');
   }
 }
+export interface UserProfile {
+  id: string;
+  role: string;
+  full_name: string;
+  created_at: string;
+  // ข้อมูลจากตาราง student_details (ถ้ามี)
+  student_details?: {
+    student_code: string;
+    year_level: number;
+    major_id: number;
+    advisor_id: string;
+  } | null;
+  // ข้อมูลจากตาราง teacher_details (ถ้ามี)
+  teacher_details?: {
+    major_id: number;
+  } | null;
+}
+

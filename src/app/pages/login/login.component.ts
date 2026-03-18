@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core'; // เพิ่ม ChangeDetectorRef
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { SupabaseService } from '../../supabase';
 import { Router } from '@angular/router';
@@ -11,10 +11,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-
 export class LoginComponent {
   private supabaseService = inject(SupabaseService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef); // เพิ่มตัวนี้เข้าไปบี้ Change Detection
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -22,6 +22,13 @@ export class LoginComponent {
   });
 
   loading = false;
+  showErrorModal = false;
+  errorMessage = '';
+
+  closeModal() {
+    this.showErrorModal = false;
+    this.cdr.detectChanges(); // สั่งให้หน้าจอหายไปทันทีเมื่อปิด
+  }
 
   async onLogin() {
     if (this.loginForm.invalid) {
@@ -33,33 +40,50 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     try {
-      // 1. เรียกใช้ signIn ที่เราแก้ใหม่ (ซึ่งมันจะโหลด Profile ลง Signal ให้เสร็จสรรพ)
       const { data, error } = await this.supabaseService.signIn(email!, password!);
 
-      if (error) {
-        alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message);
-      } else {
-        // 2. ดึงค่า Role จาก Signal ใน Service มาเช็คทางแยก
-        // มึงต้องแน่ใจนะว่าใน Database มึงใส่ role เป็น 'teacher' หรือ 'student' (ตัวเล็กหมด)
-        const userProfile = this.supabaseService.userProfile();
-        const role = userProfile?.role;
+      if (error) throw error;
 
-        console.log('Login สำเร็จ! Role ของมึงคือ:', role);
+      if (data.user) {
+        // 1. มั่นใจว่าได้ Profile ล่าสุด (ถ้า Service มีฟังก์ชันดึงข้อมูลใหม่)
+        // หรือรอให้ Service อัปเดต State ให้เสร็จ
 
-        // 3. ทำทางแยก (Conditional Routing)
-        if (role === 'teacher') {
-          await this.router.navigate(['/home']); // หน้าของอาจารย์
-        } else if (role === 'student') {
-          await this.router.navigate(['/personal-data']); // หน้าของนักเรียน
-        } else if (role === 'admin') {
-          //
-          await this.router.navigate(['/system-dashboard']); // หน้า admin
+        const { data: profile, error: profileError } =
+          await this.supabaseService.refreshUserProfile(data.user.id);
+
+        if (profileError || !profile) {
+          this.errorMessage = 'ไม่สามารถดึงข้อมูลสิทธิ์การใช้งานได้';
+          this.showErrorModal = true;
+          return; // หยุดการทำงานถ้าดึง profile ไม่สำเร็จ
+        }
+
+        const role = profile.role?.toLowerCase().trim();
+
+        // 2. ใช้ switch case เพื่อความอ่านง่าย
+        switch (role) {
+          case 'teacher':
+            await this.router.navigate(['/home']);
+            break;
+          case 'student':
+            await this.router.navigate(['/personal-data']);
+            break;
+          case 'admin':
+            await this.router.navigate(['/system-dashboard']);
+            break;
+          default:
+            this.errorMessage = 'ไม่พบสิทธิ์การใช้งานในระบบ หรือ Role ไม่ถูกต้อง';
+            this.showErrorModal = true;
         }
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
+    } catch (err: any) {
+      this.errorMessage =
+        err.message === 'Invalid login credentials'
+          ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+          : 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+      this.showErrorModal = true;
     } finally {
       this.loading = false;
+      this.cdr.detectChanges(); // เรียกครั้งเดียวตอนจบเพื่อ Update UI
     }
   }
 }
