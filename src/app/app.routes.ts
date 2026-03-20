@@ -79,6 +79,56 @@ export const routes: Routes = [
         data: { role: 'admin' },
       },
       {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/admin/users/users').then((m) => m.Users),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'students',
+        loadComponent: () =>
+          import('./pages/admin/students/students').then((m) => m.Students),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'teachers',
+        loadComponent: () =>
+          import('./pages/admin/teachers/teachers').then((m) => m.Teachers),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./pages/admin/reports/reports').then((m) => m.Reports),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'plo',
+        loadComponent: () =>
+          import('./pages/admin/plo/plo').then((m) => m.Plo),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path:'assign-advisor',
+        loadComponent: () =>
+          import('./pages/admin/assign-advisor/assign-advisor').then((m) => m.AssignAdvisor),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'advisor-history',
+        loadComponent: () =>
+          import('./pages/admin/advisor-history/advisor-history').then((m) => m.AdvisorHistory),
+        canActivate: [authGuard],
+        data: { role: 'admin' },
+      },
+      {
         path: '**',
         redirectTo: 'home',
       },
