@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AssignAdvisor } from './assign-advisor';
+import { AssignAdvisor } from './assign-advisor.component';
 
 describe('AssignAdvisor', () => {
   let component: AssignAdvisor;

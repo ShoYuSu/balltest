@@ -1,66 +1,106 @@
-<div class="p-6">
+<div class="min-h-screen bg-gray-50 p-8">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">จัดการผู้ใช้</h1>
-    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
-      เพิ่มผู้ใช้ใหม่
+    <h1 class="text-2xl font-bold text-gray-800">จัดการผู้ใช้งาน</h1>
+    <button (click)="openAddModal()" 
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition">
+      <span class="text-xl">+</span> เพิ่มผู้ใช้
     </button>
   </div>
 
-  <!-- Users Table -->
-  <div class="bg-white shadow-md rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-gray-50 border-b border-gray-100">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัส</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">อีเมล</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">บทบาท</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">การดำเนินการ</th>
+          <th class="p-4 font-semibold text-gray-600">ชื่อ-สกุล</th>
+          <th class="p-4 font-semibold text-gray-600">อีเมล</th>
+          <th class="p-4 font-semibold text-gray-600">บทบาท</th>
+          <th class="p-4 font-semibold text-gray-600">สถานะ</th>
+          <th class="p-4 font-semibold text-gray-600">จัดการ</th>
         </tr>
       </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">12345</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">สมชาย ใจดี</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">somchai@example.com</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              นักศึกษา
-            </span>
+      <tbody>
+        <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+          <td class="p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold">JD</div>
+            <span class="text-gray-700">สมชาย สายลม</span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              active
-            </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
-              แก้ไข
-            </button>
-          </td>
-        </tr>
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">67890</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">สมหญิง รักเรียน</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">somying@example.com</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-              อาจารย์
-            </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              active
-            </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
-              แก้ไข
-            </button>
-          </td>
+          <td class="p-4 text-gray-500">somchai.s@email.com</td>
+          <td class="p-4"><span class="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-600">อาจารย์</span></td>
+          <td class="p-4"><span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600 font-medium">ใช้งาน</span></td>
+          <td class="p-4 text-gray-400 cursor-pointer">•••</td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div *ngIf="isModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+      
+      <div class="p-6 pb-0 flex justify-between items-center">
+        <h3 class="text-xl font-bold text-gray-800">{{ isEditMode ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่' }}</h3>
+        <button (click)="isModalOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="p-6 space-y-4">
+        
+        <div class="flex flex-col items-center mb-4">
+          <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-2 overflow-hidden border border-gray-100 shadow-inner">
+            <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+            
+            <svg *ngIf="!imagePreview" class="w-10 h-10 text-indigo-300" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
+          
+          <button type="button" (click)="fileInput.click()" class="text-pink-400 text-sm font-medium hover:underline">
+            เพิ่มรูปโปรไฟล์
+          </button>
+        </div>
+        <div class="space-y-1">
+          <label class="text-sm font-semibold text-gray-700">ชื่อ-สกุล</label>
+          <input type="text" formControlName="name" placeholder="กรอกชื่อ-สกุล"
+                 class="w-full p-2.5 border rounded-xl outline-none transition focus:ring-2 focus:ring-indigo-100"
+                 [ngClass]="submitted && userForm.get('name')?.invalid ? 'border-red-500' : 'border-gray-200 focus:border-indigo-400'">
+          <p *ngIf="submitted && userForm.get('name')?.invalid" class="text-red-500 text-xs mt-1">กรุณากรอกชื่อ-นามสกุล</p>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-sm font-semibold text-gray-700">อีเมล</label>
+          <input type="email" formControlName="email" placeholder="กรอกอีเมล"
+                 class="w-full p-2.5 border rounded-xl outline-none transition disabled:bg-gray-50 disabled:text-gray-400"
+                 [ngClass]="submitted && userForm.get('email')?.invalid ? 'border-red-500' : 'border-gray-200 focus:border-indigo-400'">
+                 <p *ngIf="submitted && userForm.get('email')?.invalid" class="text-red-500 text-xs mt-1">กรุณากรอกอีเมล</p>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-sm font-semibold text-gray-700 text-left w-full">รหัส</label>
+          <input type="password" formControlName="password" placeholder="รหัส"
+                 class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 transition"
+                 [ngClass]="{'border-red-500': submitted && userForm.get('password')?.invalid}">
+          <p *ngIf="submitted && userForm.get('password')?.invalid" class="text-red-500 text-xs mt-1">กรุณากรอกรหัสผ่าน</p>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <select formControlName="role" 
+                  class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1em_1em] disabled:bg-gray-50">
+            <option value="" disabled>เลือกบทบาท</option>
+            <option value="อาจารย์">อาจารย์</option>
+            <option value="นักศึกษา">นักศึกษา</option>
+            <option value="แอดมิน">แอดมิน</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="button" (click)="isModalOpen = false" 
+                  class="flex-1 py-2.5 border border-gray-300 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition">ยกเลิก</button>
+          <button type="submit" 
+                  class="flex-1 py-2.5 bg-indigo-200 text-indigo-700 rounded-xl font-semibold hover:bg-indigo-600 hover:text-white transition shadow-sm">
+            {{ isEditMode ? 'บันทึกแก้ไข' : 'เพิ่มผู้ใช้' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

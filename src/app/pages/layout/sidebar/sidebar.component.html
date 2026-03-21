@@ -44,11 +44,39 @@
   }
   @if (supabaseService.userProfile()?.role === 'admin') {
     <nav>
-      <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
+      <ul class="flex flex-col gap-2 text-[16px] font-semibold " >
         <li routerLink="/system-dashboard" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
           <a  class="flex items-center">
             <span class="material-symbols-outlined icon-filled pr-2"> dashboard </span> ภาพรวมระบบ</a>
         </li>
+        <li routerLink="users" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> group </span>จัดการผู้ใช้งาน</a>
+      </li>
+      <li routerLink="teachers" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> badge </span>อาจารย์</a>
+      </li>
+      <li routerLink="students" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> school </span>นักศึกษา</a>
+      </li>
+      <li routerLink="assign-advisor" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> person_add </span>กำหนดอาจารย์ที่ปรึกษา</a>
+      </li>
+      <li routerLink="plo" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> track_changes </span>จัดการPLO</a>
+      </li>
+      <li routerLink="advisor-history" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> history</span>ประวัติที่ปรึกษาของนักศึกษา</a>
+      </li>
+      <li routerLink="reports" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> description </span>รายงานระบบ</a>
+      </li>
       </ul>
     </nav>
   }

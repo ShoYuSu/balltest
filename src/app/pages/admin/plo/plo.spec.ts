@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Plo } from './plo';
+import { Plo } from './plo.component';
 
 describe('Plo', () => {
   let component: Plo;
