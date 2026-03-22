@@ -1,6 +1,10 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+ 
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4"
+     [ngClass]="stats.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'">
+  
   <div *ngFor="let item of stats" 
-       class="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-all cursor-default group">
+       class="bg-white rounded-2xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-all cursor-default group">
     
     <div [class]="item.bgColor" 
          class="w-14 h-14 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
@@ -17,3 +21,4 @@
     </div>
   </div>
 </div>
+
