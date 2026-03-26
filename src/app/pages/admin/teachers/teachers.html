@@ -1,1 +1,24 @@
-<p>teachers works!</p>
+<div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-6">
+  <div class=" justify-center w-full mb-7">
+    <app-stat-cards [stats]="myStats"></app-stat-cards>
+  </div>
+
+  <div class="flex items-center justify-between gap-4">
+    
+    <div class="relative flex-1 max-w-xl">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        search
+      </span>
+      <input 
+        type="text" 
+        placeholder="ค้นหาอาจารย์..." 
+        class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+      >
+    </div>
+
+    <button class="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all whitespace-nowrap">
+      <span class="material-symbols-outlined text-xl">add</span>
+      เพิ่มอาจารย์
+    </button>
+  </div>
+</div>

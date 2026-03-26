@@ -1,1 +1,41 @@
-<p>students works!</p>
+<div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-6">
+  
+  <div class=" justify-center w-full mb-10">
+    <app-stat-cards [stats]="studentStats"></app-stat-cards>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+    
+    <div class="relative flex-1 min-w-[300px] max-w-md">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        search
+      </span>
+      <input type="text" 
+             placeholder="ค้นหานักศึกษา..." 
+             class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+        <span class="material-symbols-outlined text-lg">menu_book</span>
+        โครงสร้างหลักสูตร
+      </button>
+      
+      <button class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
+        <span class="material-symbols-outlined text-lg">add</span>
+        เพิ่มนักศึกษา
+      </button>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <select class="min-w-[160px] px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none text-sm text-gray-600 cursor-pointer appearance-none">
+      <option>ทุกสาขา</option>
+    </select>
+
+    <select class="min-w-[160px] px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none text-sm text-gray-600 cursor-pointer appearance-none">
+      <option>ทุกชั้นปี</option>
+    </select>
+  </div>
+
+</div>
