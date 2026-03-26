@@ -33,7 +33,7 @@ This project was generated using Angular CLI version 21.2.2.
 
 ## 4. "รันแอป" (Start the App)
 ```bash
-ng serv
+ng serve
 ```
 หรือ 
 ```bash
