@@ -1,11 +1,103 @@
-<h2>รายชื่อนักศึกษา (Angular Latest Version)</h2>
+<div class="p-6 bg-gray-50 min-h-screen">
+  <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
 
-<div class="student-list">
-  @for (student of students(); track student.id) {
-    <div class="card">
-      <strong>{{ student.name }}</strong> - {{ student.major }}
+  <div class="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6 mt-8">
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">นักศึกษาในความดูแล</h2>
+          <p class="text-sm text-gray-500">รายชื่อนักศึกษาทั้งหมด 45 คน</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative flex-grow">
+            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
+            <input type="text" placeholder="ค้นหานักศึกษา..." class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-200 focus:border-blue-400">
+          </div>
+          <button class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">ดูทั้งหมด</button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        @for (s of studentsInCare(); track s.id) {
+          <div class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+            <div class="flex items-center gap-4">
+              <img [src]="s.img" class="w-16 h-16 rounded-full object-cover border-2 border-gray-50" alt="avatar">
+              <div>
+                <div class="font-bold text-lg text-gray-900">{{ s.name }}</div>
+                <div class="text-xs text-gray-500">รหัส {{ s.id }} • ปี {{ s.year }} • GPA {{ s.gpa }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.status === 'รออนุมัติ' ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-600')">
+                {{ s.status }}
+              </span>
+              <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.ploStatus === 'PLO รอประเมิน' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600')">
+                {{ s.ploStatus }}
+              </span>
+              <span class="material-icons text-gray-400 text-lg">chevron_right</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-between mt-8 text-sm text-gray-500">
+        <div>แสดง 1-5 จาก 45 รายการ</div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">ก่อนหน้า</button>
+          <button class="px-3 py-1.5 bg-orange-500 text-white rounded-lg">1</button>
+          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">ถัดไป</button>
+        </div>
+      </div>
     </div>
-  } @empty {
-    <p>ไม่มีข้อมูลในฐานข้อมูลเลยครับ</p>
-  }
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">การนัดหมายล่าสุด</h2>
+        <button class="text-orange-500 text-sm font-semibold hover:underline">ดูทั้งหมด</button>
+      </div>
+
+      <div class="space-y-5">
+        @for (app of appointments(); track app.id + app.date) {
+          <div class="p-5 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <img [src]="app.img" class="w-12 h-12 rounded-full object-cover">
+                <div>
+                  <div class="font-bold text-sm text-gray-900">{{ app.name }}</div>
+                  <div class="text-[11px] text-gray-400">รหัส {{ app.id }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span [class]="'px-2 py-0.5 text-[11px] font-bold rounded ' + (app.type === 'อาชีพ/ฝึกงาน' ? 'bg-cyan-50 text-cyan-600' : 'bg-blue-50 text-blue-600')">{{ app.type }}</span>
+                <span class="px-2 py-0.5 text-[11px] font-bold text-orange-600 bg-orange-50 rounded">นัดหมาย</span>
+              </div>
+            </div>
+
+            <div class="text-sm text-gray-800 font-medium mb-2">{{ app.topic }}</div>
+            @if (app.note) {
+              <div class="p-3 mb-4 text-xs text-gray-600 bg-gray-50 rounded-lg border border-gray-100 line-clamp-2">
+                บันทึก: {{ app.note }}
+              </div>
+            }
+
+            <div class="flex items-center gap-5 text-sm text-gray-500">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-base">calendar_today</span>
+                {{ app.date }}
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-base">schedule</span>
+                {{ app.time }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
 </div>
