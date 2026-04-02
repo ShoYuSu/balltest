@@ -11,7 +11,7 @@
         </div>
         <div class="flex items-center gap-3">
           <div class="relative flex-grow">
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
+            <span class="material-symbols-outlined icon-filled absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
             <input type="text" placeholder="ค้นหานักศึกษา..." class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-200 focus:border-blue-400">
           </div>
           <button class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">ดูทั้งหมด</button>
@@ -36,7 +36,7 @@
               <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.ploStatus === 'PLO รอประเมิน' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600')">
                 {{ s.ploStatus }}
               </span>
-              <span class="material-icons text-gray-400 text-lg">chevron_right</span>
+              <span class="material-symbols-outlined icon-filled text-gray-400 text-lg">chevron_right</span>
             </div>
           </div>
         }
@@ -86,11 +86,11 @@
 
             <div class="flex items-center gap-5 text-sm text-gray-500">
               <div class="flex items-center gap-2">
-                <span class="material-icons text-base">calendar_today</span>
+                <span class="material-symbols-outlined icon-filled text-base">calendar_today</span>
                 {{ app.date }}
               </div>
               <div class="flex items-center gap-2">
-                <span class="material-icons text-base">schedule</span>
+                <span class="material-symbols-outlined icon-filled text-base">schedule</span>
                 {{ app.time }}
               </div>
             </div>
