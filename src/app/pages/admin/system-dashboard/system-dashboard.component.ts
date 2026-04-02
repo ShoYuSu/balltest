@@ -7,6 +7,7 @@ import { ActionMenuComponent } from '../../../shared/components/stat-cards/actio
   imports: [StatCardsComponent, ActionMenuComponent],
   templateUrl: './system-dashboard.component.html',
   styleUrl: './system-dashboard.component.css',
+
 })
 export class SystemDashboardComponent {
   dashboardStats = [
