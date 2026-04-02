@@ -2,20 +2,38 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, StatCardsComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, StatCardsComponent, ButtonComponent ],
   templateUrl: './students.html',
   styleUrl: './students.css',
 })
 export class StudentsComponent implements OnInit {
   // --- ตัวแปรเดิมที่คุณมี ---
   studentStats = [
-    { label: 'นักศึกษาทั้งหมด', value: 0, icon: 'school', bgColor: 'bg-green-50', textColor: 'text-green-600' },
-    { label: 'มีที่ปรึกษาแล้ว', value: 0, icon: 'person', bgColor: 'bg-yellow-50', textColor: 'text-yellow-600' },
-    { label: 'ยังไม่มีที่ปรึกษา', value: 0, icon: 'person_off', bgColor: 'bg-red-50', textColor: 'text-red-600' },
+    { label: 'นักศึกษาทั้งหมด', 
+      value: 0, icon: 'school', 
+      bgColor: 'bg-green-200', 
+      textColor: 'text-green-600' ,
+      cardBg: 'bg-[#F5FFFA]',
+    },
+
+    { label: 'มีที่ปรึกษาแล้ว', 
+      value: 0, icon: 'person', 
+      bgColor: 'bg-yellow-100', 
+      textColor: 'text-yellow-600', 
+      cardBg: 'bg-[#FFF9E5]' 
+    },
+    { label: 'ยังไม่มีที่ปรึกษา', 
+      value: 0, 
+      icon: 'person_off', 
+      bgColor: 'bg-red-200', 
+      textColor: 'text-red-600', 
+      cardBg: 'bg-[#FFE5E5]' 
+    },
   ];
 
   // --- ตัวแปรจัดการ Modal และ Form ---
