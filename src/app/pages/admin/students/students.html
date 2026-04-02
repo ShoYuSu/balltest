@@ -4,38 +4,122 @@
     <app-stat-cards [stats]="studentStats"></app-stat-cards>
   </div>
 
-  <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-    
-    <div class="relative flex-1 min-w-[300px] max-w-md">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-        search
-      </span>
-      <input type="text" 
-             placeholder="ค้นหานักศึกษา..." 
-             class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
-    </div>
-
-    <div class="flex items-center gap-3">
-      <button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
-        <span class="material-symbols-outlined text-lg">menu_book</span>
-        โครงสร้างหลักสูตร
-      </button>
-      
-      <button class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
-        <span class="material-symbols-outlined text-lg">add</span>
-        เพิ่มนักศึกษา
-      </button>
-    </div>
+  <div class="flex flex-wrap items-center justify-between gap-4 my-6">
+  <div class="relative flex-1 min-w-[300px] max-w-md">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+    <input type="text" [(ngModel)]="searchText" placeholder="ค้นหานักศึกษา..." 
+           class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm">
   </div>
 
   <div class="flex items-center gap-3">
-    <select class="min-w-[160px] px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none text-sm text-gray-600 cursor-pointer appearance-none">
-      <option>ทุกสาขา</option>
-    </select>
-
-    <select class="min-w-[160px] px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none text-sm text-gray-600 cursor-pointer appearance-none">
-      <option>ทุกชั้นปี</option>
-    </select>
+    <button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+      <span class="material-symbols-outlined text-lg text-blue-600">menu_book</span>
+      โครงสร้างหลักสูตร
+    </button>
+    
+    <button (click)="openModal()" class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
+      <span class="material-symbols-outlined text-lg">add</span>
+      เพิ่มนักศึกษา
+    </button>
   </div>
+</div>
 
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr class="bg-gray-50 border-b border-gray-100">
+        <th class="p-4 text-xs font-bold text-gray-500 uppercase">โปรไฟล์</th>
+        <th class="p-4 text-xs font-bold text-gray-500 uppercase">รหัสนักศึกษา</th>
+        <th class="p-4 text-xs font-bold text-gray-500 uppercase">ชื่อ-นามสกุล</th>
+        <th class="p-4 text-xs font-bold text-gray-500 uppercase">สาขา</th>
+        <th class="p-4 text-xs font-bold text-gray-500 uppercase">ชั้นปี</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of filteredStudents" class="border-b border-gray-50 hover:bg-blue-50/20 transition-colors">
+        <td class="p-4">
+          <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border">
+            <img *ngIf="s.image" [src]="s.image" class="w-full h-full object-cover">
+            <span *ngIf="!s.image" class="material-symbols-outlined text-blue-300">person</span>
+          </div>
+        </td>
+        <td class="p-4 text-sm font-medium text-gray-700">{{ s.id }}</td>
+        <td class="p-4 text-sm text-gray-800">{{ s.name }}</td>
+        <td class="p-4">
+          <span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-bold">{{ s.major }}</span>
+        </td>
+        <td class="p-4 text-sm text-gray-600">ปี {{ s.year }}</td>
+      </tr>
+      <tr *ngIf="filteredStudents.length === 0">
+        <td colspan="5" class="p-10 text-center text-gray-400 text-sm italic">ไม่พบข้อมูลนักศึกษา</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="isModalOpen" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-[440px] overflow-hidden transform transition-all animate-in fade-in zoom-in duration-300">
+    
+    <div class="p-6 pb-0 flex justify-between items-start">
+      <h3 class="text-xl font-bold text-gray-800">เพิ่มนักศึกษาใหม่</h3>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="p-8 pt-4 space-y-5 text-left">
+      <div class="flex flex-col items-center">
+        <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-4 border border-blue-100 shadow-inner overflow-hidden">
+          <img *ngIf="imagePreview" [src]="imagePreview" class="w-full h-full object-cover">
+          <span *ngIf="!imagePreview" class="material-symbols-outlined text-4xl text-blue-300">person</span>
+        </div>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
+        <button type="button" (click)="fileInput.click()" class="text-blue-500 text-sm font-semibold hover:underline">อัปโหลดรูปโปรไฟล์</button>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-semibold text-gray-700">รหัสนักศึกษา</label>
+        <input type="text" formControlName="studentId" placeholder="กรอกรหัส"
+               class="w-full p-3 bg-gray-50 border rounded-xl outline-none transition"
+               [ngClass]="submitted && studentForm.get('studentId')?.invalid ? 'border-red-500' : 'border-gray-200 focus:border-indigo-400'">
+        <p *ngIf="submitted && studentForm.get('studentId')?.invalid" class="text-red-500 text-xs mt-1">กรุณากรอกรหัสนักศึกษา (ตัวเลขเท่านั้น)</p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-semibold text-gray-700">ชื่อ-สกุล</label>
+        <input type="text" formControlName="fullName" placeholder="กรอกชื่อ-นามสกุล"
+               class="w-full p-3 bg-gray-50 border rounded-xl outline-none transition"
+               [ngClass]="submitted && studentForm.get('fullName')?.invalid ? 'border-red-500 ' : 'border-gray-200 focus:border-blue-400'">
+        <p *ngIf="submitted && studentForm.get('fullName')?.invalid" class="text-red-500 text-[11px] font-medium mt-1">กรุณากรอกชื่อ-นามสกุล</p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-semibold text-gray-700">สาขา</label>
+        <select formControlName="major" class="w-full p-3 bg-gray-50 border rounded-xl outline-none transition"
+                [ngClass]="submitted && studentForm.get('major')?.invalid ? 'border-red-500 ' : 'border-gray-200 focus:border-blue-400'">
+          <option value="" disabled>เลือกสาขา</option>
+          <option value="IT">เทคโนโลยีสารสนเทศ (IT)</option>
+          <option value="CS">วิทยาการคอมพิวเตอร์ (CS)</option>
+        </select>
+        <p *ngIf="submitted && studentForm.get('major')?.invalid" class="text-red-500 text-[11px] font-medium mt-1">กรุณาเลือกสาขา</p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-semibold text-gray-700">ชั้นปี</label>
+        <select formControlName="year" class="w-full p-3 bg-white border-2 border-blue-500 rounded-xl outline-none shadow-sm">
+          <option value="1">ปี 1</option>
+          <option value="2">ปี 2</option>
+          <option value="3">ปี 3</option>
+          <option value="4">ปี 4</option>
+        </select>
+      </div>
+
+      <div class="flex gap-4 pt-4">
+        <button type="button" (click)="closeModal()" class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-500 hover:bg-gray-50">ยกเลิก</button>
+        <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
+          เพิ่มนักศึกษา
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

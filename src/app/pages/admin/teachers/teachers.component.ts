@@ -7,7 +7,7 @@ import { StatCardsComponent } from "../../../shared/components/stat-cards/stat-c
   templateUrl: './teachers.html',
   styleUrl: './teachers.css',
 })
-export class Teachers {
+export class TeachersComponent {
  myStats = [
     { label: 'อาจารย์ทั้งหมด', value: 0, icon: 'group', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
     { label: 'เป็นที่ปรึกษา', value: 0, icon: 'school', bgColor: 'bg-green-50', textColor: 'text-green-600' },

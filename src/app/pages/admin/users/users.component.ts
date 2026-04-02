@@ -8,7 +8,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './users.html',
 })
-export class Users implements OnInit {
+export class UsersComponent implements OnInit {
   userForm!: FormGroup;
   isModalOpen: boolean = false;
   isEditMode: boolean = false;

@@ -6,4 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './advisor-history.html',
   styleUrl: './advisor-history.css',
 })
-export class AdvisorHistory {}
+export class AdvisorHistoryComponent {}

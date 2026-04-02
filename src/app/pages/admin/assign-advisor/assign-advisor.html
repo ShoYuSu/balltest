@@ -1,1 +1,87 @@
-<p>assign-advisor works!</p>
+<div class="p-6 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+  <span class="material-symbols-rounded">person_add</span>
+</div>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">เลือกอาจารย์ที่ปรึกษา</h2>
+          <p class="text-slate-400 text-sm">เลือกสาขาแล้วเลือกอาจารย์</p>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="text-sm font-semibold mb-2 block">สาขา</label>
+        <select [(ngModel)]="selectedBranch" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100">
+          <option>ทุกสาขา</option>
+          <option>วิทยาการคอมพิวเตอร์</option>
+          <option>เทคโนโลยีการอาหาร</option>
+        </select>
+      </div>
+
+      <div class="space-y-3">
+        @for (item of advisors; track item.id) {
+          <div (click)="selectAdvisor(item)"
+               [class.border-indigo-500]="selectedAdvisor?.id === item.id"
+               class="flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all hover:bg-slate-50">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600">
+                {{ item.name[0] }}
+              </div>
+              <div>
+                <p class="font-bold text-slate-700">{{ item.name }}</p>
+                <p class="text-xs text-slate-400">{{ item.dept }}</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">{{ item.code }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+  <span class="material-symbols-rounded">groups</span>
+</div>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">เลือกนักศึกษา</h2>
+          <p class="text-slate-400 text-sm">กรุณาเลือกอาจารย์หรือสาขาก่อน</p>
+        </div>
+      </div>
+
+      <input type="text" placeholder="ค้นหานักศึกษา..." class="w-full p-3 bg-slate-50 border-none rounded-xl mb-10 outline-none">
+
+      <div class="text-center py-20">
+        <p class="text-slate-400">กรุณาเลือกสาขาหรืออาจารย์ก่อนเพื่อแสดงรายชื่อนักศึกษา</p>
+      </div>
+
+      <button class="w-full py-4 bg-indigo-100 text-indigo-400 rounded-2xl font-bold flex items-center justify-center gap-2 cursor-not-allowed">
+        กำหนดที่ปรึกษา <span class="material-symbols-rounded ml-2">arrow_forward</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+@if (showDeleteModal) {
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200]">
+  <div class="bg-white rounded-[2rem] p-10 w-full max-w-lg shadow-2xl">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4">ยืนยันการลบ</h2>
+    <p class="text-slate-500 mb-10">คุณต้องการลบข้อมูลนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+    
+    <div class="flex gap-4">
+      <button (click)="showDeleteModal = false" 
+              class="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all">
+        ยกเลิก
+      </button>
+      <button (click)="executeDelete()" 
+              class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all">
+        ลบข้อมูล
+      </button>
+    </div>
+  </div>
+</div>
+}

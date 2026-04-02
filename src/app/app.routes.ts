@@ -81,21 +81,21 @@ export const routes: Routes = [
       {
         path: 'users',
         loadComponent: () =>
-          import('./pages/admin/users/users.component').then((m) => m.Users),
+          import('./pages/admin/users/users.component').then((m) => m.UsersComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path: 'students',
         loadComponent: () =>
-          import('./pages/admin/students/students.component').then((m) => m.Students),
+          import('./pages/admin/students/students.component').then((m) => m.StudentsComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path: 'teachers',
         loadComponent: () =>
-          import('./pages/admin/teachers/teachers.component').then((m) => m.Teachers),
+          import('./pages/admin/teachers/teachers.component').then((m) => m.TeachersComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
@@ -103,28 +103,28 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () =>
-          import('./pages/admin/reports/reports.component').then((m) => m.Reports),
+          import('./pages/admin/reports/reports.component').then((m) => m.ReportsComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path: 'plo',
         loadComponent: () =>
-          import('./pages/admin/plo/plo.component').then((m) => m.Plo),
+          import('./pages/admin/plo/plo.component').then((m) => m.PloComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path:'assign-advisor',
         loadComponent: () =>
-          import('./pages/admin/assign-advisor/assign-advisor.component').then((m) => m.AssignAdvisor),
+          import('./pages/admin/assign-advisor/assign-advisor.component').then((m) => m.AssignAdvisorComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path: 'advisor-history',
         loadComponent: () =>
-          import('./pages/admin/advisor-history/advisor-history.component').then((m) => m.AdvisorHistory),
+          import('./pages/admin/advisor-history/advisor-history.component').then((m) => m.AdvisorHistoryComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
