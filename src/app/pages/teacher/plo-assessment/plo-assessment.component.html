@@ -1,0 +1,148 @@
+<div class="h-full min-h-screen pb-20">
+
+  <div class="mb-4 relative w-[400px]">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+    <input type="text" placeholder="ค้นหานักศึกษา ด้วยชื่อ, รหัสนักศึกษา"
+           class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder-gray-400">
+  </div>
+  <div class="flex flex-row justify-between items-center mb-6">
+
+    <div class="inline-flex bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+      <button (click)="setTab('ทั้งหมด')" [class]="'px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ทั้งหมด' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+        ทั้งหมด ({{ countAll() }})
+      </button>
+      <button (click)="setTab('รอประเมิน')" [class]="'px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'รอประเมิน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+        รอประเมิน ({{ countPending() }})
+      </button>
+      <button (click)="setTab('ผ่าน')" [class]="'px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ผ่าน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+        ผ่าน ({{ countPassed() }})
+      </button>
+      <button (click)="setTab('ไม่ผ่าน')" [class]="'px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ไม่ผ่าน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+        ไม่ผ่าน ({{ countFailed() }})
+      </button>
+    </div>
+
+    <div class="flex gap-2 ">
+      <button (click)="prevPage()" [disabled]="currentPage() === 1"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+        ก่อนหน้า
+      </button>
+
+      @for (page of pageNumbers(); track page) {
+        <button (click)="goToPage(page)"
+                [class]="'px-3 py-1.5 rounded-lg transition ' + (currentPage() === page ? 'bg-[#F59E0B] text-white shadow-sm' : 'border border-gray-200 hover:bg-gray-50 bg-white text-gray-600')">
+          {{ page }}
+        </button>
+      }
+
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+        ถัดไป
+      </button>
+    </div>
+
+  </div>
+  <div class="space-y-4">
+    @if (paginatedStudents().length === 0) {
+      <div class="text-center py-10 bg-white rounded-2xl border border-gray-100 text-gray-500">
+        ไม่พบข้อมูลนักศึกษาในสถานะนี้
+      </div>
+    } @else {
+      @for (s of paginatedStudents(); track s.id) {
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 grid grid-cols-12 gap-6 items-center hover:shadow-md transition-shadow hover:cursor-pointer">
+
+          <div class="col-span-12 md:col-span-3 flex flex-col items-start gap-3">
+            <div class="flex items-center gap-4">
+              <img [src]="s.img" class="w-[60px] h-[60px] rounded-full object-cover shadow-sm" alt="avatar">
+              <div>
+                <div class="font-semibold text-gray-900 text-[15px]">{{ s.name }}</div>
+                <div class="text-sm text-gray-500">รหัส {{ s.studentId }}</div>
+              </div>
+            </div>
+            <span class="px-5 py-1 text-xs font-medium rounded-full border bg-white mt-1 ml-[76px]"
+                  [ngClass]="{
+                    'border-[#F59E0B] text-[#F59E0B]': s.status === 'pending',
+                    'border-[#10B981] text-[#10B981]': s.status === 'passed',
+                    'border-[#EF4444] text-[#EF4444]': s.status === 'failed'
+                  }">
+              {{ s.statusText }}
+            </span>
+          </div>
+
+          <div class="col-span-12 md:col-span-6 flex justify-center items-center h-full">
+            @if (s.status === 'pending') {
+              <button class="w-[200px] py-3 bg-[#F3F4F6] border-[1px] border-gray-200  text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all duration-200 ">
+                ประเมิน
+              </button>
+            } @else {
+              <div class="w-full max-w-[450px] space-y-2">
+                @for (plo of s.plos; track plo.label) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-28 text-sm text-gray-600">{{ plo.label }}</div>
+                    <div class="flex-grow h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-500"
+                           [ngClass]="getProgressBarColor(plo.score)" [style.width]="plo.score + '%'">
+                      </div>
+                    </div>
+                    <div class="w-10 text-right text-sm font-medium" [ngClass]="getProgressTextColor(plo.score)">
+                      {{ plo.score }}%
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="col-span-12 md:col-span-3 flex flex-col items-center justify-center gap-2 border-l border-gray-100 pl-4 h-full">
+            <div class="w-[70px] h-[70px] rounded-full flex items-center justify-center text-xl font-bold mb-1"
+                 [ngClass]="{
+                   'bg-gray-100 text-gray-600': s.status === 'pending',
+                   'bg-[#ECFDF5] text-[#10B981]': s.status === 'passed',
+                   'bg-[#FEF2F2] text-[#EF4444]': s.status === 'failed'
+                 }">
+              {{ s.average !== null ? s.average + '%' : '?' }}
+            </div>
+            <div class="text-xs text-gray-500">คะแนนเฉลี่ย</div>
+
+            @if (s.status !== 'pending') {
+              <button class="mt-2 px-6 py-1.5 bg-[#F3F4F6] text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition">
+                ดูรายละเอียด
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  @if (filteredStudents().length > 0) {
+    <div class="flex items-center justify-between mb-12 mt-8 text-sm text-gray-500">
+      <div>
+        แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }} -
+        {{ (currentPage() * itemsPerPage) > filteredStudents().length ? filteredStudents().length : (currentPage() * itemsPerPage) }}
+        จาก {{ filteredStudents().length }} รายการ
+      </div>
+      <div class="flex gap-2">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+          ก่อนหน้า
+        </button>
+
+        @for (page of pageNumbers(); track page) {
+          <button (click)="goToPage(page)"
+                  [class]="'px-3 py-1.5 rounded-lg transition ' + (currentPage() === page ? 'bg-[#F59E0B] text-white shadow-sm' : 'border border-gray-200 hover:bg-gray-50 bg-white text-gray-600')">
+            {{ page }}
+          </button>
+        }
+
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+          ถัดไป
+        </button>
+      </div>
+    </div>
+
+  }
+    <div class="h-[1px] w-full block clear-both"></div>
+
+</div>

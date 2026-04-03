@@ -1,60 +1,76 @@
-<div class=" bg-gray-50 min-h-screen">
+<div class="bg-gray-50 min-h-screen">
   <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
 
   <div class="grid grid-cols-1 md:grid-cols-[2fr,1.3fr] gap-6 mt-8">
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
 
-      <div class="flex items-center gap-4 mb-6">
-        <div class="ml-2 mr-2">
-          <h2 class="text-xl font-bold text-gray-800 ">นักศึกษาในความดูแล</h2>
-          <p class="text-sm text-gray-500">รายชื่อนักศึกษาทั้งหมด 45 คน</p>
-        </div>
-
-        <div class="flex items-center gap-3 w-[30x0px] focus:ring-1! focus:ring-blue-200! focus:border-blue-400! ">
-          <div class="relative flex-grow"> <span class="material-symbols-outlined icon-filled absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
-            <input type="text" placeholder="ค้นหานักศึกษา..." class="focus:outline-none w-full pl-10 pr-4 py-2 text-sm border  border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+      <div>
+        <div class="flex items-center gap-4 mb-6">
+          <div class="ml-2 mr-2">
+            <h2 class="text-xl font-bold text-gray-800 ">นักศึกษาในความดูแล</h2>
+            <p class="text-sm text-gray-500">รายชื่อนักศึกษาทั้งหมด {{ totalItems() }} คน</p>
           </div>
+
+          <div class="flex items-center gap-3 w-[300px] focus:ring-1! focus:ring-blue-200! focus:border-blue-400! ">
+            <div class="relative flex-grow"> <span class="material-symbols-outlined icon-filled absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
+              <input type="text" placeholder="ค้นหานักศึกษา..." class="focus:outline-none w-full pl-10 pr-4 py-2 text-sm border  border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+            </div>
+          </div>
+
+          <button  routerLink="/all-students"  class="ml-auto px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+            ดูทั้งหมด
+          </button>
         </div>
 
-        <button class="ml-auto px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
-          ดูทั้งหมด
-        </button>
-      </div>
-      <div class="space-y-4">
-        @for (s of studentsInCare(); track s.id) {
-          <div class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
-            <div class="flex items-center gap-4">
-              <img [src]="s.img" class="w-16 h-16 rounded-full object-cover border-2 border-gray-50" alt="avatar">
-              <div>
-                <div class="font-bold text-base text-gray-900">{{ s.name }}</div>
-                <div class="text-xs text-gray-500">รหัส {{ s.id }} • ปี {{ s.year }} • GPA {{ s.gpa }}</div>
+        <div class="space-y-4">
+          @for (s of paginatedStudents(); track s.id) {
+            <div class="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+              <div class="flex items-center gap-4">
+                <img [src]="s.img" class="w-16 h-16 rounded-full object-cover border-2 border-gray-50" alt="avatar">
+                <div>
+                  <div class="font-bold text-base text-gray-900">{{ s.name }}</div>
+                  <div class="text-xs text-gray-500">รหัส {{ s.id }} • ปี {{ s.year }} • GPA {{ s.gpa }}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.ploStatus === 'PLO รอประเมิน' ? 'bg-yellow-50 text-yellow-600' : (s.ploStatus === 'PLO ไม่ผ่าน' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'))">
+                  {{ s.ploStatus }}
+                </span>
+                <span class="material-symbols-outlined icon-filled text-gray-400 text-lg">chevron_right</span>
               </div>
             </div>
-
-            <div class="flex items-center gap-3">
-              <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.status === 'รออนุมัติ' ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-600')">
-                {{ s.status }}
-              </span>
-              <span [class]="'px-3 py-1 text-xs font-bold rounded-full ' + (s.ploStatus === 'PLO รอประเมิน' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600')">
-                {{ s.ploStatus }}
-              </span>
-              <span class="material-symbols-outlined icon-filled text-gray-400 text-lg">chevron_right</span>
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="flex items-center justify-between mt-8 text-sm text-gray-500">
-        <div>แสดง 1-5 จาก 45 รายการ</div>
-        <div class="flex gap-2 transition duration-200">
-          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">ก่อนหน้า</button>
-          <button class="px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary_hover transition duration-200 ">1</button>
-          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">2</button>
-          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">3</button>
-          <button class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">ถัดไป</button>
+          }
         </div>
       </div>
+
+      @if (totalItems() > 0) {
+        <div class="flex items-center justify-between mt-8 text-sm text-gray-500">
+          <div>
+            แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }}-{{ (currentPage() * itemsPerPage) > totalItems() ? totalItems() : (currentPage() * itemsPerPage) }}
+            จาก {{ totalItems() }} รายการ
+          </div>
+          <div class="flex gap-2 transition duration-200">
+            <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                    class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">
+              ก่อนหน้า
+            </button>
+
+            @for (page of pageNumbers(); track page) {
+              <button (click)="goToPage(page)"
+                      [class]="'px-3 py-1.5 rounded-lg transition duration-200 ' + (currentPage() === page ? 'bg-primary text-white border border-primary' : 'border border-gray-200 hover:bg-gray-50 text-gray-700')">
+                {{ page }}
+              </button>
+            }
+
+            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                    class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">
+              ถัดไป
+            </button>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

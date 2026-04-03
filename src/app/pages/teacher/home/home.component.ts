@@ -1,18 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core'; // ใช้ Signal
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { SupabaseService } from '../../../supabase';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 
-
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent], // ไม่ต้องมี CommonModule แล้ว!
+  imports: [RouterModule, StatCardsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-
   dashboardStats = [
     {
       label: 'นักศึกษาที่ดูแลทั้งหมด',
@@ -47,14 +45,18 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFF5FE]',
     },
   ];
-  // Mock ข้อมูลนักศึกษาในความดูแล
+
+  // --- 1. ตัวแปรสำหรับ Pagination ---
+  currentPage = signal(1);
+  itemsPerPage = 5;
+
+  // --- 2. ข้อมูล Mock นักศึกษา (เอาฟิลด์ status ออกแล้ว) ---
   studentsInCare = signal([
     {
       id: '6501230567',
       name: 'นายสมศักดิ์ ทดสอบ',
       year: 1,
       gpa: 3.45,
-      status: 'รออนุมัติ',
       ploStatus: 'PLO รอประเมิน',
       img: 'https://i.pravatar.cc/150?u=1',
     },
@@ -63,7 +65,6 @@ export class HomeComponent implements OnInit {
       name: 'นางสาวหญิง ทดลอง',
       year: 1,
       gpa: 3.78,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=2',
     },
@@ -72,7 +73,6 @@ export class HomeComponent implements OnInit {
       name: 'นายวิชัย สมบูรณ์',
       year: 1,
       gpa: 3.21,
-      status: 'รออนุมัติ',
       ploStatus: 'PLO ไม่ผ่าน',
       img: 'https://i.pravatar.cc/150?u=3',
     },
@@ -81,7 +81,6 @@ export class HomeComponent implements OnInit {
       name: 'นางสาวพิมพ์ชนก ดีงาม',
       year: 1,
       gpa: 3.92,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=4',
     },
@@ -90,13 +89,90 @@ export class HomeComponent implements OnInit {
       name: 'นายธนากร รุ่งเรือง',
       year: 1,
       gpa: 3.56,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=5',
     },
+    {
+      id: '6501230572',
+      name: 'นางสาวแพรว รัตนโชติ',
+      year: 2,
+      gpa: 3.8,
+      ploStatus: 'PLO รอประเมิน',
+      img: 'https://i.pravatar.cc/150?u=6',
+    },
+    {
+      id: '6501230573',
+      name: 'นายอัครพล สุวรรณ',
+      year: 1,
+      gpa: 3.1,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=7',
+    },
+    {
+      id: '6501230574',
+      name: 'นางสาวชลดา พิพัฒน์',
+      year: 3,
+      gpa: 3.4,
+      ploStatus: 'PLO ไม่ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=8',
+    },
+    {
+      id: '6501230575',
+      name: 'นายปิยบุตร เลิศ',
+      year: 1,
+      gpa: 3.95,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=9',
+    },
+    {
+      id: '6501230576',
+      name: 'นางสาววรินดา เตชะ',
+      year: 2,
+      gpa: 3.65,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=10',
+    },
+    {
+      id: '6501230577',
+      name: 'นายก้องเกียรติ ยินดี',
+      year: 1,
+      gpa: 2.8,
+      ploStatus: 'PLO รอประเมิน',
+      img: 'https://i.pravatar.cc/150?u=11',
+    },
+    {
+      id: '6501230578',
+      name: 'นางสาวใจดี รักเรียน',
+      year: 4,
+      gpa: 4.0,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=12',
+    },
   ]);
 
-  // Mock ข้อมูลการนัดหมาย
+  // --- 3. ฟังก์ชันคำนวณหน้า ---
+  totalItems = computed(() => this.studentsInCare().length);
+  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
+
+  paginatedStudents = computed(() => {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.studentsInCare().slice(start, start + this.itemsPerPage);
+  });
+
+  pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  // --- 4. ฟังก์ชันเปลี่ยนหน้า ---
+  goToPage(page: number) {
+    this.currentPage.set(page);
+  }
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
+  }
+  prevPage() {
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
+  }
+
+  // --------------------------------------------------------
   appointments = signal([
     {
       name: 'นางสาวจุวาวิน วาวิวา',
@@ -128,19 +204,17 @@ export class HomeComponent implements OnInit {
       img: 'https://i.pravatar.cc/150?u=3',
     },
   ]);
+
   students = signal<any[]>([]);
 
   constructor(private supabase: SupabaseService) {}
 
   async ngOnInit() {
     const { data, error } = await this.supabase.getStudents();
-
     if (error) {
       console.error('พังดิครับ:', error.message);
     } else if (data) {
-      // อัปเดตข้อมูลลงใน Signal
       this.students.set(data);
     }
   }
-
 }
