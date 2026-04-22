@@ -36,7 +36,7 @@ export const routes: Routes = [
       {
         path: 'plo-assessment',
         loadComponent: () =>
-          import('./pages/teacher/plo-assessment/plo-assessment').then((m) => m.PloAssessment),
+          import('./pages/teacher/plo-assessment/plo-assessment.component').then((m) => m.PloAssessmentComponent),
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
