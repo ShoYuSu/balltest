@@ -22,6 +22,37 @@
       <a  class="flex items-center">
         <span class="material-symbols-outlined icon-filled pr-2"> assignment </span> ประเมิน PLO</a>
     </li>
+      //ยังทำไม่เสร็จ
+      <li class="flex flex-col">
+        <div (click)="toggleAppointmentMenu()"
+             class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center justify-between">
+          <div class="flex items-center font-semibold text-[16px]">
+            <span class="material-symbols-outlined icon-filled pr-2"> calendar_month </span>
+            การนัดหมายปรึกษา
+          </div>
+          <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="isAppointmentOpen">
+      expand_more
+    </span>
+        </div>
+
+        @if (isAppointmentOpen) {
+          <div class="ml-8 mt-1 border-l-2 border-gray-200 flex flex-col gap-1">
+            <ul class="flex flex-col gap-1">
+              <li routerLink="/appointment/request"
+                  class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2"
+                  routerLinkActive="bg-primary text-white">
+                <a class="flex items-center">สร้างการนัดหมาย</a>
+              </li>
+              <li routerLink="/appointment/history"
+                  class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2"
+                  routerLinkActive="bg-primary text-white">
+                <a class="flex items-center">ประวัติการนัดหมาย</a>
+              </li>
+            </ul>
+          </div>
+        }
+      </li>
+      //ยังทำไม่เสร็จ
     </ul>
   </nav>
   }
@@ -77,6 +108,7 @@
         <a  class="flex items-center">
           <span class="material-symbols-outlined icon-filled pr-2"> description </span>รายงานระบบ</a>
       </li>
+
       </ul>
     </nav>
   }

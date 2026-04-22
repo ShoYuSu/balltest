@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { SupabaseService} from '../../../supabase';
+import { SupabaseService } from '../../../supabase';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,4 +10,12 @@ import { SupabaseService} from '../../../supabase';
 })
 export class SidebarComponent {
   public supabaseService = inject(SupabaseService);
+
+  // เพิ่มตัวแปรสำหรับเช็กสถานะการเปิด/ปิดเมนูย่อย
+  isAppointmentOpen = false;
+
+  // ฟังก์ชันสลับการเปิด/ปิด
+  toggleAppointmentMenu() {
+    this.isAppointmentOpen = !this.isAppointmentOpen;
+  }
 }
