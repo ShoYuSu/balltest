@@ -1,0 +1,60 @@
+<div class="page-wrapper">
+
+  <div class="content">
+
+    <!-- 🔥 พื้นหลังโค้ง -->
+    <div class="section-bg">
+
+      <!-- TITLE -->
+      <div class="title-row">
+        <span class="material-symbols-outlined">forum</span>
+        <h2>ประวัติการปรึกษา</h2>
+      </div>
+
+      <!-- CARD -->
+      <div class="card">
+
+        <!-- YEAR -->
+        <div class="year-bar">
+          <span class="arrow">‹</span>
+          <h1>{{ currentYear }}</h1>
+          <span class="arrow">›</span>
+        </div>
+
+        <!-- MONTH -->
+        <div class="month-bar">
+          <div class="month-inner">
+            <button
+              *ngFor="let m of months"
+              (click)="selectMonth(m)"
+              [class.month-active]="activeMonth === m"
+              class="month">
+              {{ m }}
+            </button>
+          </div>
+        </div>
+
+        <!-- EMPTY -->
+        <div class="empty">
+
+          <div class="empty-icon">
+            <span class="material-symbols-outlined">event_busy</span>
+          </div>
+
+          <p class="empty-title">
+            ไม่มีบันทึกการปรึกษา
+          </p>
+
+          <p class="empty-sub">
+            เลือกเดือนอื่น หรือเพิ่มข้อมูลในภายหลัง
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

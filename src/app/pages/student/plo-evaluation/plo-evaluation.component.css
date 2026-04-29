@@ -1,0 +1,31 @@
+.card {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm p-5;
+}
+
+.title {
+  @apply font-semibold text-gray-700;
+}
+
+/* progress */
+.progress-bg {
+  @apply w-full h-3 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.progress-bar {
+  @apply h-full transition-all duration-500;
+}
+
+/* status */
+.status {
+  @apply px-2 py-0.5 text-xs rounded-full ml-2;
+}
+
+/* button */
+.detail-btn {
+  @apply text-xs border border-gray-300 px-3 py-1 rounded-md hover:bg-gray-100;
+}
+
+/* bookmark */
+.bookmark {
+  @apply bg-blue-100 text-blue-500 p-2 rounded-lg;
+}

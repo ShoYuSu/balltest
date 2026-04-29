@@ -23,22 +23,43 @@
         <span class="material-symbols-outlined icon-filled pr-2"> assignment </span> ประเมิน PLO</a>
     </li>
     </ul>
-  </nav>
+  </nav>/
   }
   @if (supabaseService.userProfile()?.role === 'student') {
     <nav>
       <ul class="flex flex-col gap-2 text-[16px] font-semibold  " >
-        <li routerLink="personal-data" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <li routerLink="/personal-data" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
           <a  class="flex items-center">
             <span class="material-symbols-outlined icon-filled pr-2"> home </span> ข้อมูลส่วนตัว </a>
         </li>
-        <li routerLink="study-results" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <li routerLink="/study-results" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
           <a  class="flex items-center">
             <span class="material-symbols-outlined icon-filled pr-2"> group </span> ผลการเรียน </a>
         </li> <li routerLink="plo-evaluation" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
         <a  class="flex items-center">
           <span class="material-symbols-outlined icon-filled pr-2"> assignment </span> การประเมิน PLO</a>
       </li>
+      <li routerLink="/activity" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> event </span> กิจกรรม</a>
+      </li>
+      <li routerLink="/certification" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> badge </span>certification</a>
+      </li>
+      <li routerLink="advisor-record" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> history </span>บันทึกการปรึกษา</a>
+      </li>
+      <li routerLink="/advisor-information" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> Person_text </span>ข้อมูลที่ปรึกษา</a>
+      </li>
+      <li routerLink="/history-student-record" class="py-3 px-4 text-black !rounded-lg hover:bg-primary hover:text-white hover:rounded-lg hover:cursor-pointer transition duration-200 " routerLinkActive="bg-primary text-white rounded-lg " >
+        <a  class="flex items-center">
+          <span class="material-symbols-outlined icon-filled pr-2"> History_edu </span>ระเบียนประวัติ</a>
+      </li>
+      
       </ul>
     </nav>
   }

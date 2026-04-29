@@ -41,7 +41,8 @@ export class LoginComponent {
 
     try {
       const { data, error } = await this.supabaseService.signIn(email!, password!);
-
+     console.log("LOGIN RESULT:", data);
+     console.log("LOGIN ERROR:", error);
       if (error) throw error;
 
       if (data.user) {

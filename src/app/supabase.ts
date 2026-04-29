@@ -88,6 +88,12 @@ export class SupabaseService {
   async getStudents() {
     return await this.supabase.from('students_test').select('*');
   }
+  async getSession() {
+  const {
+    data: { session },
+  } = await this.supabase.auth.getSession();
+  return session;
+}
 }
 export interface UserProfile {
   id: string;

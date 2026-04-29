@@ -1,0 +1,77 @@
+<div class="page-wrapper">
+
+  <div class="content">
+
+    <div class="card">
+
+      <!-- HEADER -->
+      <div class="header">
+
+        <img [src]="advisor.avatar" class="avatar" />
+
+        <div>
+          <h2 class="name">{{ advisor.nameTH }}</h2>
+          <p class="sub">{{ advisor.nameEN }}</p>
+
+          <div class="tags">
+            <span>อาจารย์ที่ปรึกษา</span>
+            <span>ภาควิชาวิทยาการคอมพิวเตอร์</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BODY -->
+      <div class="info-grid">
+
+        <!-- EMAIL -->
+        <div class="info-item">
+          <div class="icon icon-mail">
+            <span class="material-symbols-outlined">mail</span>
+          </div>
+          <div>
+            <p class="label">อีเมล</p>
+            <p class="value">{{ advisor.email }}</p>
+          </div>
+        </div>
+
+        <!-- PHONE -->
+        <div class="info-item">
+          <div class="icon icon-phone">
+            <span class="material-symbols-outlined">call</span>
+          </div>
+          <div>
+            <p class="label">เบอร์</p>
+            <p class="value">{{ advisor.phone }}</p>
+          </div>
+        </div>
+
+        <!-- OFFICE -->
+        <div class="info-item">
+          <div class="icon icon-location">
+            <span class="material-symbols-outlined">location_on</span>
+          </div>
+          <div>
+            <p class="label">ห้องทำงาน</p>
+            <p class="value">{{ advisor.office }}</p>
+          </div>
+        </div>
+
+        <!-- LINE -->
+        <div class="info-item">
+          <div class="icon icon-line">
+            <span class="material-symbols-outlined">chat</span>
+          </div>
+          <div>
+            <p class="label">ไลน์</p>
+            <p class="value">ID: {{ advisor.line }}</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

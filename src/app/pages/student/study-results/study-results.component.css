@@ -1,0 +1,87 @@
+.stat-card {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5;
+}
+
+.label {
+  @apply text-xs text-gray-400;
+}
+
+.value {
+  @apply text-2xl font-semibold mt-1;
+}
+
+/* TAB */
+.tab-active {
+  @apply px-4 py-1.5 rounded-full text-sm bg-[#7B4A1E] text-white;
+}
+
+.tab-inactive {
+  @apply px-4 py-1.5 rounded-full text-sm text-gray-600 hover:bg-gray-200 transition;
+}
+
+/* BUTTON */
+.btn-green {
+  @apply flex items-center gap-2 bg-[#34A853] hover:bg-[#2e9449]
+         text-white text-sm px-4 py-2 rounded-lg shadow-sm transition;
+}
+
+/* DROPDOWN */
+.dropdown {
+  @apply border border-gray-200 rounded-lg px-3 py-1 text-sm bg-white;
+}
+
+/* TABLE */
+.card {
+  @apply bg-white mt-6 rounded-2xl border border-gray-200 shadow-sm p-6;
+}
+
+.table-head {
+  @apply text-xs text-gray-400 border-b;
+}
+
+.table-row {
+  @apply  border-b hover:bg-gray-50 transition;
+  
+}
+.table-row:hover {
+  background-color: #f9fafb;
+}
+.table-row td {
+  @apply py-3;   /* จากเดิม 3 → 5 */
+}
+.code {
+  @apply text-blue-500 font-medium;
+}
+
+.grade {
+  @apply px-3 py-1 text-xs rounded-full font-medium;
+}
+
+/* ANIMATION */
+.fade-in {
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stat-card {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5;
+}
+
+.icon-box {
+  @apply w-12 h-12 flex items-center justify-center rounded-xl;
+}
+
+.label {
+  @apply text-xs text-gray-400;
+}
+
+.value {
+  @apply text-2xl font-semibold mt-1;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  transition: 0.2s;
+}

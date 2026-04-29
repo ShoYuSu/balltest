@@ -1,1 +1,156 @@
-<p>study-results works!</p>
+<div class="p-6 bg-[#EEF2F6] min-h-screen">
+
+  <!-- ===== STATS ===== -->
+ <div class="grid grid-cols-3 gap-6">
+
+  <!-- GPA -->
+  <div class="stat-card flex justify-between items-center">
+    <div>
+      <p class="label">เกรดเฉลี่ยล่าสุด (GPA)</p>
+      <p class="value">3.85</p>
+    </div>
+    <div class="icon-box bg-green-50 text-green-500">
+      <span class="material-symbols-outlined">trending_up</span>
+    </div>
+  </div>
+
+  <!-- CREDIT -->
+  <div class="stat-card flex justify-between items-center">
+    <div>
+      <p class="label">หน่วยกิตสะสม</p>
+      <p class="value">97/127</p>
+    </div>
+    <div class="icon-box bg-blue-50 text-blue-500">
+      <span class="material-symbols-outlined">star</span>
+    </div>
+  </div>
+
+  <!-- GPAX -->
+  <div class="stat-card flex justify-between items-center">
+    <div>
+      <p class="label">เกรดเฉลี่ยสะสม (GPAX)</p>
+      <p class="value">3.45</p>
+    </div>
+    <div class="icon-box bg-gray-100 text-gray-500">
+      <span class="material-symbols-outlined">analytics</span>
+    </div>
+  </div>
+
+</div>
+
+  <!-- ===== HEADER ===== -->
+  <div class="bg-white mt-6 rounded-2xl border border-gray-200 px-6 py-4 
+              flex justify-between items-center shadow-sm">
+
+    <div class="flex items-center gap-6">
+
+      <h2 class="font-semibold text-gray-700">ผลการศึกษา</h2>
+
+      <!-- TAB -->
+      <div class="flex bg-gray-100 rounded-full p-1">
+        <button
+          (click)="activeTab='result'"
+          [ngClass]="activeTab==='result' ? 'tab-active' : 'tab-inactive'">
+          ผลการเรียน
+        </button>
+
+        <button
+          (click)="activeTab='credit'"
+          [ngClass]="activeTab==='credit' ? 'tab-active' : 'tab-inactive'">
+          เช็คหน่วยกิต
+        </button>
+      </div>
+
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button class="btn-green">
+        <span class="material-symbols-outlined text-sm">description</span>
+        แปลงเป็น Google Sheet
+      </button>
+
+      <select class="dropdown">
+        <option>1/2567</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- ===== RESULT TABLE ===== -->
+  <div *ngIf="activeTab === 'result'" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6 fade-in">
+
+    <table class="w-full text-sm">
+
+      <colgroup>
+        <col class="w-[15%]" />
+        <col class="w-[55%]" />
+        <col class="w-[15%]" />
+        <col class="w-[15%]" />
+      </colgroup>
+
+      <thead class="table-head">
+        <tr>
+          <th>รหัสวิชา</th>
+          <th>ชื่อวิชา</th>
+          <th class="text-center">หน่วยกิต</th>
+          <th class="text-center">เกรด</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let s of subjects" class="table-row">
+          <td class="code">{{s.code}}</td>
+          <td class="subject">{{s.name}}</td>
+          <td class="text-center">{{s.credit}}</td>
+          <td class="text-center">
+            <span class="grade" [ngClass]="getGradeColor(s.grade)">
+              {{s.grade}}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+    <div class="text-right mt-6">
+      <p class="text-gray-500">หน่วยกิตรวม 15</p>
+      <p class="text-green-600 font-semibold">GPA 3.80</p>
+    </div>
+
+  </div>
+
+  <!-- ===== CREDIT TABLE ===== -->
+  <div *ngIf="activeTab === 'credit'" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6 fade-in">
+
+    <table class="w-full text-sm">
+
+      <thead class="bg-[#8B5E3C] text-white">
+        <tr>
+          <th class="text-left py-3 px-3">หมวด</th>
+          <th class="text-center">ต้องการ</th>
+          <th class="text-center">ได้แล้ว</th>
+          <th class="text-center">คงเหลือ</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let c of creditSummary" class="table-row">
+          <td class="px-3 py-3">{{c.name}}</td>
+          <td class="text-center">{{c.need}}</td>
+          <td class="text-center">{{c.done}}</td>
+          <td class="text-center">{{c.remain}}</td>
+        </tr>
+
+        <tr class="font-semibold border-t">
+          <td class="px-3 py-3">รวม</td>
+          <td class="text-center">132</td>
+          <td class="text-center">97</td>
+          <td class="text-center">35</td>
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
