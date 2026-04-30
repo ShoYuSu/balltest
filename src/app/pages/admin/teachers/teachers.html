@@ -15,9 +15,10 @@
         class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm">
     </div>
 
-    <button class="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all whitespace-nowrap">
-      <span class="material-symbols-outlined text-xl">add</span>
-      เพิ่มอาจารย์
-    </button>
+    <app-main-button 
+  label="เพิ่มอาจารย์" 
+  icon="person_add" 
+  (btnClick)="someOtherFunction()">
+</app-main-button>
   </div>
 </div>
