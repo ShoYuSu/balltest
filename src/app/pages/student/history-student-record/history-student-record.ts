@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
 })
 export class HistoryStudentRecord {
   student = {
-    name: 'สมหญิง ใจดี',
-    en: 'Somying Jaidee',
-    avatar: 'https://i.pravatar.cc/150?img=5'
+    name: 'นายแข็งแร่ง ดั่งหินผา',
+    en: 'Klanggang Danghyinpa',
+    avatar: 'https://i.pravatar.cc/150?img=13'
   };
 }
