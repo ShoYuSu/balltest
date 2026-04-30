@@ -42,3 +42,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment ทั้งหมด
+src/environments/*.ts
+!src/environments/environment.example.ts
