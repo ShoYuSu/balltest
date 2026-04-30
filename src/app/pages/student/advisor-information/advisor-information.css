@@ -1,0 +1,116 @@
+/* ===== LAYOUT ===== */
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.content {
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* ===== CARD ===== */
+.card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+.header {
+  background: #7B4A1E; /* 🔥 เป๊ะ */
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  color: white;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 3px solid white;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sub {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* ===== TAG ===== */
+.tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tags span {
+  background: #A97142; /* 🔥 เป๊ะ */
+  color: white;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* ===== GRID ===== */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 24px;
+}
+
+/* ===== ITEM ===== */
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ===== ICON ===== */
+.icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🔥 สีเป๊ะ */
+.icon-mail {
+  background: #DBEAFE;
+}
+
+.icon-phone {
+  background: #D1FAE5;
+}
+
+.icon-location {
+  background: #FDE7D3;
+}
+
+.icon-line {
+  background: #D1FAE5;
+}
+
+/* ===== TEXT ===== */
+.label {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.value {
+  font-size: 14px;
+  color: #1F2937;
+  font-weight: 500;
+}

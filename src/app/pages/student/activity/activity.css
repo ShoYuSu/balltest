@@ -1,0 +1,43 @@
+/* card */
+.empty-card {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm 
+         p-10 flex justify-center items-center min-h-[350px];
+}
+
+/* icon */
+.empty-icon {
+  @apply w-16 h-16 bg-gray-100 text-gray-400 
+         rounded-xl flex items-center justify-center mx-auto;
+}
+
+/* button */
+.btn-add {
+  @apply flex items-center gap-2 bg-orange-500 hover:bg-orange-600
+         text-white text-sm px-4 py-2 rounded-lg shadow-sm transition;
+}
+.btn-primary {
+  @apply flex items-center gap-2 
+         bg-[#F59E0B] text-white text-sm px-4 py-2 
+         rounded-lg transition;
+
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+}
+.empty-card {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm
+         min-h-[350px] flex items-center justify-center;
+}
+
+.empty-content {
+  @apply flex flex-col items-center text-center;
+}
+
+.empty-icon {
+  @apply w-16 h-16 bg-gray-100 text-gray-400 
+         rounded-xl flex items-center justify-center;
+}
+.empty-card {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
