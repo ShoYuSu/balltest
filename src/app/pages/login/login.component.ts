@@ -17,8 +17,16 @@ export class LoginComponent {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
+  // ควบคุมหน้าจอ: select (หน้าแรก) -> student (หน้านักศึกษา) -> teacher (หน้าอาจารย์)
+  loginStep: 'select' | 'student' | 'teacher' = 'select';
+
+  // ควบคุม Popup เลือกระบบ
+  showSystemPopup = false;
+  tempRole = ''; // เอาไว้เก็บสิทธิ์ชั่วคราวตอนที่ล็อกอินผ่านแล้วรอเลือกระบบ
+
   loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
+    // เอา Validators.email ออกแล้ว พี่จะพิมพ์แค่ teacher1 ก็ได้
+    email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
   });
 
@@ -26,7 +34,13 @@ export class LoginComponent {
   showErrorModal = false;
   errorMessage = '';
 
-  // เพิ่มฟังก์ชันปิด Modal ตรงนี้ครับ
+  // ฟังก์ชันเปลี่ยนหน้าจอ
+  setStep(step: 'select' | 'student' | 'teacher') {
+    this.loginStep = step;
+    this.loginForm.reset(); // ล้างฟอร์มเวลาสลับหน้า
+    this.cdr.detectChanges();
+  }
+
   closeModal() {
     this.showErrorModal = false;
     this.cdr.detectChanges();
@@ -41,27 +55,23 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    // ใช้ HttpClient ยิงไป XAMPP แบบที่เราทำกันไว้ (เตะ Supabase ของ dev-ball ทิ้ง)
     this.http.post(`${environment.apiUrl}/login.php`, { email, password }).subscribe({
       next: (res: any) => {
         if (res.success) {
           const role = res.role?.toLowerCase().trim();
 
-          // เก็บข้อมูลลง LocalStorage เพื่อให้ Guard และ Header เรียกใช้ได้
           localStorage.setItem('token', res.token);
           localStorage.setItem('role', role);
-
-          // เก็บชื่อและรหัสนักศึกษาเผื่อให้ Header เอาไปโชว์
           if (res.full_name) localStorage.setItem('full_name', res.full_name);
           if (res.student_code) localStorage.setItem('student_code', res.student_code);
 
-          if (role === 'advisor' || role === 'teacher') {
-            // ดีดไป Port 4201 (Advisor App) หรือถ้าพี่รวมเลโปแล้วแก้เป็น 4200 ได้เลย
-            window.location.href = 'http://localhost:4201/home';
-          } else if (role === 'student') {
+          if (role === 'student') {
+            // ถ้านักศึกษา ไม่ต้องมี Popup พุ่งไปหน้าข้อมูลส่วนตัวเลย
             this.router.navigate(['/personal-data']);
-          } else if (role === 'admin') {
-            this.router.navigate(['/system-dashboard']);
+          } else {
+            // ถ้าอาจารย์/แอดมิน โชว์ Popup ให้เลือกระบบ
+            this.tempRole = role;
+            this.showSystemPopup = true;
           }
         } else {
           this.errorMessage = res.message;
@@ -77,5 +87,22 @@ export class LoginComponent {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  // ฟังก์ชันตอนกดปุ่มใน Popup (Advising / Research)
+  selectSystem(system: 'advising' | 'research') {
+    if (system === 'advising') {
+      // เข้า Advising (ระบบนี้)
+      if (this.tempRole === 'advisor' || this.tempRole === 'teacher') {
+        window.location.href = 'http://localhost:4200/home'; // หรือ /home ถ้าพอร์ตเดียวกัน
+      } else if (this.tempRole === 'admin') {
+        this.router.navigate(['/system-dashboard']);
+      }
+    } else if (system === 'research') {
+      // เข้า Research (ยังไม่มีระบบ เปิดแท็บเปล่าให้ไปก่อน)
+      window.open('about:blank', '_blank');
+    }
+    this.showSystemPopup = false;
+    this.cdr.detectChanges();
   }
 }
