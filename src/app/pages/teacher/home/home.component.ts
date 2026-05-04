@@ -1,17 +1,18 @@
-import { Component, OnInit, signal } from '@angular/core'; // ใช้ Signal
+import { Component, OnInit, signal, inject } from '@angular/core'; // เพิ่ม inject เข้ามา
 import { RouterModule } from '@angular/router';
-import { SupabaseService } from '../../../supabase';
+import { HttpClient } from '@angular/common/http'; // ใช้ HttpClient แทน Supabase
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
-
+import { environment } from '../../../../environments/environment'; // เช็ค Path ให้ตรงกับโฟลเดอร์ environments นะพี่
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent], // ไม่ต้องมี CommonModule แล้ว!
+  imports: [RouterModule, StatCardsComponent], // ไม่ต้องมี CommonModule
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
+  private http = inject(HttpClient); // Inject HTTP เข้ามาใช้งาน
 
   dashboardStats = [
     {
@@ -47,6 +48,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFF5FE]',
     },
   ];
+
   // Mock ข้อมูลนักศึกษาในความดูแล
   studentsInCare = signal([
     {
@@ -128,19 +130,19 @@ export class HomeComponent implements OnInit {
       img: 'https://i.pravatar.cc/150?u=3',
     },
   ]);
+
   students = signal<any[]>([]);
 
-  constructor(private supabase: SupabaseService) {}
-
-  async ngOnInit() {
-    const { data, error } = await this.supabase.getStudents();
-
-    if (error) {
-      console.error('พังดิครับ:', error.message);
-    } else if (data) {
-      // อัปเดตข้อมูลลงใน Signal
-      this.students.set(data);
-    }
+  ngOnInit() {
+    // ยิง API ไปที่ XAMPP แทน Supabase
+    this.http.get(`${environment.apiUrl}/get_students.php`).subscribe({
+      next: (data: any) => {
+        // อัปเดตข้อมูลลงใน Signal
+        this.students.set(data);
+      },
+      error: (error) => {
+        console.error('พังดิครับ:', error.message);
+      },
+    });
   }
-
 }

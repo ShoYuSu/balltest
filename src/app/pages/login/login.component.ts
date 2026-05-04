@@ -1,8 +1,9 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core'; // เพิ่ม ChangeDetectorRef
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { SupabaseService } from '../../supabase';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -12,9 +13,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-  private supabaseService = inject(SupabaseService);
+  private http = inject(HttpClient);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef); // เพิ่มตัวนี้เข้าไปบี้ Change Detection
+  private cdr = inject(ChangeDetectorRef);
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -25,12 +26,13 @@ export class LoginComponent {
   showErrorModal = false;
   errorMessage = '';
 
+  // เพิ่มฟังก์ชันปิด Modal ตรงนี้ครับ
   closeModal() {
     this.showErrorModal = false;
-    this.cdr.detectChanges(); // สั่งให้หน้าจอหายไปทันทีเมื่อปิด
+    this.cdr.detectChanges();
   }
 
-  async onLogin() {
+  onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -39,51 +41,40 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    try {
-      const { data, error } = await this.supabaseService.signIn(email!, password!);
+    this.http.post(`${environment.apiUrl}/login.php`, { email, password }).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          const role = res.role?.toLowerCase().trim();
 
-      if (error) throw error;
+          // เก็บข้อมูลลง LocalStorage เพื่อให้ Guard และ Header เรียกใช้ได้
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('role', role);
 
-      if (data.user) {
-        // 1. มั่นใจว่าได้ Profile ล่าสุด (ถ้า Service มีฟังก์ชันดึงข้อมูลใหม่)
-        // หรือรอให้ Service อัปเดต State ให้เสร็จ
+          // เก็บชื่อและรหัสนักศึกษาเผื่อให้ Header เอาไปโชว์
+          if (res.full_name) localStorage.setItem('full_name', res.full_name);
+          if (res.student_code) localStorage.setItem('student_code', res.student_code);
 
-        const { data: profile, error: profileError } =
-          await this.supabaseService.refreshUserProfile(data.user.id);
-
-        if (profileError || !profile) {
-          this.errorMessage = 'ไม่สามารถดึงข้อมูลสิทธิ์การใช้งานได้';
+          if (role === 'advisor' || role === 'teacher') {
+            // ดีดไป Port 4201 (Advisor App)
+            window.location.href = 'http://localhost:4200/home';
+          } else if (role === 'student') {
+            this.router.navigate(['/personal-data']);
+          } else if (role === 'admin') {
+            this.router.navigate(['/system-dashboard']);
+          }
+        } else {
+          this.errorMessage = res.message;
           this.showErrorModal = true;
-          return; // หยุดการทำงานถ้าดึง profile ไม่สำเร็จ
         }
-
-        const role = profile.role?.toLowerCase().trim();
-
-        // 2. ใช้ switch case เพื่อความอ่านง่าย
-        switch (role) {
-          case 'teacher':
-            await this.router.navigate(['/home']);
-            break;
-          case 'student':
-            await this.router.navigate(['/personal-data']);
-            break;
-          case 'admin':
-            await this.router.navigate(['/system-dashboard']);
-            break;
-          default:
-            this.errorMessage = 'ไม่พบสิทธิ์การใช้งานในระบบ หรือ Role ไม่ถูกต้อง';
-            this.showErrorModal = true;
-        }
-      }
-    } catch (err: any) {
-      this.errorMessage =
-        err.message === 'Invalid login credentials'
-          ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
-          : 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
-      this.showErrorModal = true;
-    } finally {
-      this.loading = false;
-      this.cdr.detectChanges(); // เรียกครั้งเดียวตอนจบเพื่อ Update UI
-    }
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'เชื่อมต่อ XAMPP ไม่ได้ เช็คพอร์ต 8080 หรือยัง?';
+        this.showErrorModal = true;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 }
