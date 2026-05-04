@@ -1,1 +1,65 @@
-<p>plo-evaluation works!</p>
+<div class="p-6 bg-[#EEF2F6] min-h-screen">
+
+  <!-- ===== OVERALL ===== -->
+  <div class="card mb-5">
+
+    <div class="flex justify-between items-start">
+      <div>
+        <h3 class="title">ผลลัพธ์การเรียนรู้ของหลักสูตร (PLO)</h3>
+        <p class="text-sm text-gray-500">ติดตามความก้าวหน้าผลลัพธ์การเรียนรู้ของหลักสูตร</p>
+      </div>
+
+      <div class="bookmark">
+        <span class="material-symbols-outlined">bookmark</span>
+      </div>
+    </div>
+
+    <!-- progress -->
+    <div class="mt-4">
+      <p class="text-sm text-gray-500 mb-1">{{overall.text}}</p>
+
+      <div class="progress-bg">
+        <div class="progress-bar bg-blue-500" [style.width.%]="overall.progress"></div>
+      </div>
+
+      <p class="text-sm text-gray-400 mt-2">{{overall.status}}</p>
+    </div>
+
+  </div>
+
+  <!-- ===== GRID ===== -->
+  <div class="grid grid-cols-2 gap-5">
+
+    <div *ngFor="let p of plos" class="card">
+
+      <p class="font-medium text-sm mb-3">
+        {{p.title}}
+      </p>
+
+      <!-- progress -->
+      <div class="progress-bg">
+        <div class="progress-bar"
+             [ngClass]="getBarColor(p.color)"
+             [style.width.%]="p.percent">
+        </div>
+      </div>
+
+      <!-- footer -->
+      <div class="flex justify-between items-center mt-3">
+
+        <div class="text-sm">
+          <span class="text-gray-400">สถานะ :</span>
+          <span class="status" [ngClass]="getStatusColor(p.color)">
+            {{p.status}}
+          </span>
+        </div>
+
+        <button class="detail-btn">ดูรายละเอียด</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

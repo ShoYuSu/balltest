@@ -1,10 +1,13 @@
 <div class="min-h-screen bg-gray-50 p-8">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">จัดการผู้ใช้งาน</h1>
-    <button (click)="openAddModal()" 
+    <!-- <button (click)="openAddModal()" 
             class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition">
       <span class="text-xl">+</span> เพิ่มผู้ใช้
-    </button>
+    </button> -->
+    <app-main-button 
+     label="เพิ่มผู้ใช้"
+     (btnClick)="openAddModal()"></app-main-button>
   </div>
 
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -86,9 +89,9 @@
           <select formControlName="role" 
                   class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1em_1em] disabled:bg-gray-50">
             <option value="" disabled>เลือกบทบาท</option>
-            <option value="อาจารย์">อาจารย์</option>
+            
             <option value="นักศึกษา">นักศึกษา</option>
-            <option value="แอดมิน">แอดมิน</option>
+            
           </select>
         </div>
 

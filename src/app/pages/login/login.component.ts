@@ -41,6 +41,7 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
+    // ใช้ HttpClient ยิงไป XAMPP แบบที่เราทำกันไว้ (เตะ Supabase ของ dev-ball ทิ้ง)
     this.http.post(`${environment.apiUrl}/login.php`, { email, password }).subscribe({
       next: (res: any) => {
         if (res.success) {
@@ -55,8 +56,8 @@ export class LoginComponent {
           if (res.student_code) localStorage.setItem('student_code', res.student_code);
 
           if (role === 'advisor' || role === 'teacher') {
-            // ดีดไป Port 4201 (Advisor App)
-            window.location.href = 'http://localhost:4200/home';
+            // ดีดไป Port 4201 (Advisor App) หรือถ้าพี่รวมเลโปแล้วแก้เป็น 4200 ได้เลย
+            window.location.href = 'http://localhost:4201/home';
           } else if (role === 'student') {
             this.router.navigate(['/personal-data']);
           } else if (role === 'admin') {

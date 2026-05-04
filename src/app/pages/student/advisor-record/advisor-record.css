@@ -1,0 +1,84 @@
+/* ===== PAGE ===== */
+.page-wrapper {
+  @apply flex justify-center py-6;
+}
+
+/* 🔥 ขยายให้ไม่เล็ก */
+.content {
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* 🔥 พื้นหลังโค้ง (ตัวที่คุณอยากได้) */
+.section-bg {
+  background: #EEF2F6;
+  border-radius: 28px;
+  padding: 20px;
+}
+
+/* ===== TITLE ===== */
+.title-row {
+  @apply flex items-center gap-2 text-gray-700 font-semibold mb-4;
+}
+
+/* ===== CARD ===== */
+.card {
+  @apply bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden w-full;
+}
+
+/* ===== YEAR ===== */
+.year-bar {
+  background: #8B5E3C;
+  @apply text-white flex justify-between items-center px-8 py-4;
+}
+
+.year-bar h1 {
+  @apply text-2xl font-semibold;
+}
+
+.arrow {
+  @apply text-2xl cursor-pointer opacity-80 hover:opacity-100;
+}
+
+/* ===== MONTH ===== */
+.month-bar {
+  @apply w-full px-6 py-4;
+  background: #F5F5F5;
+}
+
+.month-inner {
+  @apply flex justify-center gap-3 flex-wrap;
+}
+
+.month {
+  @apply px-4 py-2 text-sm rounded-full 
+         bg-gray-200 text-gray-600 transition;
+}
+
+.month:hover {
+  @apply bg-gray-300;
+}
+
+.month-active {
+  @apply px-4 py-2 text-sm rounded-full text-white;
+  background: #8B5E3C;
+}
+
+/* ===== EMPTY ===== */
+.empty {
+  @apply flex flex-col items-center justify-center text-center;
+  min-height: 320px;
+}
+
+.empty-icon {
+  @apply w-16 h-16 bg-gray-100 text-gray-400 
+         rounded-xl flex items-center justify-center;
+}
+
+.empty-title {
+  @apply mt-4 text-gray-700 font-medium;
+}
+
+.empty-sub {
+  @apply text-sm text-gray-400 mt-1;
+}

@@ -1,18 +1,18 @@
-import { Component, OnInit, signal, inject } from '@angular/core'; // เพิ่ม inject เข้ามา
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http'; // ใช้ HttpClient แทน Supabase
+import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
-import { environment } from '../../../../environments/environment'; // เช็ค Path ให้ตรงกับโฟลเดอร์ environments นะพี่
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent], // ไม่ต้องมี CommonModule
+  imports: [RouterModule, StatCardsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-  private http = inject(HttpClient); // Inject HTTP เข้ามาใช้งาน
+  private http = inject(HttpClient); // Inject HTTP สำหรับยิง XAMPP
 
   dashboardStats = [
     {
@@ -49,14 +49,17 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  // Mock ข้อมูลนักศึกษาในความดูแล
+  // --- 1. ตัวแปรสำหรับ Pagination (เก็บของ dev-ball ไว้) ---
+  currentPage = signal(1);
+  itemsPerPage = 5;
+
+  // --- 2. ข้อมูล Mock นักศึกษา (เก็บของ dev-ball ไว้) ---
   studentsInCare = signal([
     {
       id: '6501230567',
       name: 'นายสมศักดิ์ ทดสอบ',
       year: 1,
       gpa: 3.45,
-      status: 'รออนุมัติ',
       ploStatus: 'PLO รอประเมิน',
       img: 'https://i.pravatar.cc/150?u=1',
     },
@@ -65,7 +68,6 @@ export class HomeComponent implements OnInit {
       name: 'นางสาวหญิง ทดลอง',
       year: 1,
       gpa: 3.78,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=2',
     },
@@ -74,7 +76,6 @@ export class HomeComponent implements OnInit {
       name: 'นายวิชัย สมบูรณ์',
       year: 1,
       gpa: 3.21,
-      status: 'รออนุมัติ',
       ploStatus: 'PLO ไม่ผ่าน',
       img: 'https://i.pravatar.cc/150?u=3',
     },
@@ -83,7 +84,6 @@ export class HomeComponent implements OnInit {
       name: 'นางสาวพิมพ์ชนก ดีงาม',
       year: 1,
       gpa: 3.92,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=4',
     },
@@ -92,13 +92,90 @@ export class HomeComponent implements OnInit {
       name: 'นายธนากร รุ่งเรือง',
       year: 1,
       gpa: 3.56,
-      status: 'อนุมัติแล้ว',
       ploStatus: 'PLO ผ่าน',
       img: 'https://i.pravatar.cc/150?u=5',
     },
+    {
+      id: '6501230572',
+      name: 'นางสาวแพรว รัตนโชติ',
+      year: 2,
+      gpa: 3.8,
+      ploStatus: 'PLO รอประเมิน',
+      img: 'https://i.pravatar.cc/150?u=6',
+    },
+    {
+      id: '6501230573',
+      name: 'นายอัครพล สุวรรณ',
+      year: 1,
+      gpa: 3.1,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=7',
+    },
+    {
+      id: '6501230574',
+      name: 'นางสาวชลดา พิพัฒน์',
+      year: 3,
+      gpa: 3.4,
+      ploStatus: 'PLO ไม่ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=8',
+    },
+    {
+      id: '6501230575',
+      name: 'นายปิยบุตร เลิศ',
+      year: 1,
+      gpa: 3.95,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=9',
+    },
+    {
+      id: '6501230576',
+      name: 'นางสาววรินดา เตชะ',
+      year: 2,
+      gpa: 3.65,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=10',
+    },
+    {
+      id: '6501230577',
+      name: 'นายก้องเกียรติ ยินดี',
+      year: 1,
+      gpa: 2.8,
+      ploStatus: 'PLO รอประเมิน',
+      img: 'https://i.pravatar.cc/150?u=11',
+    },
+    {
+      id: '6501230578',
+      name: 'นางสาวใจดี รักเรียน',
+      year: 4,
+      gpa: 4.0,
+      ploStatus: 'PLO ผ่าน',
+      img: 'https://i.pravatar.cc/150?u=12',
+    },
   ]);
 
-  // Mock ข้อมูลการนัดหมาย
+  // --- 3. ฟังก์ชันคำนวณหน้า (เก็บของ dev-ball ไว้) ---
+  totalItems = computed(() => this.studentsInCare().length);
+  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
+
+  paginatedStudents = computed(() => {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.studentsInCare().slice(start, start + this.itemsPerPage);
+  });
+
+  pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  // --- 4. ฟังก์ชันเปลี่ยนหน้า (เก็บของ dev-ball ไว้) ---
+  goToPage(page: number) {
+    this.currentPage.set(page);
+  }
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
+  }
+  prevPage() {
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
+  }
+
+  // --------------------------------------------------------
   appointments = signal([
     {
       name: 'นางสาวจุวาวิน วาวิวา',
@@ -134,7 +211,7 @@ export class HomeComponent implements OnInit {
   students = signal<any[]>([]);
 
   ngOnInit() {
-    // ยิง API ไปที่ XAMPP แทน Supabase
+    // ยิง API ไปที่ XAMPP แทน Supabase (เตะ Supabase ของเพื่อนทิ้งไปแล้วใช้ท่านี้)
     this.http.get(`${environment.apiUrl}/get_students.php`).subscribe({
       next: (data: any) => {
         // อัปเดตข้อมูลลงใน Signal

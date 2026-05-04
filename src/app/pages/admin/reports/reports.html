@@ -1,1 +1,55 @@
-<p>reports works!</p>
+<div class="p-8 bg-gray-50 min-h-screen">
+  <h1 class="text-2xl font-bold text-gray-800 mb-8">รายงานสรุปหลักสูตร</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+    <!-- Loop ตามข้อมูลสาขา -->
+    <div *ngFor="let report of reportData" 
+      class="bg-white rounded-[40px] p-10 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-gray-50 relative overflow-hidden">
+      
+      <!-- Header Section -->
+      <div class="flex items-center gap-5 mb-10">
+        <div class="w-16 h-16 flex items-center justify-center">
+          <img [src]="report.logo" class="w-full h-full object-contain" alt="logo">
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 leading-tight">{{ report.title }}</h2>
+          <p class="text-gray-400 text-sm font-medium">{{ report.subtitle }}</p>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="flex justify-between items-end mb-8 px-2">
+        <div class="flex flex-col">
+          <div class="flex items-baseline gap-2">
+            <span class="text-5xl font-black text-[#1A2233]">{{ report.totalStudents }}</span>
+            <span class="text-xl font-bold text-[#1A2233]">คน</span>
+          </div>
+          <span class="text-gray-700 font-bold mt-1">นักศึกษา</span>
+        </div>
+
+        <div class="flex flex-col items-end">
+          <div class="flex items-baseline gap-2">
+            <span class="text-5xl font-black text-[#1A2233]">{{ report.totalAdvisors }}</span>
+            <span class="text-xl font-bold text-[#1A2233]">คน</span>
+          </div>
+          <span class="text-gray-700 font-bold mt-1">อาจารย์ที่ปรึกษา</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="border-gray-200 mb-6">
+
+      <!-- Sub-Courses Section -->
+      <div class="space-y-4">
+        <h3 class="text-sm font-bold text-gray-500 mb-4 px-1">หลักสูตรย่อย</h3>
+        
+        <div *ngFor="let sub of report.subCourses" 
+          class="flex justify-between items-center bg-[#EBE9FF] border border-[#D6D1FF] rounded-lg px-6 py-4 transition-all hover:scale-[1.02] cursor-default">
+          <span class="font-bold text-[#4F46E5]">{{ sub.name }}</span>
+          <span class="font-bold text-[#1A2233]">{{ sub.count }} คน</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

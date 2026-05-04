@@ -36,7 +36,7 @@ export const routes: Routes = [
       {
         path: 'plo-assessment',
         loadComponent: () =>
-          import('./pages/teacher/plo-assessment/plo-assessment').then((m) => m.PloAssessment),
+          import('./pages/teacher/plo-assessment/plo-assessment.component').then((m) => m.PloAssessmentComponent),
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
@@ -68,6 +68,51 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'student' },
       },
+      {
+        path: 'activity',
+        loadComponent: () =>
+          import('./pages/student/activity/activity').then(
+            (m) => m.Activity,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'student' },
+      },
+      {
+        path: 'certification',
+        loadComponent: () =>
+          import('./pages/student/certification/certification').then(
+            (m) => m.Certification,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'student' },
+      },
+       {
+        path: 'advisor-record',
+        loadComponent: () =>
+          import('./pages/student/advisor-record/advisor-record').then(
+            (m) => m.AdvisorRecord,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'student' },
+      },
+      {
+        path: 'advisor-information',
+        loadComponent: () =>
+          import('./pages/student/advisor-information/advisor-information').then(
+            (m) => m.AdvisorInformation,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'student' },
+      },
+      {
+        path: 'history-student-record',
+        loadComponent: () =>
+          import('./pages/student/history-student-record/history-student-record').then(
+            (m) => m.HistoryStudentRecord,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'student' },
+      },
       //admin
       {
         path: 'system-dashboard',
@@ -78,6 +123,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
+      
       {
         path: 'users',
         loadComponent: () =>

@@ -1,1 +1,85 @@
-<p>all-students works!</p>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+
+  <h2 class="text-[1.15rem] font-bold text-gray-900 mb-5">นักศึกษาทั้งหมดในความดูแล</h2>
+
+  <div class="flex items-center justify-between mb-6">
+    <div class="relative w-[400px]">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+      <input type="text" placeholder="ค้นหานักศึกษา ด้วยชื่อ, รหัสนักศึกษา, หรืออีเมล"
+             class="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder-gray-400">
+    </div>
+
+    <button class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+      <span class="material-symbols-outlined text-[20px]">logout</span>
+      <span>Excel</span>
+    </button>
+  </div>
+
+  <div class="overflow-x-auto border border-gray-200 rounded-xl">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-white text-gray-900 border-b border-gray-200">
+      <tr>
+        <th class="py-4 px-6 font-bold whitespace-nowrap">ชื่อนักศึกษา</th>
+        <th class="py-4 px-6 font-bold whitespace-nowrap">อีเมล</th>
+        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">รหัสนักศึกษา</th>
+        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">ชั้นปี</th>
+        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">เกรดเฉลี่ยสะสม</th>
+        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">หน่วยกิตสะสม</th>
+        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">PLO</th>
+      </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 bg-white">
+        @for (s of paginatedStudents(); track s.id) {
+          <tr class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer">
+            <td class="py-3 px-6 whitespace-nowrap">
+              <div class="flex items-center gap-4">
+                <img [src]="s.img" class="w-10 h-10 rounded-full object-cover" alt="avatar">
+                <span class="text-gray-900">{{ s.name }}</span>
+              </div>
+            </td>
+            <td class="py-3 px-6 text-gray-800 whitespace-nowrap">{{ s.email }}</td>
+            <td class="py-3 px-6 text-gray-800 text-center whitespace-nowrap">{{ s.id }}</td>
+            <td class="py-3 px-6 text-gray-800 text-center whitespace-nowrap">{{ s.year }}</td>
+            <td class="py-3 px-6 text-gray-800 text-center whitespace-nowrap">{{ s.gpa }}</td>
+            <td class="py-3 px-6 text-gray-800 text-center whitespace-nowrap">{{ s.credits }}</td>
+            <td class="py-3 px-6 text-center whitespace-nowrap">
+              <span class="inline-block px-5 py-1 text-xs font-medium rounded-full bg-white border"
+                    [class]="s.ploStatus === 'ผ่าน' ? 'text-[#10B981] border-[#10B981]' :
+                             (s.ploStatus === 'รอประเมิน' ? 'text-[#F59E0B] border-[#F59E0B]' : 'text-[#EF4444] border-[#EF4444]')">
+                {{ s.ploStatus }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex items-center justify-between mt-6 text-sm text-gray-500">
+    <div>
+      แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }} -
+      {{ (currentPage() * itemsPerPage) > totalItems() ? totalItems() : (currentPage() * itemsPerPage) }}
+      จาก {{ totalItems() }} รายการ
+    </div>
+
+    <div class="flex gap-2">
+      <button (click)="prevPage()" [disabled]="currentPage() === 1"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+        ก่อนหน้า
+      </button>
+
+      @for (page of pageNumbers(); track page) {
+        <button (click)="goToPage(page)"
+                [class]="'px-3 py-1.5 rounded-lg transition ' + (currentPage() === page ? 'bg-[#F59E0B] text-white shadow-sm border border-[#F59E0B]' : 'border border-gray-200 hover:bg-gray-50 bg-white text-gray-600')">
+          {{ page }}
+        </button>
+      }
+
+      <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-600 transition">
+        ถัดไป
+      </button>
+    </div>
+  </div>
+
+</div>

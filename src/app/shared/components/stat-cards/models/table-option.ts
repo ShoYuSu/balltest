@@ -11,7 +11,8 @@ export interface TableColumnModel {
     | "delete"
     | "audio"
     | "download"
-    | "icon";
+    | "icon"
+    | "name";
   stickyEnd?: boolean;
   countField?: string;
   color?: string;
