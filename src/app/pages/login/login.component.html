@@ -1,136 +1,189 @@
-<div class="flex h-screen w-full font-sans bg-[#2b241e]">
+<div class="flex min-h-screen w-full font-sans bg-[#332B23] overflow-hidden">
+  
+  <div class="relative hidden w-2/5 lg:flex flex-col items-center justify-center bg-white shadow-2xl z-10">
+    <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-[#F9BD15] opacity-5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-[-10%] right-[-20%] w-96 h-96 rounded-full blur-3xl opacity-60"></div>
 
-  <!-- ฝั่งซ้าย: Branding มหาวิทยาลัย -->
-  <div class="relative hidden w-1/2 bg-black md:flex flex-col items-center justify-center overflow-hidden">
-    <!-- Overlay พื้นหลังสีเข้ม -->
-    <div class="absolute inset-0 bg-gradient-to-b from-gray-900 via-gray-800 to-black opacity-80 z-0"></div>
+    <div class="z-10 flex flex-col items-center px-12 text-center">
+      <div class="mb-8 transform hover:scale-105 transition-transform duration-500">
+        <img src="assets/img/สยาม.png" alt="Siam Logo" class="h-32 drop-shadow-xl" />
+      </div>
+      
+      <h1 class="text-4xl font-black text-[#332B23] mb-2 tracking-tight">มหาวิทยาลัยสยาม</h1>
+      <h2 class="text-2xl font-light text-gray-400 mb-4 tracking-widest uppercase">Siam University</h2>
+      
+      <div class="h-1 w-full bg-[#F9BD15] mb-8 rounded-full"></div>
+      
+      <p class="text-[#332B23] font-semibold mb-12 text-lg italic opacity-80">"Connect Science, Connect Future"</p>
 
-    <div class="z-10 flex flex-col items-center">
-      <img src="assets/img/logo.png" alt="Siam Logo" class="h-28 mb-4 drop-shadow-xl" />
-      <h1 class="text-4xl font-bold text-white mb-1 tracking-wide">มหาวิทยาลัยสยาม</h1>
-      <h2 class="text-3xl font-serif text-white mb-6">Siam University</h2>
-      <p class="text-[#e2b036] font-medium mb-12 text-lg">Connect Science, Connect Future</p>
-
-      <div class="flex gap-6">
-        <!-- โลโก้วงกลม -->
-        <div class="w-16 h-16 rounded-full border border-[#e2b036] p-2 flex items-center justify-center bg-black/50 backdrop-blur-sm shadow-[0_0_15px_rgba(226,176,54,0.3)]">
-          <img src="assets/img/สยาม.png" class="object-contain" />
+      <div class="flex gap-8">
+        <div class="group relative">
+          <div class="absolute -inset-1 bg-[#F9BD15] rounded-full blur opacity-20 group-hover:opacity-50 transition duration-1000"></div>
+          <div class="relative w-20 h-20 rounded-full border border-gray-100 p-3 flex items-center justify-center bg-white shadow-xl">
+            <img src="assets/img/วิทยาการคอมพิวเตอร์.jpg" class="object-contain rounded-full" alt="Computer Science" />
+          </div>
         </div>
-        <div class="w-16 h-16 rounded-full border border-[#e2b036] p-2 flex items-center justify-center bg-black/50 backdrop-blur-sm shadow-[0_0_15px_rgba(226,176,54,0.3)]">
-          <img src="assets/img/วิทยาการคอมพิวเตอร์.jpg" class="object-contain rounded-full" />
-        </div>
-        <div class="w-16 h-16 rounded-full border border-[#e2b036] p-2 flex items-center justify-center bg-black/50 backdrop-blur-sm shadow-[0_0_15px_rgba(226,176,54,0.3)]">
-          <img src="assets/img/small_logo_faculty.png" class="object-contain" />
+        
+        <div class="group relative">
+          <div class="absolute -inset-1 bg-gray-300 rounded-full blur opacity-20 group-hover:opacity-50 transition duration-1000"></div>
+          <div class="relative w-20 h-20 rounded-full border border-gray-100 p-3 flex items-center justify-center bg-white shadow-xl">
+            <img src="assets/img/small_logo_faculty.png" class="object-contain" alt="Faculty" />
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ฝั่งขวา: พื้นที่ Login -->
-  <div class="flex w-full md:w-1/2 items-center justify-center bg-[#2b241e]">
-
-    <!-- State 1: หน้าเลือกประเภทผู้ใช้ (Frame 148) -->
-    @if(loginStep === 'select') {
-      <div class="bg-white rounded-xl shadow-2xl p-10 w-full max-w-[400px] mx-4 animate-in fade-in zoom-in duration-300">
-        <h2 class="text-[22px] font-extrabold text-center text-[#0a1128] mb-1">เข้าสู่ระบบ</h2>
-        <p class="text-center text-gray-500 text-sm mb-8">เลือกประเภทผู้ใช้งาน</p>
-
-        <!-- ปุ่มนักศึกษา (สีแดง) -->
-        <button (click)="setStep('student')" class="w-full bg-[#c10015] hover:bg-red-800 text-white font-medium py-3.5 px-4 rounded-lg flex items-center justify-center gap-3 mb-5 transition shadow-lg shadow-red-200">
-          <span class="material-symbols-outlined text-[20px]">school</span> นักศึกษา
-        </button>
-
-        <!-- ปุ่มอาจารย์/แอดมิน (สีขาวขอบแดง) -->
-        <button (click)="setStep('teacher')" class="w-full bg-white border border-gray-300 hover:border-[#c10015] hover:text-[#c10015] text-gray-700 font-medium py-3.5 px-4 rounded-lg flex items-center justify-center gap-3 transition shadow-sm">
-          <span class="material-symbols-outlined text-[20px]">group</span> อาจารย์ / เจ้าหน้าที่ / แอดมิน
-        </button>
-      </div>
-    }
-
-    <!-- State 2: หน้ากรอกรหัสผ่าน (Frame 149 & 150) -->
-    @if(loginStep === 'student' || loginStep === 'teacher') {
-      <div class="bg-white rounded-xl shadow-2xl p-10 w-full max-w-[400px] mx-4 relative animate-in fade-in zoom-in duration-300">
-        <h2 class="text-xl font-bold text-center text-[#0a1128] mb-8">
-          เข้าสู่ระบบ ({{ loginStep === 'student' ? 'นักศึกษา' : 'อาจารย์ / เจ้าหน้าที่ / แอดมิน' }})
-        </h2>
-
-        <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
-          <!-- Username -->
-          <div>
-            <label class="block text-sm font-bold text-gray-800 mb-2">Username</label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-gray-400 text-[20px]">person</span>
-              <input formControlName="email" type="text" placeholder="Username หรือ อีเมล" class="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#e04622] focus:border-transparent outline-none transition text-sm">
-            </div>
-            @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-              <span class="text-red-500 text-xs mt-1 block">กรุณากรอก Username หรือ อีเมล</span>
-            }
+ 
+  <div class="relative flex w-full lg:w-3/5 items-center justify-center bg-[#332B23] via-yellow-600 p-6">
+    
+    <div class="absolute top-1/4 right-1/4 w-72 h-72 bg-[#F9BD15] opacity-[0.08] blur-[120px]"></div>
+    
+    <div class="w-full max-w-[420px] z-10">
+      
+      @if(loginStep === 'select') {
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-10 transform transition-all duration-500">
+          <div class="text-center mb-10">
+            <h2 class="text-3xl font-black text-[#332B23] mb-2">เข้าสู่ระบบ</h2>
+            <p class="text-gray-400 font-medium text-sm">กรุณาเลือกประเภทผู้ใช้งาน</p>
           </div>
 
-          <!-- Password -->
-          <div>
-            <label class="block text-sm font-bold text-gray-800 mb-2">Password</label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-gray-400 text-[20px]">lock</span>
-              <input formControlName="password" type="password" placeholder="Password" class="w-full pl-11 pr-11 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#e04622] focus:border-transparent outline-none transition text-sm">
-              <span class="material-symbols-outlined absolute right-3.5 top-2.5 text-gray-400 cursor-pointer hover:text-gray-600 text-[20px]">visibility</span>
-            </div>
-          </div>
+          <div class="space-y-4">
+            <button (click)="setStep('student')" class="group w-full bg-[#F9BD15] hover:bg-[#e0a910] text-[#332B23] font-black py-4 px-6 rounded-2xl flex items-center justify-between transition-all duration-300 shadow-lg active:scale-[0.98]">
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">school</span>
+                <span class="text-lg">นักศึกษา</span>
+              </div>
+              <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0">chevron_right</span>
+            </button>
 
-          <!-- Forgot Password -->
-          <div class="flex justify-end">
-            <a href="#" class="text-[13px] text-gray-500 hover:text-[#e04622] transition">ลืมรหัสผ่าน?</a>
-          </div>
-
-          <!-- Login Button (สีส้มอิฐ) -->
-          <button type="submit" [disabled]="loginForm.invalid || loading" class="w-full bg-[#e04622] hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-lg transition shadow-md disabled:opacity-50 mt-2">
-            {{ loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ \u2192' }}
-          </button>
-
-          <!-- Back Button -->
-          <div class="text-center mt-6">
-            <button type="button" (click)="setStep('select')" class="text-[13px] text-gray-500 hover:text-gray-800 transition">
-              &larr; เปลี่ยนประเภทผู้ใช้
+            <button (click)="setStep('teacher')" class="group w-full bg-gray-50 border-2 border-gray-100 hover:border-[#F9BD15]/50 hover:bg-white text-[#332B23] font-bold py-4 px-6 rounded-2xl flex items-center justify-between transition-all duration-300 active:scale-[0.98]">
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-2xl text-gray-400 group-hover:text-[#332B23]">group</span>
+                <span class="text-lg">อาจารย์/ เจ้าหน้าที่ / แอดมิน</span>
+              </div>
+              <span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0">chevron_right</span>
             </button>
           </div>
-        </form>
+        </div>
+      }
+
+      @if(loginStep === 'student' || loginStep === 'teacher') {
+        <div class="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-10 animate-in fade-in slide-in-from-bottom-8 duration-500">
+          <button (click)="setStep('select')" class="mb-6 flex items-center text-gray-400 hover:text-[#332B23] transition-colors text-sm font-bold uppercase tracking-tighter">
+            <span class="material-symbols-outlined text-sm mr-1">arrow_back</span> กลับไปเลือกประเภทผู้ใช้งาน
+          </button>
+
+          <h2 class="text-lg font-black text-[#332B23] mb-2 leading-tight">
+            เข้าสู่ระบบ ({{ loginStep === 'student' ? 'นักศึกษา' : 'อาจารย์ / เจ้าหน้าที่ / แอดมิน' }})
+          </h2>
+          <p class="text-gray-400 mb-8 text-sm">ระบุ Username และ Password ของคุณ</p>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
+  
+  <div class="space-y-1">
+    <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400 ml-1">Username</label>
+    <div class="relative group">
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">person</span>
+      <input 
+        formControlName="email" 
+        type="text" 
+        placeholder="Username หรือ อีเมล" 
+        [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
+    </div>
+    @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+      <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
+        <span class="material-symbols-outlined text-[14px]">error</span>
+        กรุณากรอก Username หรือ อีเมล
       </div>
     }
   </div>
 
-  <!-- Error Modal -->
-  @if(showErrorModal) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div class="bg-white rounded-xl shadow-2xl max-w-[320px] w-full p-8 text-center relative animate-in zoom-in duration-200">
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 text-[#c10015] text-2xl font-bold">!</div>
-        <h3 class="text-[18px] font-extrabold text-gray-900 mb-2">เข้าสู่ระบบไม่สำเร็จ</h3>
-        <p class="text-gray-500 text-sm mb-6">{{ errorMessage }}</p>
-        <button (click)="closeModal()" class="w-full bg-[#c10015] hover:bg-red-800 text-white py-3 rounded-lg font-bold transition shadow-md">ตกลง</button>
-      </div>
+  <div class="space-y-1">
+    <div class="flex justify-between items-center px-1">
+      <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Password</label>
+      <a href="#" class="text-[11px] font-bold text-[#F9BD15] hover:text-[#332B23]">ลืมรหัสผ่าน?</a>
     </div>
-  }
+    <div class="relative group">
+      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">lock</span>
+      <input 
+      formControlName="password" 
+      [type]="hidePassword ? 'password' : 'text'" 
+      placeholder="••••••••" 
+      [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+      class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
+    
+    <button 
+      type="button" 
+      (click)="hidePassword = !hidePassword"
+      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#332B23] transition-colors flex items-center justify-center">
+      <span class="material-symbols-outlined text-[22px]">
+        {{ hidePassword ? 'visibility_off' : 'visibility' }}
+      </span>
+    </button>
+    </div>
+    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+      <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
+        <span class="material-symbols-outlined text-[14px]">error</span>
+        กรุณากรอกรหัสผ่านของคุณ
+      </div>
+    }
+  </div>
 
-  <!-- System Select Popup (Frame 151) -->
+  <button 
+    type="submit" 
+    [disabled]="loginForm.invalid || loading" 
+    class="w-full bg-[#332B23] hover:bg-[#4d4135] text-white font-black py-4 rounded-2xl transition-all shadow-xl active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
+    {{ loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ' }}
+    <span class="material-symbols-outlined text-[#F9BD15]">arrow_forward</span>
+  </button>
+
+</form>
+        </div>
+      }
+    </div>
+  </div>
+
   @if(showSystemPopup) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm animate-in fade-in duration-200">
-      <!-- กล่องสีส้มอิฐแบบในรูป -->
-      <div class="bg-[#e04622] rounded-xl shadow-2xl max-w-[450px] w-full p-8 relative animate-in zoom-in duration-200">
-        <button (click)="showSystemPopup = false" class="absolute top-4 right-4 text-white hover:text-gray-200 transition">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-        <h3 class="text-xl font-bold text-white mb-2">เลือกระบบที่ต้องการเข้าใช้งาน</h3>
-        <p class="text-white/90 text-sm mb-8">คุณต้องการเข้าสู่ระบบ Advising หรือ Research?</p>
-
-        <div class="flex flex-col sm:flex-row gap-4">
-          <!-- ปุ่ม Advising สีขาวตัวหนังสือแดง -->
-          <button (click)="selectSystem('advising')" class="flex-1 bg-white text-[#c10015] font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition shadow-md">
-            <span class="material-symbols-outlined">menu_book</span> Advising
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#332B23]/80 backdrop-blur-lg animate-in fade-in duration-300">
+      <div class="bg-white rounded-[40px] shadow-2xl max-w-[480px] w-full overflow-hidden relative animate-in zoom-in-95 duration-300">
+        <div class="h-2 w-full bg-[#F9BD15]"></div>
+        
+        <div class="p-10">
+          <button (click)="showSystemPopup = false" class="absolute top-8 right-8 text-gray-300 hover:text-gray-600 transition-colors">
+            <span class="material-symbols-outlined">close</span>
           </button>
+          
+          <div class="mb-10 text-center">
+            <div class="w-16 h-16 bg-[#F9BD15]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+               <span class="material-symbols-outlined text-[#F9BD15] text-3xl">grid_view</span>
+            </div>
+            <h3 class="text-2xl font-black text-[#332B23] mb-2">ยินดีต้อนรับ</h3>
+            <p class="text-gray-500 text-sm">กรุณาเลือกระบบที่ต้องการเข้าใช้งาน</p>
+          </div>
 
-          <!-- ปุ่ม Research สีน้ำเงินเข้มตัวหนังสือขาว -->
-          <button (click)="selectSystem('research')" class="flex-1 bg-[#0a1128] text-white font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#152042] transition shadow-md">
-            <span class="material-symbols-outlined">science</span> Research
-          </button>
+          <div class="grid grid-cols-1 gap-4">
+            <button (click)="selectSystem('advising')" class="group flex items-center gap-5 p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-[#F9BD15] hover:bg-white transition-all text-left">
+              <div class="w-12 h-12 rounded-xl bg-[#F9BD15] text-[#332B23] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined">auto_stories</span>
+              </div>
+              <div>
+                <span class="block font-bold text-[#332B23]">Advising System</span>
+                <span class="text-xs text-gray-400 uppercase tracking-tighter">เข้าสู่ระบบให้คำปรึกษา</span>
+              </div>
+            </button>
+
+            <button (click)="selectSystem('research')" class="group flex items-center gap-5 p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-[#332B23] hover:bg-white transition-all text-left">
+              <div class="w-12 h-12 rounded-xl bg-[#332B23] text-[#F9BD15] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined">science</span>
+              </div>
+              <div>
+                <span class="block font-bold text-[#332B23]">Research System</span>
+                <span class="text-xs text-gray-400 uppercase tracking-tighter">เข้าสู่ระบบงานวิจัย</span>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </div>

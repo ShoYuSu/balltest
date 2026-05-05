@@ -19,6 +19,7 @@ export class LoginComponent {
 
   // ควบคุมหน้าจอ: select (หน้าแรก) -> student (หน้านักศึกษา) -> teacher (หน้าอาจารย์)
   loginStep: 'select' | 'student' | 'teacher' = 'select';
+  hidePassword = true;
 
   // ควบคุม Popup เลือกระบบ
   showSystemPopup = false;
@@ -49,6 +50,7 @@ export class LoginComponent {
   onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      this.cdr.detectChanges();
       return;
     }
 
