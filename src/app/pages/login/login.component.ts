@@ -21,12 +21,7 @@ export class LoginComponent {
   loginStep: 'select' | 'student' | 'teacher' = 'select';
   hidePassword = true;
 
-  // ควบคุม Popup เลือกระบบ
-  showSystemPopup = false;
-  tempRole = ''; // เอาไว้เก็บสิทธิ์ชั่วคราวตอนที่ล็อกอินผ่านแล้วรอเลือกระบบ
-
   loginForm = new FormGroup({
-    // เอา Validators.email ออกแล้ว พี่จะพิมพ์แค่ teacher1 ก็ได้
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
   });
@@ -68,12 +63,11 @@ export class LoginComponent {
           if (res.student_code) localStorage.setItem('student_code', res.student_code);
 
           if (role === 'student') {
-            // ถ้านักศึกษา ไม่ต้องมี Popup พุ่งไปหน้าข้อมูลส่วนตัวเลย
+            // ถ้านักศึกษา พุ่งไปหน้าข้อมูลส่วนตัวเลย
             this.router.navigate(['/personal-data']);
           } else {
-            // ถ้าอาจารย์/แอดมิน โชว์ Popup ให้เลือกระบบ
-            this.tempRole = role;
-            this.showSystemPopup = true;
+            // ถ้าเป็น อาจารย์/เจ้าหน้าที่/แอดมิน แนบ Role กับ Token ไปให้ระบบเพื่อนด้วย
+            window.location.href = `http://localhost:4201/admin/dashboard?role=${role}&token=${res.token}`;
           }
         } else {
           this.errorMessage = res.message;
@@ -89,22 +83,5 @@ export class LoginComponent {
         this.cdr.detectChanges();
       },
     });
-  }
-
-  // ฟังก์ชันตอนกดปุ่มใน Popup (Advising / Research)
-  selectSystem(system: 'advising' | 'research') {
-    if (system === 'advising') {
-      // เข้า Advising (ระบบนี้)
-      if (this.tempRole === 'advisor' || this.tempRole === 'teacher') {
-        window.location.href = 'http://localhost:4200/home'; // หรือ /home ถ้าพอร์ตเดียวกัน
-      } else if (this.tempRole === 'admin') {
-        this.router.navigate(['/system-dashboard']);
-      }
-    } else if (system === 'research') {
-      // เข้า Research (ยังไม่มีระบบ เปิดแท็บเปล่าให้ไปก่อน)
-      window.open('about:blank', '_blank');
-    }
-    this.showSystemPopup = false;
-    this.cdr.detectChanges();
   }
 }

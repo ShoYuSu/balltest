@@ -1,5 +1,5 @@
 <div class="flex min-h-screen w-full font-sans bg-[#332B23] overflow-hidden">
-  
+
   <div class="relative hidden w-2/5 lg:flex flex-col items-center justify-center bg-white shadow-2xl z-10">
     <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-[#F9BD15] opacity-5 rounded-full blur-3xl"></div>
     <div class="absolute bottom-[-10%] right-[-20%] w-96 h-96 rounded-full blur-3xl opacity-60"></div>
@@ -8,12 +8,12 @@
       <div class="mb-8 transform hover:scale-105 transition-transform duration-500">
         <img src="assets/img/สยาม.png" alt="Siam Logo" class="h-32 drop-shadow-xl" />
       </div>
-      
+
       <h1 class="text-4xl font-black text-[#332B23] mb-2 tracking-tight">มหาวิทยาลัยสยาม</h1>
       <h2 class="text-2xl font-light text-gray-400 mb-4 tracking-widest uppercase">Siam University</h2>
-      
+
       <div class="h-1 w-full bg-[#F9BD15] mb-8 rounded-full"></div>
-      
+
       <p class="text-[#332B23] font-semibold mb-12 text-lg italic opacity-80">"Connect Science, Connect Future"</p>
 
       <div class="flex gap-8">
@@ -23,7 +23,7 @@
             <img src="assets/img/วิทยาการคอมพิวเตอร์.jpg" class="object-contain rounded-full" alt="Computer Science" />
           </div>
         </div>
-        
+
         <div class="group relative">
           <div class="absolute -inset-1 bg-gray-300 rounded-full blur opacity-20 group-hover:opacity-50 transition duration-1000"></div>
           <div class="relative w-20 h-20 rounded-full border border-gray-100 p-3 flex items-center justify-center bg-white shadow-xl">
@@ -34,13 +34,12 @@
     </div>
   </div>
 
- 
   <div class="relative flex w-full lg:w-3/5 items-center justify-center bg-[#332B23] via-yellow-600 p-6">
-    
+
     <div class="absolute top-1/4 right-1/4 w-72 h-72 bg-[#F9BD15] opacity-[0.08] blur-[120px]"></div>
-    
+
     <div class="w-full max-w-[420px] z-10">
-      
+
       @if(loginStep === 'select') {
         <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-10 transform transition-all duration-500">
           <div class="text-center mb-10">
@@ -80,112 +79,68 @@
           <p class="text-gray-400 mb-8 text-sm">ระบุ Username และ Password ของคุณ</p>
 
           <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
-  
-  <div class="space-y-1">
-    <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400 ml-1">Username</label>
-    <div class="relative group">
-      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">person</span>
-      <input 
-        formControlName="email" 
-        type="text" 
-        placeholder="Username หรือ อีเมล" 
-        [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-        class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
-    </div>
-    @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-      <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
-        <span class="material-symbols-outlined text-[14px]">error</span>
-        กรุณากรอก Username หรือ อีเมล
-      </div>
-    }
-  </div>
 
-  <div class="space-y-1">
-    <div class="flex justify-between items-center px-1">
-      <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Password</label>
-      <a href="#" class="text-[11px] font-bold text-[#F9BD15] hover:text-[#332B23]">ลืมรหัสผ่าน?</a>
-    </div>
-    <div class="relative group">
-      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">lock</span>
-      <input 
-      formControlName="password" 
-      [type]="hidePassword ? 'password' : 'text'" 
-      placeholder="••••••••" 
-      [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-      class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
-    
-    <button 
-      type="button" 
-      (click)="hidePassword = !hidePassword"
-      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#332B23] transition-colors flex items-center justify-center">
-      <span class="material-symbols-outlined text-[22px]">
-        {{ hidePassword ? 'visibility_off' : 'visibility' }}
-      </span>
-    </button>
-    </div>
-    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-      <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
-        <span class="material-symbols-outlined text-[14px]">error</span>
-        กรุณากรอกรหัสผ่านของคุณ
-      </div>
-    }
-  </div>
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400 ml-1">Username</label>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">person</span>
+                <input
+                  formControlName="email"
+                  type="text"
+                  placeholder="Username หรือ อีเมล"
+                  [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                  class="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
+              </div>
+              @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                  <span class="material-symbols-outlined text-[14px]">error</span>
+                  กรุณากรอก Username หรือ อีเมล
+                </div>
+              }
+            </div>
 
-  <button 
-    type="submit" 
-    [disabled]="loginForm.invalid || loading" 
-    class="w-full bg-[#332B23] hover:bg-[#4d4135] text-white font-black py-4 rounded-2xl transition-all shadow-xl active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
-    {{ loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ' }}
-    <span class="material-symbols-outlined text-[#F9BD15]">arrow_forward</span>
-  </button>
+            <div class="space-y-1">
+              <div class="flex justify-between items-center px-1">
+                <label class="text-[11px] font-bold uppercase tracking-widest text-gray-400">Password</label>
+                <a href="#" class="text-[11px] font-bold text-[#F9BD15] hover:text-[#332B23]">ลืมรหัสผ่าน?</a>
+              </div>
+              <div class="relative group">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#F9BD15] transition-colors">lock</span>
+                <input
+                  formControlName="password"
+                  [type]="hidePassword ? 'password' : 'text'"
+                  placeholder="••••••••"
+                  [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                  class="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-[#F9BD15] outline-none transition-all text-[#332B23]">
 
-</form>
+                <button
+                  type="button"
+                  (click)="hidePassword = !hidePassword"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#332B23] transition-colors flex items-center justify-center">
+                <span class="material-symbols-outlined text-[22px]">
+                  {{ hidePassword ? 'visibility_off' : 'visibility' }}
+                </span>
+                </button>
+              </div>
+              @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                <div class="flex items-center gap-1 mt-1 ml-1 text-[#c10015] text-xs font-medium animate-in fade-in slide-in-from-top-1">
+                  <span class="material-symbols-outlined text-[14px]">error</span>
+                  กรุณากรอกรหัสผ่านของคุณ
+                </div>
+              }
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="loginForm.invalid || loading"
+              class="w-full bg-[#332B23] hover:bg-[#4d4135] text-white font-black py-4 rounded-2xl transition-all shadow-xl active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
+              {{ loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ' }}
+              <span class="material-symbols-outlined text-[#F9BD15]">arrow_forward</span>
+            </button>
+
+          </form>
         </div>
       }
     </div>
   </div>
-
-  @if(showSystemPopup) {
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#332B23]/80 backdrop-blur-lg animate-in fade-in duration-300">
-      <div class="bg-white rounded-[40px] shadow-2xl max-w-[480px] w-full overflow-hidden relative animate-in zoom-in-95 duration-300">
-        <div class="h-2 w-full bg-[#F9BD15]"></div>
-        
-        <div class="p-10">
-          <button (click)="showSystemPopup = false" class="absolute top-8 right-8 text-gray-300 hover:text-gray-600 transition-colors">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-          
-          <div class="mb-10 text-center">
-            <div class="w-16 h-16 bg-[#F9BD15]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-               <span class="material-symbols-outlined text-[#F9BD15] text-3xl">grid_view</span>
-            </div>
-            <h3 class="text-2xl font-black text-[#332B23] mb-2">ยินดีต้อนรับ</h3>
-            <p class="text-gray-500 text-sm">กรุณาเลือกระบบที่ต้องการเข้าใช้งาน</p>
-          </div>
-
-          <div class="grid grid-cols-1 gap-4">
-            <button (click)="selectSystem('advising')" class="group flex items-center gap-5 p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-[#F9BD15] hover:bg-white transition-all text-left">
-              <div class="w-12 h-12 rounded-xl bg-[#F9BD15] text-[#332B23] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined">auto_stories</span>
-              </div>
-              <div>
-                <span class="block font-bold text-[#332B23]">Advising System</span>
-                <span class="text-xs text-gray-400 uppercase tracking-tighter">เข้าสู่ระบบให้คำปรึกษา</span>
-              </div>
-            </button>
-
-            <button (click)="selectSystem('research')" class="group flex items-center gap-5 p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-[#332B23] hover:bg-white transition-all text-left">
-              <div class="w-12 h-12 rounded-xl bg-[#332B23] text-[#F9BD15] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined">science</span>
-              </div>
-              <div>
-                <span class="block font-bold text-[#332B23]">Research System</span>
-                <span class="text-xs text-gray-400 uppercase tracking-tighter">เข้าสู่ระบบงานวิจัย</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
 </div>
