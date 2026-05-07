@@ -28,4 +28,9 @@ export class SidebarComponent implements OnInit {
   ngOnInit() {
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
   }
+  
+ goBack() {
+    // คำสั่งย้อนกลับไปหน้าก่อนหน้า (หน้าเดิมของเพื่อน)
+    window.location.href = 'http://localhost:4201/admin/dashboard';
+  }
 }

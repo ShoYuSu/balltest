@@ -210,6 +210,50 @@
             @if (isSidebarOpen) { <span>รายงานระบบ</span> }
           </a>
         </li>
+        <div class="px-7 my-4">
+  <div class="h-px w-full bg-gray-300"></div>
+</div>
+
+<div (click)="goBack()" 
+     class="group relative flex items-center p-2 bg-[#3D2521] hover:bg-[#4D312C] active:scale-[0.98] rounded-2xl cursor-pointer transition-all duration-200 shadow-md"
+     [class.justify-center]="!isSidebarOpen"
+     [class.px-4]="isSidebarOpen">
+  
+  <div class="flex items-center w-full" 
+       [class.justify-between]="isSidebarOpen" 
+       [class.justify-center]="!isSidebarOpen">
+    
+    <div class="flex items-center gap-3">
+      <!-- Icon หลัก: ใช้ Material Symbols แทน SVG -->
+      <div class="flex items-center justify-center p-2 bg-[#F9BD15]/10 group-hover:bg-[#F9BD15]/20 rounded-xl transition-colors shrink-0">
+        <span class="material-symbols-outlined text-[#F9BD15] select-none text-[20px] font-bold"
+              style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
+          group
+        </span>
+      </div>
+      
+      <!-- ข้อความ Label -->
+      @if (isSidebarOpen) {
+        <div class="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
+          <span class="text-[10px] text-gray-400 font-semibold whitespace-nowrap uppercase tracking-widest">
+            ไปยังระบบอื่น
+          </span>
+          <span class="text-white font-bold text-sm leading-tight whitespace-nowrap group-hover:text-[#F9BD15] transition-colors">
+            SCIENCE MIS
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- Icon External Link: ใช้ Material Symbols แทน SVG -->
+    @if (isSidebarOpen) {
+      <span class="material-symbols-outlined text-white opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all select-none text-[18px]"
+            style="font-variation-settings: 'wght' 500;">
+        open_in_new
+      </span>
+    }
+  </div>
+</div>
       </ul>
     </nav>
   }
