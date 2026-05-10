@@ -16,6 +16,7 @@ export class LoginComponent {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  isStudentPage: boolean = false;
 
   // ควบคุมหน้าจอ: select (หน้าแรก) -> student (หน้านักศึกษา) -> teacher (หน้าอาจารย์)
   loginStep: 'select' | 'student' | 'teacher' = 'select';
@@ -33,6 +34,7 @@ export class LoginComponent {
   // ฟังก์ชันเปลี่ยนหน้าจอ
   setStep(step: 'select' | 'student' | 'teacher') {
     this.loginStep = step;
+    this.isStudentPage = (step === 'student');
     this.loginForm.reset(); // ล้างฟอร์มเวลาสลับหน้า
     this.cdr.detectChanges();
   }
@@ -52,36 +54,39 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    this.http.post(`${environment.apiUrl}/login.php`, { email, password }).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          const role = res.role?.toLowerCase().trim();
+   this.http.post(`${environment.apiUrl}/login.php`, { email, password, login_type: this.isStudentPage ? 'student' : 'staff' }).subscribe({
+  next: (res: any) => {
+    if (res.success) {
+      const role = res.role?.toLowerCase().trim();
 
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('role', role);
-          if (res.full_name) localStorage.setItem('full_name', res.full_name);
-          if (res.student_code) localStorage.setItem('student_code', res.student_code);
+      // 1. เก็บข้อมูลลง LocalStorage
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('full_name', res.full_name || '');
 
-          if (role === 'student') {
-            // ถ้านักศึกษา พุ่งไปหน้าข้อมูลส่วนตัวเลย
-            this.router.navigate(['/personal-data']);
-          } else {
-            // ถ้าเป็น อาจารย์/เจ้าหน้าที่/แอดมิน แนบ Role กับ Token ไปให้ระบบเพื่อนด้วย
-            window.location.href = `http://localhost:4201/admin/dashboard?role=${role}&token=${res.token}`;
-          }
-        } else {
-          this.errorMessage = res.message;
-          this.showErrorModal = true;
-        }
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.errorMessage = 'เชื่อมต่อ XAMPP ไม่ได้ เช็คพอร์ต 8080 หรือยัง?';
-        this.showErrorModal = true;
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-    });
+      // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
+      if (role === 'student') {
+        // ✅ ไปที่หน้านักศึกษา (พอร์ต 4200) เพื่อให้โชว์เมนูที่คุณส่งมา
+        this.router.navigate(['/personal-data']);
+      } else {
+        // ⚠️ หากคุณต้องการให้อาจารย์/แอดมิน ไปหน้า Dashboard ของระบบพอร์ต 4201 เหมือนเดิม
+        // แต่ถ้าต้องการให้อยู่ในหน้าเดียวกัน ให้เปลี่ยนเป็น this.router.navigate(['/admin-dashboard']);
+        window.location.href = `http://localhost:4201/admin/dashboard?role=${role}&token=${res.token}&user=${res.full_name}`;
+      }
+
+    } else {
+      this.errorMessage = res.message;
+      this.showErrorModal = true;
+    }
+    this.loading = false;
+    this.cdr.detectChanges();
+  },
+  error: () => {
+    this.errorMessage = 'การเชื่อมต่อผิดพลาด';
+    this.showErrorModal = true;
+    this.loading = false;
+    this.cdr.detectChanges();
+  }
+});
   }
 }

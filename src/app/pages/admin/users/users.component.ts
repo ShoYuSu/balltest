@@ -1,74 +1,123 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. เพิ่ม ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
-
+import { environment } from '../../../../environments/environment';
+import { TableColumnModel } from '../../../shared/components/stat-cards/models/table-option';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './users.html',
 })
 export class UsersComponent implements OnInit {
   userForm!: FormGroup;
-  isModalOpen: boolean = false;
-  isEditMode: boolean = false;
-  submitted: boolean = false;
-  imagePreview: string | null = null;
-
-  // ประกาศตัวแปรสำหรับรับข้อมูลจาก API (คุณนำไปดึงค่าใส่ที่นี่)
+  isModalOpen = false;
+  submitted = false;
+  isStudentDropdownOpen = false;
+  selectedStudentName = '';
+  
+  studentsNoUser: any[] = []; 
   users: any[] = []; 
 
-  constructor(private fb: FormBuilder) {}
+  public columns: TableColumnModel[] = [
+    { columnDef: "full_name", header: "ชื่อ-นามสกุล", tag: "text", display: true, width: "large", cell: (el: any) => el.full_name || '-' },
+    { columnDef: "email", header: "ชื่อผู้ใช้ (อีเมล)", tag: "text", display: true, width: "large", cell: (el: any) => el.email || '-' },
+    { columnDef: "role", header: "บทบาท", tag: "badge", display: true, width: "medium", cell: (el: any) => 'นักศึกษา' },
+    { columnDef: "manage", header: "จัดการ", tag: "manage", display: true, width: "large", cell: (el: any) => el }
+  ];
+
+  constructor(
+    private fb: FormBuilder, 
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef // 2. Inject ChangeDetectorRef เข้ามา
+  ) {}
 
   ngOnInit(): void {
+    this.initForm();
+    this.loadAllUsers(); 
+    this.loadStudentsNoUser();
+  }
+
+  initForm(): void {
     this.userForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['', Validators.required],
-      profileImage: [null]
+      person_id: ['', Validators.required],
+      email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  // จัดการการเลือกรูปภาพ
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      this.userForm.patchValue({ profileImage: file });
-      
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+  loadAllUsers() {
+    this.http.get(`${environment.apiUrl}/get_all_users.php`).subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          // 3. ใช้ Spread Operator [...] เพื่อสร้าง Array ใหม่ (กระตุ้น Change Detection)
+          this.users = [...res.data]; 
+          console.log('Users loaded:', this.users);
+          
+          // 4. สั่งให้ Angular ตรวจสอบและวาดหน้าจอใหม่ทันที
+          this.cdr.detectChanges(); 
+        }
+      },
+      error: (err) => {
+        console.error('ไม่สามารถโหลดข้อมูลผู้ใช้ได้:', err);
+      }
+    });
   }
 
-  openAddModal(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    this.imagePreview = null;
-    this.userForm.reset({ role: '' });
-    this.userForm.get('email')?.enable();
-    this.userForm.get('role')?.enable();
-    this.isModalOpen = true;
+  loadStudentsNoUser(): void {
+    this.http.get(`${environment.apiUrl}/get_students_no_user.php`).subscribe({
+      next: (res: any) => { 
+        if (res.success) {
+          this.studentsNoUser = [...res.data];
+          this.cdr.detectChanges(); // สั่งวาด Dropdown ใหม่ด้วย
+        }
+      }
+    });
   }
 
-  // ส่งข้อมูลไปบันทึก (คุณสามารถเขียนคำสั่งยิง API ตรงนี้)
+  selectStudent(student: any) {
+    this.selectedStudentName = `${student.student_code} - ${student.full_name}`;
+    this.userForm.patchValue({ 
+      person_id: student.person_id,
+      email: student.email 
+    });
+    this.isStudentDropdownOpen = false;
+  }
+
   saveUser(): void {
     this.submitted = true;
     if (this.userForm.valid) {
-      const data = this.userForm.getRawValue();
-      console.log('ข้อมูลที่พร้อมส่งไป API:', data);
-      
-      // เมื่อบันทึกสำเร็จ:
-      // this.isModalOpen = false;
+      const payload = this.userForm.getRawValue(); 
+
+      this.http.post(`${environment.apiUrl}/add_user_student.php`, payload).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            alert('สร้างบัญชีสำเร็จ!');
+            this.closeModal();
+            this.loadAllUsers(); 
+            this.loadStudentsNoUser(); 
+          } else {
+            alert('ผิดพลาด: ' + res.message);
+          }
+        },
+        error: () => alert('เซิร์ฟเวอร์ขัดข้อง')
+      });
     }
   }
 
-  closeModal(): void {
-    this.isModalOpen = false;
+  toggleStudentDropdown() { this.isStudentDropdownOpen = !this.isStudentDropdownOpen; }
+  
+  openAddModal() { 
+    this.submitted = false; 
+    this.userForm.reset(); 
+    this.selectedStudentName = ''; 
+    this.isModalOpen = true; 
+  }
+  
+  closeModal() { 
+    this.isModalOpen = false; 
   }
 }
