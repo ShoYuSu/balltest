@@ -12,7 +12,10 @@ export interface TableColumnModel {
     | "audio"
     | "download"
     | "icon"
+    | "badge"
+    | "manage"
     | "name";
+    
   stickyEnd?: boolean;
   countField?: string;
   color?: string;

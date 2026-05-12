@@ -9,17 +9,25 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent implements OnInit {
-  // สร้างตัวแปรมารอรับค่าแทน Supabase
   userName: string = 'ผู้ใช้งาน';
   userRole: string = '';
   studentCode: string = '';
   isDropdownOpen: boolean = false;
+  userImageUrl: string | null = null; // ตัวแปรเก็บ URL รูปภาพ
 
   ngOnInit() {
-    // ดึงค่าจากที่ XAMPP ส่งมาเก็บไว้ตอนล็อกอิน
+    // 1. ดึงค่าพื้นฐาน
     this.userName = localStorage.getItem('full_name') || 'ผู้ใช้งาน';
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
     this.studentCode = localStorage.getItem('student_code') || '';
+
+    // 2. ดึงค่ารูปภาพที่เก็บไว้ตอน Login (สมมติว่าใช้คีย์ชื่อ 'student_image')
+    const savedImagePath = localStorage.getItem('student_image');
+    
+    if (savedImagePath && savedImagePath !== 'null') {
+      // ต่อ URL ไปหาพอร์ต 8080 ของ XAMPP เหมือนเดิมเลยพี่
+      this.userImageUrl = `http://localhost:8080/api/${savedImagePath}`;
+    }
   }
 
   toggleDropdown() {
@@ -28,7 +36,6 @@ export class HeaderComponent implements OnInit {
 
   onLogout() {
     localStorage.clear();
-    // ดีดกลับหน้า Login ของพอร์ต 4200
     window.location.href = 'http://localhost:4200/login';
   }
 }

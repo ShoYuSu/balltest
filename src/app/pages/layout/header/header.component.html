@@ -4,16 +4,20 @@
       (click)="toggleDropdown()"
       class="flex items-center gap-3 p-1 rounded-full hover:bg-gray-100 transition duration-200"
     >
-      <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white shrink-0">
-        <!-- เช็คว่ามีชื่อไหม (เอาตัวอักษรแรกมาโชว์ก็ได้นะพี่ ถ้าอยากให้เฟี้ยว) -->
-        @if (userName !== 'ผู้ใช้งาน') {
-          {{ userName.charAt(0) }}
-        } @else {
+      <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white shrink-0 overflow-hidden">
+        
+        @if (userImageUrl) {
+          <img [src]="userImageUrl" class="w-full h-full object-cover animate-in fade-in duration-300">
+        } 
+        @else if (userName !== 'ผู้ใช้งาน') {
+          {{ userName.charAt(0).toUpperCase() }}
+        } 
+        @else {
           <span class="material-symbols-outlined">person</span>
         }
       </div>
 
-      <div class="hidden md:flex items-center flex-col">
+      <div class="hidden md:flex items-center flex-col text-left">
         <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">
           {{ userName || 'Loading...' }}
         </span>
@@ -28,7 +32,7 @@
           </span>
         } @else if (userRole === 'admin') {
           <span class="text-[12px] text-blue-600 font-bold rounded-full ">
-           ผู้ดูแลระบบ
+            ผู้ดูแลระบบ
           </span>
         }
       </div>

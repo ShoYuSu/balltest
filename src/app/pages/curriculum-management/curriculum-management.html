@@ -1,0 +1,151 @@
+<div *ngIf="isOpen" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+    
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-blue-600">menu_book</span>
+        <h3 class="text-xl font-bold text-gray-800">จัดการโครงสร้างหลักสูตร</h3>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-600 rounded-full">
+          {{ curriculumData.length }} รายการ
+        </span>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
+      
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">ภาควิชา:</span>
+          <span class="text-sm font-medium text-gray-700 px-3 py-1 bg-gray-100 rounded-lg">เทคโนโลยีสารสนเทศ</span>
+        </div>
+        <button (click)="isAddCategoryModal = true" 
+                class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">
+          <span class="material-symbols-outlined text-sm">add</span> เพิ่มหมวดวิชา
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div *ngFor="let cat of curriculumData" class="border border-gray-100 rounded-2xl shadow-sm overflow-hidden bg-white">
+          <div class="flex items-center justify-between p-4 bg-green-50/40 border-b border-green-100/50">
+            <div class="flex items-center gap-3 cursor-pointer" (click)="toggleAccordion(cat)">
+              <span class="material-symbols-outlined text-green-600 transition-transform" [class.rotate-90]="cat.isOpen">chevron_right</span>
+              <span class="font-bold text-green-800">{{ cat.category_name }}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-md">{{ cat.required_credit }} หน่วยกิต</span>
+              <button (click)="selectedCatId = cat.category_id; isAddModuleModal = true" class="text-green-700 hover:bg-green-100 p-1 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-xl">add_circle</span>
+              </button>
+              <button class="text-red-400 hover:text-red-600 transition-colors">
+                <span class="material-symbols-outlined text-xl">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="cat.isOpen" class="p-4 space-y-3 bg-white">
+            <div *ngFor="let mod of cat.modules" class="border border-blue-50 rounded-xl overflow-hidden">
+              <div class="flex justify-between items-center p-3 bg-blue-50/30">
+                <div class="flex items-center gap-3 cursor-pointer" (click)="toggleAccordion(mod)">
+                  <span class="material-symbols-outlined text-blue-500 transition-transform text-sm" [class.rotate-90]="mod.isOpen">arrow_right_stone</span>
+                  <span class="font-bold text-blue-800 text-sm">{{ mod.module_name }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button (click)="selectedModuleId = mod.module_id; isAddCourseModal = true" 
+                          class="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-lg hover:bg-blue-200 transition-colors uppercase">
+                    <span class="material-symbols-outlined text-xs">add</span> เพิ่มวิชา
+                  </button>
+                  <button class="text-red-300 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="mod.isOpen" class="divide-y divide-gray-50">
+                <div *ngFor="let course of mod.courses" class="flex justify-between items-center p-3 hover:bg-gray-50 transition-colors">
+                  <div class="flex items-center gap-4">
+                    <span class="text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{{ course.course_code }}</span>
+                    <span class="text-xs font-semibold text-gray-700">{{ course.course_name }}</span>
+                  </div>
+                  <div class="flex items-center gap-6">
+                    <span class="text-xs font-bold text-gray-400">{{ course.credit }} นก.</span>
+                    <div class="flex gap-2">
+                      <button class="text-gray-300 hover:text-blue-500 transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+                      <button class="text-gray-300 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="mod.courses?.length === 0" class="p-4 text-center text-[10px] text-gray-400 italic">
+                  ยังไม่มีรายวิชาในกลุ่มนี้
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isAddCategoryModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
+  <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+    <h4 class="text-lg font-bold text-gray-800 mb-4">เพิ่มหมวดวิชาใหม่</h4>
+    <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="space-y-4">
+      <div class="space-y-1">
+        <label class="text-xs font-bold text-gray-500">ชื่อหมวด</label>
+        <input type="text" formControlName="category_name" placeholder="เช่น หมวดวิชาศึกษาทั่วไป" 
+               class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-blue-400 transition-all text-sm">
+      </div>
+      <div class="space-y-1">
+        <label class="text-xs font-bold text-gray-500">จำนวนหน่วยกิตที่ต้องเก็บ</label>
+        <input type="number" formControlName="required_credit" class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-blue-400 text-sm">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" (click)="isAddCategoryModal = false" class="flex-1 py-2.5 text-sm font-bold text-gray-400 hover:bg-gray-50 rounded-xl transition-all">ยกเลิก</button>
+        <button type="submit" class="flex-1 py-2.5 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">เพิ่มหมวด</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="isAddCourseModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
+  <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+    <div class="flex justify-between items-center mb-6">
+      <h4 class="text-xl font-bold text-gray-800">เพิ่มรายวิชา</h4>
+      <button (click)="isAddCourseModal = false" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <form [formGroup]="courseForm" (ngSubmit)="saveCourse()" class="space-y-4">
+      <div class="space-y-1 text-left">
+        <label class="text-xs font-bold text-gray-500 uppercase">รหัสวิชา</label>
+        <input type="text" formControlName="course_code" placeholder="เช่น 241-101" 
+               class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all">
+      </div>
+      <div class="space-y-1 text-left">
+        <label class="text-xs font-bold text-gray-500 uppercase">ชื่อวิชา (ไทย)</label>
+        <input type="text" formControlName="course_name" placeholder="เช่น การเขียนโปรแกรม 1" 
+               class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-blue-400">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-bold text-gray-500 uppercase">หน่วยกิต</label>
+          <input type="number" formControlName="credit" class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-blue-400">
+        </div>
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-bold text-gray-500 uppercase">ระบบเกรด</label>
+          <select class="w-full p-3 border border-gray-200 rounded-xl outline-none bg-gray-50 text-gray-500 text-sm">
+            <option>ปกติ (A-F)</option>
+            <option>ผ่าน/ไม่ผ่าน (S/U)</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-4 pt-4">
+        <button type="button" (click)="isAddCourseModal = false" class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all">ยกเลิก</button>
+        <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all">เพิ่มรายวิชา</button>
+      </div>
+    </form>
+  </div>
+</div>
