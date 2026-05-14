@@ -21,12 +21,17 @@ export class HeaderComponent implements OnInit {
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
     this.studentCode = localStorage.getItem('student_code') || '';
 
+
     // 2. ดึงค่ารูปภาพที่เก็บไว้ตอน Login (สมมติว่าใช้คีย์ชื่อ 'student_image')
-    const savedImagePath = localStorage.getItem('student_image');
-    
-    if (savedImagePath && savedImagePath !== 'null') {
-      // ต่อ URL ไปหาพอร์ต 8080 ของ XAMPP เหมือนเดิมเลยพี่
-      this.userImageUrl = `http://localhost:8080/api/${savedImagePath}`;
+    const savedImagePath = localStorage.getItem('img_profile');
+
+    if (savedImagePath && savedImagePath !== 'null' && savedImagePath !== '') {
+
+      const cleanPath = savedImagePath.startsWith('/')
+        ? savedImagePath.substring(1)
+        : savedImagePath;
+
+      this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
     }
   }
 

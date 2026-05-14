@@ -63,6 +63,7 @@ export class LoginComponent {
       localStorage.setItem('token', res.token);
       localStorage.setItem('role', role);
       localStorage.setItem('full_name', res.full_name || '');
+      localStorage.setItem('img_profile', res.img_profile || '');
 
       // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
       if (role === 'student') {
