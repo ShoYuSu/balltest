@@ -49,111 +49,14 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  // --- 1. ตัวแปรสำหรับ Pagination (เก็บของ dev-ball ไว้) ---
+  // --- 1. ตัวแปรสำหรับ Pagination ---
   currentPage = signal(1);
   itemsPerPage = 5;
 
-  // --- 2. ข้อมูล Mock นักศึกษา (เก็บของ dev-ball ไว้) ---
-  studentsInCare = signal([
-    {
-      id: '6501230567',
-      name: 'นายสมศักดิ์ ทดสอบ',
-      year: 1,
-      gpa: 3.45,
-      ploStatus: 'PLO รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=1',
-    },
-    {
-      id: '6501230568',
-      name: 'นางสาวหญิง ทดลอง',
-      year: 1,
-      gpa: 3.78,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=2',
-    },
-    {
-      id: '6501230569',
-      name: 'นายวิชัย สมบูรณ์',
-      year: 1,
-      gpa: 3.21,
-      ploStatus: 'PLO ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=3',
-    },
-    {
-      id: '6501230570',
-      name: 'นางสาวพิมพ์ชนก ดีงาม',
-      year: 1,
-      gpa: 3.92,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=4',
-    },
-    {
-      id: '6501230571',
-      name: 'นายธนากร รุ่งเรือง',
-      year: 1,
-      gpa: 3.56,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=5',
-    },
-    {
-      id: '6501230572',
-      name: 'นางสาวแพรว รัตนโชติ',
-      year: 2,
-      gpa: 3.8,
-      ploStatus: 'PLO รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=6',
-    },
-    {
-      id: '6501230573',
-      name: 'นายอัครพล สุวรรณ',
-      year: 1,
-      gpa: 3.1,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=7',
-    },
-    {
-      id: '6501230574',
-      name: 'นางสาวชลดา พิพัฒน์',
-      year: 3,
-      gpa: 3.4,
-      ploStatus: 'PLO ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=8',
-    },
-    {
-      id: '6501230575',
-      name: 'นายปิยบุตร เลิศ',
-      year: 1,
-      gpa: 3.95,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=9',
-    },
-    {
-      id: '6501230576',
-      name: 'นางสาววรินดา เตชะ',
-      year: 2,
-      gpa: 3.65,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=10',
-    },
-    {
-      id: '6501230577',
-      name: 'นายก้องเกียรติ ยินดี',
-      year: 1,
-      gpa: 2.8,
-      ploStatus: 'PLO รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=11',
-    },
-    {
-      id: '6501230578',
-      name: 'นางสาวใจดี รักเรียน',
-      year: 4,
-      gpa: 4.0,
-      ploStatus: 'PLO ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=12',
-    },
-  ]);
+  // --- 2. รอรับข้อมูลนักศึกษาจากฐานข้อมูล ---
+  studentsInCare = signal<any[]>([]);
 
-  // --- 3. ฟังก์ชันคำนวณหน้า (เก็บของ dev-ball ไว้) ---
+  // --- 3. ฟังก์ชันคำนวณหน้า ---
   totalItems = computed(() => this.studentsInCare().length);
   totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
 
@@ -164,7 +67,7 @@ export class HomeComponent implements OnInit {
 
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  // --- 4. ฟังก์ชันเปลี่ยนหน้า (เก็บของ dev-ball ไว้) ---
+  // --- 4. ฟังก์ชันเปลี่ยนหน้า ---
   goToPage(page: number) {
     this.currentPage.set(page);
   }
@@ -208,14 +111,35 @@ export class HomeComponent implements OnInit {
     },
   ]);
 
-  students = signal<any[]>([]);
-
   ngOnInit() {
-    // ยิง API ไปที่ XAMPP แทน Supabase (เตะ Supabase ของเพื่อนทิ้งไปแล้วใช้ท่านี้)
-    this.http.get(`${environment.apiUrl}/get_students.php`).subscribe({
-      next: (data: any) => {
-        // อัปเดตข้อมูลลงใน Signal
-        this.students.set(data);
+    // ยิง API ไปดึงข้อมูล
+    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
+      next: (data) => {
+        const formattedStudents = data.map((student: any) => ({
+          id: student.student_code,
+          name: student.full_name,
+          year: student.year,
+          gpa: student.gpa,
+          ploStatus: student.ploStatus,
+          img: student.image
+            ? `${environment.apiUrl}/${student.image}`
+            : `https://i.pravatar.cc/150?u=${student.student_code}`,
+        }));
+
+        // อัปเดตตารางรายชื่อนักศึกษา
+        this.studentsInCare.set(formattedStudents);
+
+        // 👉 เพิ่มโค้ดส่วนนี้เพื่ออัปเดตตัวเลขบน Card ด้านบน 👈
+
+        // 1. อัปเดตจำนวน 'นักศึกษาที่ดูแลทั้งหมด' (นับจากจำนวนข้อมูลที่ได้มา)
+        this.dashboardStats[0].value = formattedStudents.length;
+
+        // 2. อัปเดตจำนวน 'ผ่าน PLO ทั้งหมด' (นับเฉพาะคนที่สถานะเป็น 'PLO ผ่าน')
+        const passedPLO = formattedStudents.filter((s) => s.ploStatus === 'PLO ผ่าน').length;
+        this.dashboardStats[1].value = passedPLO;
+
+        // 3. อัปเดตจำนวน 'นัดหมายทั้งหมด' (ดึงจากตัวแปร appointments ที่เรามีอยู่)
+        this.dashboardStats[2].value = this.appointments().length;
       },
       error: (error) => {
         console.error('พังดิครับ:', error.message);
