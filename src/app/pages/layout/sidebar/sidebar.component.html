@@ -3,18 +3,25 @@
   [class.w-64]="isSidebarOpen"
   [class.w-20]="!isSidebarOpen"
 >
-  <div class="flex items-center mb-4 border-b border-gray-200 py-2 overflow-hidden shrink-0 justify-between">
+  <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 shrink-0 mt-3 ml-1">
 
     @if (isSidebarOpen) {
-      <img
-        src="/assets/img/logo.png"
-        alt="Logo website"
-        class="h-12 transition-opacity duration-300"
-      />
+      <div class="flex items-center gap-3 transition-opacity duration-300">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#F39C12] rounded-xl shrink-0 shadow-sm">
+          <span class="material-symbols-outlined text-white text-[24px]" style="font-variation-settings: 'FILL' 1;">
+            school
+          </span>
+        </div>
+
+        <div class="flex flex-col justify-center">
+          <span class="text-[16px] font-bold text-gray-800 leading-tight">ระบบที่ปรึกษา</span>
+          <span class="text-[12px] font-semibold text-gray-500 leading-tight">Student Advisor</span>
+        </div>
+      </div>
     }
 
-    <button (click)="toggleSidebar()" class="p-2 hover:bg-primary/10 hover:text-primary rounded-xl transition-colors duration-200 shrink-0">
-      <span class="material-symbols-outlined text-[28px]">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
+    <button (click)="toggleSidebar()" class="flex items-center justify-center w-10 h-10 hover:bg-primary/10 hover:text-primary rounded-xl transition-colors duration-200 shrink-0">
+      <span class="material-symbols-outlined text-[26px] leading-none">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
     </button>
   </div>
 
@@ -48,9 +55,11 @@
           </a>
         </li>
 
-        <li class="flex flex-col">
+        <li class="flex flex-col group">
+
           <div (click)="isSidebarOpen ? toggleAppointmentMenu() : toggleSidebar()"
-               class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
+               class="py-3 !rounded-lg hover:text-white hover:bg-primary hover:cursor-pointer transition duration-200 flex items-center
+                      text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold  group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
                [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.justify-between]="isSidebarOpen">
             <div class="flex items-center font-semibold text-[16px]">
               <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> calendar_month </span>
@@ -66,16 +75,17 @@
           @if (isSidebarOpen && isAppointmentOpen) {
             <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
               <ul class="flex flex-col gap-1">
-                <li routerLink="/individual" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                <li routerLink="/individual" routerLinkActive="bg-primary text-white is-active"
+                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
                   <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> นัดหมายรายบุคคล</a>
                 </li>
-                <li routerLink="/group" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                <li routerLink="/group" routerLinkActive="bg-primary text-white is-active"
+                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
                   <a class="flex items-center"><span class="material-symbols-outlined icon-filled pr-1" > group </span> นัดหมายรายกลุ่ม</a>
                 </li>
               </ul>
             </div>
           }
-
         </li>
         <li routerLink="/consultation-record" routerLinkActive="bg-primary text-white rounded-lg"
             class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
