@@ -14,6 +14,8 @@ export interface TableColumnModel {
     | "icon"
     | "badge"
     | "manage"
+    | "reset"
+    | "action"
     | "name";
     
   stickyEnd?: boolean;

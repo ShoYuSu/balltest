@@ -5,27 +5,130 @@
 
   <div class="flex flex-wrap items-center justify-between gap-4 my-6">
     <div class="relative flex-1 min-w-[300px] max-w-md">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-      <input type="text" [(ngModel)]="searchText" placeholder="ค้นหานักศึกษา (ชื่อหรือรหัส)..." 
-             class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+        >search</span
+      >
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="ค้นหานักศึกษา (ชื่อหรือรหัส)..."
+        class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm"
+      />
     </div>
 
     <div class="flex items-center gap-3">
-      <button (click)="isCurriculumModalOpen = true" 
-              class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-200 transition-all shadow-sm">
-        <span class="material-symbols-outlined text-lg text-blue-600">menu_book</span> 
+      <button
+        (click)="isCurriculumModalOpen = true"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-200 transition-all shadow-sm"
+      >
+        <span class="material-symbols-outlined text-lg text-blue-600">menu_book</span>
         โครงสร้างหลักสูตร
       </button>
 
       <app-main-button (btnClick)="openModal()"></app-main-button>
     </div>
   </div>
+
+  <div class="flex gap-3 mt-6 mb-4">
+    <div class="relative min-w-[180px]">
+      <button
+        type="button"
+        (click)="toggleMajorDropdown()"
+        class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span>{{ selectedMajor || 'ทุกสาขาวิชา' }}</span>
+        <span
+          class="material-symbols-outlined text-gray-400 text-lg transition-transform"
+          [class.rotate-180]="isMajorDropdownOpen"
+        >
+          expand_more
+        </span>
+      </button>
+
+      <div
+        *ngIf="isMajorDropdownOpen"
+        class="absolute left-0 z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+      >
+        <ul class="p-2 text-sm text-gray-700 font-medium max-h-60 overflow-y-auto">
+          <li>
+            <button
+              type="button"
+              (click)="selectMajor('')"
+              class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+              [class.bg-blue-50]="selectedMajor === ''"
+              [class.text-blue-600]="selectedMajor === ''"
+            >
+              ทุกสาขาวิชา
+            </button>
+          </li>
+          <li *ngFor="let major of uniqueMajors">
+            <button
+              type="button"
+              (click)="selectMajor(major)"
+              class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+              [class.bg-blue-50]="selectedMajor === major"
+              [class.text-blue-600]="selectedMajor === major"
+            >
+              {{ major }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="relative min-w-[140px]">
+      <button
+        type="button"
+        (click)="toggleYearDropdown()"
+        class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+      >
+        <span>{{ selectedYear ? 'ชั้นปีที่ ' + selectedYear : 'ทุกชั้นปี' }}</span>
+        <span
+          class="material-symbols-outlined text-gray-400 text-lg transition-transform"
+          [class.rotate-180]="isYearDropdownOpen"
+        >
+          expand_more
+        </span>
+      </button>
+
+      <div
+        *ngIf="isYearDropdownOpen"
+        class="absolute left-0 z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+      >
+        <ul class="p-2 text-sm text-gray-700 font-medium">
+          <li>
+            <button
+              type="button"
+              (click)="selectYear('')"
+              class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+              [class.bg-blue-50]="selectedYear === ''"
+              [class.text-blue-600]="selectedYear === ''"
+            >
+              ทุกชั้นปี
+            </button>
+          </li>
+          <li *ngFor="let y of [1, 2, 3, 4]">
+            <button
+              type="button"
+              (click)="selectYear(y)"
+              class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+              [class.bg-blue-50]="selectedYear === y"
+              [class.text-blue-600]="selectedYear === y"
+            >
+              ชั้นปีที่ {{ y }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
 
-<app-curriculum-management 
-  *ngIf="isCurriculumModalOpen" 
+<app-curriculum-management
+  *ngIf="isCurriculumModalOpen"
   [isOpen]="isCurriculumModalOpen"
-  (close)="isCurriculumModalOpen = false">
+  (close)="isCurriculumModalOpen = false"
+>
 </app-curriculum-management>
 
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
@@ -38,166 +141,320 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let s of filteredStudents" class="border-b border-gray-50 hover:bg-blue-50/20 transition-colors">
+      <tr
+        *ngFor="let s of filteredStudents"
+        class="border-b border-gray-50 hover:bg-blue-50/20 transition-colors"
+        [class.bg-gray-50/70]="s.status === 'inactive'"
+        [class.text-gray-400]="s.status === 'inactive'"
+      >
         <td *ngFor="let col of columns" class="p-4 text-sm">
-          
-          <div *ngIf="col.tag === 'image'" class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border">
-            <img *ngIf="col.cell(s)" [src]="col.cell(s)" class="w-full h-full object-cover">
-            <span *ngIf="!col.cell(s)" class="material-symbols-outlined text-blue-300">person</span>
+          <div
+            *ngIf="col.tag === 'image'"
+            class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border"
+          >
+            <img
+              *ngIf="col.cell(s)"
+              [src]="col.cell(s)"
+              class="w-full h-full object-cover"
+              [class.grayscale]="s.status === 'inactive'"
+            />
+            <span
+              *ngIf="!col.cell(s)"
+              class="material-symbols-outlined text-blue-300"
+              [class.grayscale]="s.status === 'inactive'"
+              >person</span
+            >
           </div>
 
-          <span *ngIf="col.tag === 'text'" class="text-gray-700">{{ col.cell(s) }}</span>
+          <span
+            *ngIf="col.tag === 'text'"
+            [class.text-gray-700]="s.status !== 'inactive'"
+            [class.text-gray-400]="s.status === 'inactive'"
+          >
+            {{ col.cell(s) }}
+            <span
+              *ngIf="col.columnDef === 'year' && s.status === 'inactive'"
+              class="ml-1.5 text-xs font-semibold px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full"
+            >
+              ศิษย์เก่า
+            </span>
+          </span>
+          <button
+            *ngIf="col.columnDef === 'view_curriculum'"
+            type="button"
+            (click)="openStudentCurriculum(s)"
+            [disabled]="s.status === 'inactive'"
+            class="text-blue-500 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center disabled:text-gray-200 disabled:bg-transparent disabled:cursor-not-allowed"
+          >
+            <span class="material-symbols-outlined text-xl">visibility</span>
+          </button>
 
-          <button *ngIf="col.tag === 'edit'" (click)="editStudent(s)" class="text-blue-500     hover:text-blue-600 ">
-  <span class="material-symbols-outlined">edit</span>
-</button>
-          <button *ngIf="col.tag === 'delete'" (click)="deleteStudent(s)" class="text-red-500 hover:text-red-600 ml-2">
+          <button
+            *ngIf="col.tag === 'edit'"
+            (click)="editStudent(s)"
+            [disabled]="s.status === 'inactive'"
+            class="text-blue-500 hover:text-blue-600 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
+          >
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+
+          <button
+            *ngIf="col.tag === 'delete'"
+            (click)="deleteStudent(s)"
+            [disabled]="s.status === 'inactive'"
+            class="text-red-500 hover:text-red-600 ml-2 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
+          >
             <span class="material-symbols-outlined">delete</span>
           </button>
         </td>
       </tr>
       <tr *ngIf="filteredStudents.length === 0">
-        <td [attr.colspan]="columns.length" class="p-10 text-center text-gray-400 text-sm italic">ไม่พบข้อมูลนักศึกษา</td>
+        <td [attr.colspan]="columns.length" class="p-10 text-center text-gray-400 text-sm italic">
+          ไม่พบข้อมูลนักศึกษา
+        </td>
       </tr>
     </tbody>
   </table>
 </div>
 
-<div *ngIf="isModalOpen" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 ">
-  <div class="bg-white rounded-[16px] shadow-2xl w-full h-full max-w-[450px] overflow-y-auto transform transition-all">
+<div
+  *ngIf="isModalOpen"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-[16px] shadow-2xl w-full h-full max-w-[450px] overflow-y-auto transform transition-all"
+  >
     <div class="p-6 pb-0 flex justify-between items-start">
       <h3 class="text-xl font-bold text-gray-800">
-  {{ isEditMode ? 'แก้ไขข้อมูลนักศึกษา' : 'เพิ่มนักศึกษาใหม่' }}
-</h3>
+        {{ isEditMode ? 'แก้ไขข้อมูลนักศึกษา' : 'เพิ่มนักศึกษาใหม่' }}
+      </h3>
       <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
     <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="p-8 pt-4 space-y-4 text-left">
-  
-  <div class="flex flex-col items-center">
-  <div class="relative">
-    <div class="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/80 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.1)] backdrop-blur-sm">
-  
-  <img *ngIf="imagePreview" 
-       [src]="imagePreview" 
-       class="w-full h-full object-cover animate-in fade-in duration-500">
-  
-  <div *ngIf="!imagePreview" class="w-full h-full bg-blue-500/10 flex items-center justify-center">
-    <span class="material-symbols-outlined text-4xl text-blue-300">person_outline</span>
-  </div>
-</div>
+      <div class="flex flex-col items-center">
+        <div class="relative">
+          <div
+            class="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/80 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.1)] backdrop-blur-sm"
+          >
+            <img
+              *ngIf="imagePreview"
+              [src]="imagePreview"
+              class="w-full h-full object-cover animate-in fade-in duration-500"
+            />
 
-    <button type="button" (click)="fileInput.click()" 
-            class="absolute bottom-0 right-0 bg-white/70 text-blue-600 w-8 h-8 rounded-full shadow-md backdrop-blur-lg flex items-center justify-center border border-white/50 hover:bg-white hover:scale-110 active:scale-95 transition-all">
-      <span class="material-symbols-outlined text-sm leading-none">edit</span>
-    </button>
-  </div>
-  
-  <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
-  <p class="mt-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors">รูปนักศึกษา</p>
-</div>
+            <div
+              *ngIf="!imagePreview"
+              class="w-full h-full bg-blue-500/10 flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-4xl text-blue-300">person_outline</span>
+            </div>
+          </div>
 
-  <div class="grid grid-cols-1 gap-4">
-    <div class="space-y-1">
-      <label class="text-xs font-semibold text-gray-600 uppercase">รหัสนักศึกษา</label>
-      <input type="text" formControlName="student_code" placeholder="เช่น 650000000"
-             class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10" 
-             [ngClass]="submitted && studentForm.get('student_code')?.invalid ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-blue-400'">
-      <p *ngIf="submitted && studentForm.get('student_code')?.invalid" class="text-[10px] text-red-500 font-medium">
-        * กรุณากรอกรหัสนักศึกษา (ตัวเลขเท่านั้น)
-      </p>
-    </div>
-
-    <div class="space-y-1">
-      <label class="text-xs font-semibold text-gray-600 uppercase">ชื่อ-สกุล</label>
-      <input type="text" formControlName="full_name" placeholder="ชื่อ นามสกุล"
-             class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10" 
-             [ngClass]="submitted && studentForm.get('full_name')?.invalid ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-blue-400'">
-      <p *ngIf="submitted && studentForm.get('full_name')?.invalid" class="text-[10px] text-red-500 font-medium">
-        * กรุณากรอกชื่อ-นามสกุล
-      </p>
-    </div>
-    <div class="space-y-1">
-  <label class="text-xs font-semibold text-gray-600 uppercase">อีเมล</label>
-  <input type="email" formControlName="email" placeholder="example@siam.edu"
-         class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10" 
-         [ngClass]="submitted && studentForm.get('email')?.invalid ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-blue-400'">
-  <p *ngIf="submitted && studentForm.get('email')?.invalid" class="text-[10px] text-red-500 font-medium">
-    * กรุณากรอกอีเมลที่ถูกต้อง
-  </p>
-</div>
-<div class="space-y-1">
-  <label class="text-xs font-semibold text-gray-600 uppercase">คณะ</label>
-  <input type="text" formControlName="faculty" placeholder="ระบุคณะ"
-         class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-400">
-</div>
-  </div>
-
-  
-    <div class="space-y-1 relative">
-  <label class="text-xs font-semibold text-gray-600 uppercase">สาขา</label>
-  <div class="relative">
-    <button type="button" (click)="toggleMajorDropdown()"
-            class="w-full flex items-center justify-between p-2.5 bg-gray-50 border rounded-2xl transition-all text-sm font-medium"
-            [ngClass]="submitted && studentForm.get('major')?.invalid ? 'border-red-500' : 'border-gray-200 text-gray-700'">
-      <span>{{ studentForm.get('major')?.value || 'เลือกสาขา' }}</span>
-      <span class="material-symbols-outlined text-gray-400" [class.rotate-180]="isMajorDropdownOpen">expand_more</span>
-    </button>
-
-    <div *ngIf="isMajorDropdownOpen" class="absolute z-30 w-full mt-2 bg-white border rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
-      <ul class="p-2 text-sm max-h-48 overflow-y-auto">
-        <li *ngFor="let m of majors">
-          <button type="button" (click)="selectMajor(m)" class="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl transition-colors">{{ m }}</button>
-        </li>
-      </ul>
-      <div class="p-2 border-t bg-gray-50/50 flex gap-2">
-        <input type="text" [(ngModel)]="newMajorName" [ngModelOptions]="{standalone: true}" placeholder="เพิ่มสาขาใหม่..."
-               class="flex-1 px-3 py-2 text-xs border rounded-lg outline-none focus:border-blue-400 bg-white">
-        <button type="button" (click)="addNewMajor()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          <span class="material-symbols-outlined text-sm">add</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-  
-  <div class="grid grid-cols-2 gap-4">
-   
-      <div class="space-y-1 relative">
-  <label class="text-xs font-semibold text-gray-600 uppercase">ชั้นปี</label>
-  
-  <div class="relative">
-    <button type="button" 
-            (click)="toggleYearDropdown()"
-            class="w-full flex items-center justify-between p-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all text-sm font-medium text-gray-700">
-      <span>ปี {{ studentForm.get('year')?.value }}</span>
-      <span class="material-symbols-outlined text-gray-400 transition-transform" 
-            [class.rotate-180]="isYearDropdownOpen">expand_more</span>
-    </button>
-
-    <div *ngIf="isYearDropdownOpen" 
-         class="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
-      <ul class="p-2 text-sm text-gray-700 font-medium">
-        <li *ngFor="let y of [1,2,3,4]">
-          <button type="button" 
-                  (click)="selectYear(y)"
-                  class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors">
-            ชั้นปีที่ {{ y }}
+          <button
+            type="button"
+            (click)="fileInput.click()"
+            class="absolute bottom-0 right-0 bg-white/70 text-blue-600 w-8 h-8 rounded-full shadow-md backdrop-blur-lg flex items-center justify-center border border-white/50 hover:bg-white hover:scale-110 active:scale-95 transition-all"
+          >
+            <span class="material-symbols-outlined text-sm leading-none">edit</span>
           </button>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
+        </div>
+
+        <input
+          type="file"
+          #fileInput
+          (change)="onFileSelected($event)"
+          accept="image/*"
+          class="hidden"
+        />
+        <p class="mt-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors">
+          รูปนักศึกษา
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-600 uppercase">รหัสนักศึกษา</label>
+          <input
+            type="text"
+            formControlName="student_code"
+            placeholder="เช่น 650000000"
+            class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10"
+            [ngClass]="
+              submitted && studentForm.get('student_code')?.invalid
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-200 focus:border-blue-400'
+            "
+          />
+          <p
+            *ngIf="submitted && studentForm.get('student_code')?.invalid"
+            class="text-[10px] text-red-500 font-medium"
+          >
+            * กรุณากรอกรหัสนักศึกษา (ตัวเลขเท่านั้น)
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-600 uppercase">ชื่อ-สกุล</label>
+          <input
+            type="text"
+            formControlName="full_name"
+            placeholder="ชื่อ นามสกุล"
+            class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10"
+            [ngClass]="
+              submitted && studentForm.get('full_name')?.invalid
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-200 focus:border-blue-400'
+            "
+          />
+          <p
+            *ngIf="submitted && studentForm.get('full_name')?.invalid"
+            class="text-[10px] text-red-500 font-medium"
+          >
+            * กรุณากรอกชื่อ-นามสกุล
+          </p>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-600 uppercase">อีเมล</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="example@siam.edu"
+            class="w-full p-2.5 bg-gray-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-blue-500/10"
+            [ngClass]="
+              submitted && studentForm.get('email')?.invalid
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-200 focus:border-blue-400'
+            "
+          />
+          <p
+            *ngIf="submitted && studentForm.get('email')?.invalid"
+            class="text-[10px] text-red-500 font-medium"
+          >
+            * กรุณากรอกอีเมลที่ถูกต้อง
+          </p>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-600 uppercase">คณะ</label>
+          <input
+            type="text"
+            formControlName="faculty"
+            placeholder="ระบุคณะ"
+            class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-400"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1 relative">
+        <label class="text-xs font-semibold text-gray-600 uppercase">สาขา</label>
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFormMajorDropdown()"
+            class="w-full flex items-center justify-between p-2.5 bg-gray-50 border rounded-2xl transition-all text-sm font-medium"
+            [ngClass]="
+              submitted && studentForm.get('major')?.invalid
+                ? 'border-red-500'
+                : 'border-gray-200 text-gray-700'
+            "
+          >
+            <span>{{ studentForm.get('major')?.value || 'เลือกสาขา' }}</span>
+            <span
+              class="material-symbols-outlined text-gray-400"
+              [class.rotate-180]="isFormMajorDropdownOpen"
+              >expand_more</span
+            >
+          </button>
+
+          <div
+            *ngIf="isFormMajorDropdownOpen"
+            class="absolute z-30 w-full mt-2 bg-white border rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+          >
+            <ul class="p-2 text-sm max-h-48 overflow-y-auto">
+              <li *ngFor="let m of majors">
+                <button
+                  type="button"
+                  (click)="selectFormMajor(m)"
+                  class="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl transition-colors"
+                >
+                  {{ m }}
+                </button>
+              </li>
+            </ul>
+            <div class="p-2 border-t bg-gray-50/50 flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="newMajorName"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="เพิ่มสาขาใหม่..."
+                class="flex-1 px-3 py-2 text-xs border rounded-lg outline-none focus:border-blue-400 bg-white"
+              />
+              <button
+                type="button"
+                (click)="addNewMajor()"
+                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <span class="material-symbols-outlined text-sm">add</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1 relative">
+          <label class="text-xs font-semibold text-gray-600 uppercase">ชั้นปี</label>
+
+          <div class="relative">
+            <button
+              type="button"
+              (click)="toggleFormYearDropdown()"
+              class="w-full flex items-center justify-between p-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all text-sm font-medium text-gray-700"
+            >
+              <span>ปี {{ studentForm.get('year')?.value }}</span>
+              <span
+                class="material-symbols-outlined text-gray-400 transition-transform"
+                [class.rotate-180]="isFormYearDropdownOpen"
+                >expand_more</span
+              >
+            </button>
+
+            <div
+              *ngIf="isFormYearDropdownOpen"
+              class="absolute z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+            >
+              <ul class="p-2 text-sm text-gray-700 font-medium">
+                <li *ngFor="let y of [1, 2, 3, 4]">
+                  <button
+                    type="button"
+                    (click)="selectFormYear(y)"
+                    class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors"
+                  >
+                    ชั้นปีที่ {{ y }}
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="flex gap-4 pt-10">
-        <button type="button" (click)="closeModal()" class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all">ยกเลิก</button>
-        <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">
-  {{ isEditMode ? 'ยืนยันการแก้ไข' : 'บันทึกข้อมูล' }}
-</button>
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all"
+        >
+          ยกเลิก
+        </button>
+        <button
+          type="submit"
+          class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all"
+        >
+          {{ isEditMode ? 'ยืนยันการแก้ไข' : 'บันทึกข้อมูล' }}
+        </button>
       </div>
     </form>
   </div>
@@ -210,5 +467,224 @@
   cancelText="ยกเลิก"
   type="danger"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancel)="cancelDelete()"
+>
 </app-confirm-modal>
+<div
+  *ngIf="isStudentCurriculumOpen"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200"
+  >
+    <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-start">
+      <div class="flex flex-col gap-1 text-left">
+        <div class="flex items-center gap-2 text-blue-600 font-bold">
+          <span class="material-symbols-outlined text-lg">menu_book</span>
+          <h3 class="text-lg">โครงสร้างหลักสูตร — {{ selectedStudentForCurriculum?.full_name }}</h3>
+        </div>
+        <div class="text-xs text-gray-400 font-semibold flex items-center gap-2">
+          <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-mono"
+            >รหัส {{ selectedStudentForCurriculum?.student_code }}</span
+          >
+          <span>•</span>
+          <span>สาขา {{ selectedStudentForCurriculum?.major }}</span>
+          <span>•</span>
+          <span>ชั้นปีที่ {{ selectedStudentForCurriculum?.year }}</span>
+        </div>
+      </div>
+
+      <button
+        (click)="isStudentCurriculumOpen = false"
+        class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200 cursor-pointer flex items-center gap-1 hover:bg-gray-200 transition-colors"
+      >
+        <span>{{ getCheckedCoursesCount() }} วิชาที่เรียนแล้ว</span>
+        <span class="material-symbols-outlined text-sm leading-none">close</span>
+      </button>
+    </div>
+
+    <div class="flex-grow overflow-y-auto bg-gradient-to-b from-slate-50 to-white p-5">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-visible">
+        <!-- HEADER -->
+        <div
+          class="grid grid-cols-12 gap-2 bg-slate-100/80 px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200"
+        >
+          <div class="col-span-1 text-center">✓</div>
+          <div class="col-span-2">รหัสวิชา</div>
+          <div class="col-span-4">ชื่อวิชา</div>
+          <div class="col-span-1 text-center">หน่วยกิต</div>
+          <div class="col-span-2 text-center">เกรด</div>
+          <div class="col-span-2 text-center">เทอม / ปี</div>
+        </div>
+
+        <!-- CATEGORY -->
+        <div *ngFor="let cat of curriculumData" class="border-b border-slate-100 last:border-none">
+          <!-- CATEGORY TITLE -->
+          <div class="bg-emerald-50 px-5 py-3 border-b border-emerald-100">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+
+              <span class="text-sm font-bold text-emerald-700">
+                {{ cat.category_name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- MODULE -->
+          <div *ngFor="let mod of cat.modules">
+            <div class="bg-blue-50/50 px-8 py-2.5 border-b border-blue-100">
+              <span class="text-xs font-bold text-blue-700"> ↳ {{ mod.module_name }} </span>
+            </div>
+
+            <!-- COURSE -->
+            <div
+              *ngFor="let course of mod.courses"
+              class="grid grid-cols-12 gap-2 items-center px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-all duration-200 relative"
+            >
+              <!-- CHECK -->
+              <div class="col-span-1 flex justify-center">
+                <button type="button" (click)="toggleCourseStatus(course.course_id)" class="group">
+                  <span
+                    *ngIf="studentCoursesState[course.course_id]?.isChecked"
+                    class="material-symbols-outlined text-blue-600 text-[24px] animate-in zoom-in duration-200"
+                  >
+                    check_circle
+                  </span>
+
+                  <span
+                    *ngIf="!studentCoursesState[course.course_id]?.isChecked"
+                    class="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-blue-500 transition-all block"
+                  ></span>
+                </button>
+              </div>
+
+              <!-- CODE -->
+              <div class="col-span-2">
+                <div class="text-xs font-mono font-semibold text-slate-500">
+                  {{ course.course_code }}
+                </div>
+              </div>
+
+              <!-- NAME -->
+              <div class="col-span-4 min-w-0">
+                <div class="truncate text-sm font-semibold text-slate-700">
+                  {{ course.course_name }}
+                </div>
+              </div>
+              <div class="col-span-1 flex justify-center">
+                <div
+                  class="min-w-[52px] rounded-full bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 text-center border border-blue-100"
+                >
+                  {{ course.credit }}
+                </div>
+              </div>
+
+              <!-- GRADE -->
+              <div class="col-span-2 flex justify-center relative">
+                <div class="relative w-full max-w-[140px]">
+                  <button
+                    type="button"
+                    (click)="toggleGradeDropdown(course.course_id)"
+                   class="w-full flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                  >
+                    <span
+                      [class.text-blue-600]="
+                        studentCoursesState[course.course_id]?.grade &&
+                        studentCoursesState[course.course_id]?.grade !== '-'
+                      "
+                    >
+                      {{ studentCoursesState[course.course_id]?.grade || '-' }}
+                    </span>
+
+                    <span
+                      class="material-symbols-outlined text-slate-400 text-[18px] transition-all duration-200"
+                      [class.text-blue-500]="activeGradeDropdownId === course.course_id"
+                    >
+                      expand_more
+                    </span>
+                  </button>
+
+                  <!-- DROPDOWN -->
+                  <div
+                    *ngIf="activeGradeDropdownId === course.course_id"
+                    class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    <ul class="max-h-52 overflow-y-auto">
+                      <!-- CLEAR -->
+                      <li
+                        (click)="selectGrade(course.course_id, '-')"
+                        class="px-4 py-2.5 text-xs text-slate-400 hover:bg-slate-50 cursor-pointer border-b border-slate-100"
+                      >
+                        ล้างเกรด
+                      </li>
+
+                      <!-- NORMAL -->
+                      <ng-container *ngIf="course.grade_system !== 'ผ่าน/ไม่ผ่าน (S/U)'">
+                        <li
+                          *ngFor="let g of ['A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'W']"
+                          (click)="selectGrade(course.course_id, g)"
+                          class="px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-all"
+                          [class.bg-blue-50]="studentCoursesState[course.course_id]?.grade === g"
+                          [class.text-blue-600]="studentCoursesState[course.course_id]?.grade === g"
+                        >
+                          Grade {{ g }}
+                        </li>
+                      </ng-container>
+
+                      <!-- SU -->
+                      <ng-container *ngIf="course.grade_system === 'ผ่าน/ไม่ผ่าน (S/U)'">
+                        <li
+                          *ngFor="let g of ['S', 'U', 'W']"
+                          (click)="selectGrade(course.course_id, g)"
+                          class="px-4 py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 cursor-pointer transition-all"
+                          [class.bg-blue-600]="studentCoursesState[course.course_id]?.grade === g"
+                          [class.text-white]="studentCoursesState[course.course_id]?.grade === g"
+                        >
+                          {{ g === 'S' ? 'S (ผ่าน)' : g === 'U' ? 'U (ไม่ผ่าน)' : 'W (ถอน)' }}
+                        </li>
+                      </ng-container>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TERM -->
+              <div class="col-span-2 flex justify-center items-center gap-2">
+                <input
+                  type="text"
+                  [value]="studentCoursesState[course.course_id]?.semester || ''"
+                  (input)="
+                    onCourseStateChange(course.course_id, 'semester', $any($event.target).value)
+                  "
+                  placeholder="T"
+                  maxlength="1"
+                  class="w-11 rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-xs font-bold text-slate-700 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                />
+
+                <span class="text-slate-300 font-bold">/</span>
+
+                <input
+                  type="text"
+                  [value]="studentCoursesState[course.course_id]?.year || ''"
+                  (input)="onCourseStateChange(course.course_id, 'year', $any($event.target).value)"
+                  placeholder="YY"
+                  maxlength="2"
+                  class="w-14 rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-xs font-bold text-slate-700 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+      <button
+        (click)="isStudentCurriculumOpen = false"
+        class="px-8 py-2 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-lg cursor-pointer"
+      >
+        บันทึกข้อมูล
+      </button>
+    </div>
+  </div>
+</div>
