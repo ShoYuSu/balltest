@@ -1,5 +1,5 @@
 <div
-  class="bg-white h-screen border-l border-gray-200 px-4 py-2 flex flex-col transition-all duration-300 shadow-sm select-none"
+  class="bg-white h-screen border-r-2 border-gray-100 px-4 py-2 flex flex-col transition-all duration-300 shadow-sm select-none"
   [class.w-64]="isSidebarOpen"
   [class.w-20]="!isSidebarOpen"
 >
@@ -64,7 +64,7 @@
           </div>
 
           @if (isSidebarOpen && isAppointmentOpen) {
-            <div class="ml-8 mt-1 border-l-2 border-gray-200 flex flex-col gap-1">
+            <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
               <ul class="flex flex-col gap-1">
                 <li routerLink="/individual" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
                   <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> นัดหมายรายบุคคล</a>
