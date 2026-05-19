@@ -36,10 +36,31 @@ export const routes: Routes = [
       {
         path: 'plo-assessment',
         loadComponent: () =>
-          import('./pages/teacher/plo-assessment/plo-assessment.component').then((m) => m.PloAssessmentComponent),
+          import('./pages/teacher/plo-assessment/plo-assessment.component').then(
+            (m) => m.PloAssessmentComponent,
+          ),
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
+      {
+        path: 'individual',
+        loadComponent: () =>
+          import('./pages/teacher/individual-consultation-appointments/individual-consultation-appointments').then(
+            (m) => m.IndividualConsultationAppointments,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'teacher' },
+      },
+      {
+        path: 'group',
+        loadComponent: () =>
+          import('./pages/teacher/group-consultation-appointments/group-consultation-appointments').then(
+            (m) => m.GroupConsultationAppointments,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'teacher' },
+      },
+
       //student
       {
         path: 'personal-data',
@@ -70,28 +91,21 @@ export const routes: Routes = [
       },
       {
         path: 'activity',
-        loadComponent: () =>
-          import('./pages/student/activity/activity').then(
-            (m) => m.Activity,
-          ),
+        loadComponent: () => import('./pages/student/activity/activity').then((m) => m.Activity),
         canActivate: [authGuard],
         data: { role: 'student' },
       },
       {
         path: 'certification',
         loadComponent: () =>
-          import('./pages/student/certification/certification').then(
-            (m) => m.Certification,
-          ),
+          import('./pages/student/certification/certification').then((m) => m.Certification),
         canActivate: [authGuard],
         data: { role: 'student' },
       },
-       {
+      {
         path: 'advisor-record',
         loadComponent: () =>
-          import('./pages/student/advisor-record/advisor-record').then(
-            (m) => m.AdvisorRecord,
-          ),
+          import('./pages/student/advisor-record/advisor-record').then((m) => m.AdvisorRecord),
         canActivate: [authGuard],
         data: { role: 'student' },
       },
@@ -123,7 +137,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
-      
+
       {
         path: 'users',
         loadComponent: () =>
@@ -155,22 +169,25 @@ export const routes: Routes = [
       },
       {
         path: 'plo',
-        loadComponent: () =>
-          import('./pages/admin/plo/plo.component').then((m) => m.PloComponent),
+        loadComponent: () => import('./pages/admin/plo/plo.component').then((m) => m.PloComponent),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
-        path:'assign-advisor',
+        path: 'assign-advisor',
         loadComponent: () =>
-          import('./pages/admin/assign-advisor/assign-advisor.component').then((m) => m.AssignAdvisorComponent),
+          import('./pages/admin/assign-advisor/assign-advisor.component').then(
+            (m) => m.AssignAdvisorComponent,
+          ),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },
       {
         path: 'advisor-history',
         loadComponent: () =>
-          import('./pages/admin/advisor-history/advisor-history.component').then((m) => m.AdvisorHistoryComponent),
+          import('./pages/admin/advisor-history/advisor-history.component').then(
+            (m) => m.AdvisorHistoryComponent,
+          ),
         canActivate: [authGuard],
         data: { role: 'admin' },
       },

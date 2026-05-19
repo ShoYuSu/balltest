@@ -66,11 +66,11 @@
           @if (isSidebarOpen && isAppointmentOpen) {
             <div class="ml-8 mt-1 border-l-2 border-gray-200 flex flex-col gap-1">
               <ul class="flex flex-col gap-1">
-                <li routerLink="/appointment/request" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center">สร้างการนัดหมาย</a>
+                <li routerLink="/individual" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                  <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> นัดหมายรายบุคคล</a>
                 </li>
-                <li routerLink="/appointment/history" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center">ประวัติการนัดหมาย</a>
+                <li routerLink="/group" routerLinkActive="bg-primary text-white" class="relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                  <a class="flex items-center"><span class="material-symbols-outlined icon-filled pr-1" > group </span> นัดหมายรายกลุ่ม</a>
                 </li>
               </ul>
             </div>
