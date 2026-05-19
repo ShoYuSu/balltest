@@ -60,6 +60,15 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
+      {
+        path: 'consultation-record',
+        loadComponent: () =>
+          import('./pages/teacher/consultation-record/consultation-record').then(
+            (m) => m.ConsultationRecord,
+          ),
+        canActivate: [authGuard],
+        data: { role: 'teacher' },
+      },
 
       //student
       {

@@ -75,8 +75,18 @@
               </ul>
             </div>
           }
+
+        </li>
+        <li routerLink="/consultation-record" routerLinkActive="bg-primary text-white rounded-lg"
+            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
+            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
+          <a class="flex items-center">
+            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> chat </span>
+            @if (isSidebarOpen) { <span>บันทึกการปรึกษา</span> }
+          </a>
         </li>
       </ul>
+
     </nav>
   }
 
