@@ -78,41 +78,40 @@ export class HomeComponent implements OnInit {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
 
-  // --------------------------------------------------------
-  appointments = signal([
-    {
-      name: 'นางสาวจุวาวิน วาวิวา',
-      id: '6501234567',
-      type: 'อาชีพ/ฝึกงาน',
-      topic: 'ปรึกษาเรื่องการเตรียมตัวฝึกงาน',
-      date: '18 ม.ค. 2569',
-      time: '14:00 น.',
-      img: 'https://i.pravatar.cc/150?u=8',
-    },
-    {
-      name: 'นายสมศักดิ์ ทดสอบ',
-      id: '6501234567',
-      type: 'วิชาการ',
-      topic: 'ปรึกษาเรื่องลงทะเบียนเรียนเทอมหน้า',
-      note: 'แนะนำให้ลงวิชา Advanced ........',
-      date: '5 ม.ค. 2569',
-      time: '10:00 น.',
-      img: 'https://i.pravatar.cc/150?u=1',
-    },
-    {
-      name: 'วิชัย เก่งมาก',
-      id: '6501234567',
-      type: 'วิชาการ',
-      topic: 'ปรึกษาเรื่องปัญหาส่วนตัวที่กระทบการเรียน',
-      note: 'แนะนำให้ลงวิชา Advanced Programming และ......',
-      date: '5 ม.ค. 2569',
-      time: '10:00 น.',
-      img: 'https://i.pravatar.cc/150?u=3',
-    },
-  ]);
+  // 👉 5. เปลี่ยนมารอรับข้อมูลการนัดหมายจริงจากฐานข้อมูล (ลบข้อมูล Mock ออกแล้ว)
+  appointments = signal<any[]>([]);
+
+  // ฟังก์ชันแปลงรูปแบบวันที่ (เช่น 2026-01-20 -> 20 ม.ค. 2569)
+  formatThaiDate(dateString: string): string {
+    if (!dateString) return '';
+    const months = [
+      'ม.ค.',
+      'ก.พ.',
+      'มี.ค.',
+      'เม.ย.',
+      'พ.ค.',
+      'มิ.ย.',
+      'ก.ค.',
+      'ส.ค.',
+      'ก.ย.',
+      'ต.ค.',
+      'พ.ย.',
+      'ธ.ค.',
+    ];
+    const d = new Date(dateString);
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  }
+
+  // ฟังก์ชันแปลงเวลา (ตัดวินาทีออก)
+  formatTime(timeString: string): string {
+    if (!timeString) return '';
+    return timeString.substring(0, 5) + ' น.';
+  }
 
   ngOnInit() {
-    // ยิง API ไปดึงข้อมูล
+    // --------------------------------------------------------
+    // 👉 ดึงข้อมูลรายชื่อนักศึกษาในการดูแล
+    // --------------------------------------------------------
     this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
       next: (data) => {
         const formattedStudents = data.map((student: any) => ({
@@ -126,23 +125,53 @@ export class HomeComponent implements OnInit {
             : `https://i.pravatar.cc/150?u=${student.student_code}`,
         }));
 
-        // อัปเดตตารางรายชื่อนักศึกษา
         this.studentsInCare.set(formattedStudents);
 
-        // 👉 เพิ่มโค้ดส่วนนี้เพื่ออัปเดตตัวเลขบน Card ด้านบน 👈
-
-        // 1. อัปเดตจำนวน 'นักศึกษาที่ดูแลทั้งหมด' (นับจากจำนวนข้อมูลที่ได้มา)
+        // อัปเดตจำนวนตัวเลขบนการ์ดสรุปผล
         this.dashboardStats[0].value = formattedStudents.length;
-
-        // 2. อัปเดตจำนวน 'ผ่าน PLO ทั้งหมด' (นับเฉพาะคนที่สถานะเป็น 'PLO ผ่าน')
         const passedPLO = formattedStudents.filter((s) => s.ploStatus === 'PLO ผ่าน').length;
         this.dashboardStats[1].value = passedPLO;
-
-        // 3. อัปเดตจำนวน 'นัดหมายทั้งหมด' (ดึงจากตัวแปร appointments ที่เรามีอยู่)
-        this.dashboardStats[2].value = this.appointments().length;
       },
       error: (error) => {
-        console.error('พังดิครับ:', error.message);
+        console.error('ดึงรายชื่อเด็กพังดิครับ:', error.message);
+      },
+    });
+
+    // --------------------------------------------------------
+    // 👉 ดึงข้อมูลการนัดหมายล่าสุดจาก Database จริง 100%
+    // --------------------------------------------------------
+    const appointmentsUrl = `${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`;
+    this.http.get<any[]>(appointmentsUrl).subscribe({
+      next: (data) => {
+        const formattedAppointments = (data || []).map((app: any) => {
+          // หาข้อมูลนักศึกษาคนแรกในนัดหมายเพื่อดึงชื่อและรูปโปรไฟล์มาแสดงผลหน้า Home
+          const firstStudent = app.students && app.students.length > 0 ? app.students[0] : null;
+
+          return {
+            id: firstStudent ? firstStudent.id : '-',
+            // ถ้าเป็นนัดหมายแบบกลุ่ม (มีเด็กมากกว่า 1 คน) จะเติมข้อความ ' (และคณะ)' ต่อท้ายชื่อคนแรกให้โดยอัตโนมัติ
+            name: firstStudent
+              ? firstStudent.name + (app.students.length > 1 ? ' (และคณะ)' : '')
+              : 'ไม่ระบุชื่อ',
+            type: app.type,
+            topic: app.title,
+            note: app.note, // ผูกบันทึกข้อความผลการปรึกษา
+            date: this.formatThaiDate(app.appointment_date),
+            time: this.formatTime(app.start_time),
+            img:
+              firstStudent && firstStudent.img
+                ? `${environment.apiUrl}/${firstStudent.img}`
+                : `https://i.pravatar.cc/150?u=${firstStudent ? firstStudent.id : 'default'}`,
+          };
+        });
+
+        this.appointments.set(formattedAppointments);
+
+        // อัปเดตตัวเลข 'นัดหมายทั้งหมด' บนการ์ดสีเหลืองตามจริง
+        this.dashboardStats[2].value = formattedAppointments.length;
+      },
+      error: (error) => {
+        console.error('ดึงข้อมูลตารางนัดหมายพังดิครับ:', error.message);
       },
     });
   }

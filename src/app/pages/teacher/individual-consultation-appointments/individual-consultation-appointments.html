@@ -1,1 +1,297 @@
-<p>individual-consultation-appointments works!</p>
+<div class="p-8 bg-gray-50 min-h-screen" (click)="activeDropdownId.set(null); isFilterDropdownOpen.set(false)">
+  <div class="flex justify-between items-start mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">การนัดหมายปรึกษา — รายบุคคล</h1>
+      <p class="text-gray-500">จัดการตารางนัดหมายและบันทึกประวัติการให้คำปรึกษา</p>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-6 items-center">
+
+    <div class="relative flex-grow max-w-md">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+      <input type="text" placeholder="ค้นหาด้วยรหัสนักศึกษา หรือชื่อ..."
+             class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+    </div>
+
+    <div class="relative min-w-[170px]">
+      <button (click)="toggleFilterDropdown($event)"
+              class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm font-medium">
+        {{ selectedFilter() }}
+        <span class="material-symbols-outlined text-gray-400 transition-transform duration-200"
+              [class.rotate-180]="isFilterDropdownOpen()">
+          expand_more
+        </span>
+      </button>
+
+      @if (isFilterDropdownOpen()) {
+        <div class="absolute left-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn">
+          @for (option of filterOptions; track option) {
+            <button (click)="selectFilter(option, $event)"
+                    class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
+                    [ngClass]="selectedFilter() === option ? 'bg-orange-50 text-orange-600 font-bold' : 'text-gray-700 hover:bg-gray-50 hover:text-orange-500'">
+              {{ option }}
+              @if (selectedFilter() === option) {
+                <span class="material-symbols-outlined text-orange-500 text-base font-bold">check</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <button (click)="exportToExcel()"
+            class="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors shadow-sm font-medium">
+      <span class="material-symbols-outlined text-green-600">table_view</span>
+      Export Excel
+    </button>
+
+    <button (click)="isCreateModalOpen.set(true)"
+            class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
+      <span class="material-symbols-outlined">add</span>
+      เพิ่มนัดหมาย
+    </button>
+  </div>
+
+  <div class="space-y-4">
+    @for (app of appointments(); track app.id) {
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-5">
+          <img [src]="app.img" class="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm">
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <h3 class="font-bold text-gray-900">{{ app.studentName }}</h3>
+              <span class="px-3 py-0.5 bg-cyan-50 text-cyan-600 text-xs font-bold rounded-full">{{ app.type }}</span>
+              <span class="px-3 py-0.5 bg-orange-50 text-orange-600 text-xs font-bold rounded-full">{{ app.status }}</span>
+            </div>
+            <p class="text-gray-400 text-sm mb-2">รหัส {{ app.studentId }}</p>
+            <p class="text-gray-700 font-medium">{{ app.topic }}</p>
+
+            <div class="flex items-center gap-6 mt-3 text-sm text-gray-500">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-red-400 text-lg">calendar_today</span>
+                {{ app.date }}
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-500 text-lg">schedule</span>
+                {{ app.time }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="openLogModal(app)"
+                  class="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-semibold transition-colors">
+            <span class="material-symbols-outlined text-green-500">edit_note</span>
+            บันทึกผลการปรึกษา
+          </button>
+
+          <div class="relative">
+            <button (click)="toggleDropdown(app.id, $event)"
+                    class="px-3 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-1 text-sm font-semibold transition-colors">
+              จัดการ
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+
+            @if (activeDropdownId() === app.id) {
+              <div class="absolute right-0 mt-2 w-44 bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-10 animate-fadeIn">
+                <button (click)="openEditModal(app, $event)"
+                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-500 text-base">edit</span>
+                  แก้ไขนัดหมาย
+                </button>
+                <button (click)="promptCancelAppointment(app.id, $event)"
+                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50">
+                  <span class="material-symbols-outlined text-red-500 text-base">delete</span>
+                  ยกเลิกนัดหมาย
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="mt-8 flex justify-between items-center text-sm text-gray-500">
+    <p>แสดง {{ appointments().length }} จาก {{ appointments().length }} รายการ</p>
+    <div class="flex items-center gap-2">
+      <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-100 transition-colors">ก่อนหน้า</button>
+      <button class="px-3 py-1 bg-orange-500 text-white rounded font-medium shadow-sm">1</button>
+      <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-100 transition-colors">ถัดไป</button>
+    </div>
+  </div>
+</div>
+
+@if (isCreateModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-orange-500">add_circle</span>
+          สร้างนัดหมายใหม่
+        </h2>
+        <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
+          <select class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+            <option>เลือกนักศึกษา...</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
+            <input type="date" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
+            <input type="time" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">ประเภทหัวข้อ</label>
+          <select class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+            <option>เลือกประเภทหัวข้อ</option>
+            <option>วิชาการ</option>
+            <option>อาชีพ/ฝึกงาน</option>
+            <option>ส่วนตัว</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
+          <textarea placeholder="กรอกรายละเอียด..." rows="3" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"></textarea>
+        </div>
+      </div>
+      <div class="p-6 bg-gray-50 flex justify-end gap-3">
+        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
+        <button (click)="closeModals()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">ตกลง</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (isLogModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-orange-500">assignment</span>
+          การบันทึกนัดหมาย
+        </h2>
+        <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
+          <span class="material-symbols-outlined text-orange-500">info</span>
+          <p class="text-xs text-orange-800 leading-relaxed">
+            สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะส่ง Email แจ้งเตือนไปยังนักศึกษา และบันทึกประวัติทันที
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
+          <input type="text" [value]="selectedAppointment()?.studentName + ' (' + selectedAppointment()?.studentId + ')'" readonly
+                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
+            <input type="text" [value]="selectedAppointment()?.date" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500" readonly>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
+            <input type="text" [value]="selectedAppointment()?.time" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500" readonly>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">ประเภทหัวข้อ</label>
+          <input type="text" [value]="selectedAppointment()?.type" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500" readonly>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1 text-orange-600">รายละเอียดที่นักศึกษาแจ้ง</label>
+          <p class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+            {{ selectedAppointment()?.topic }}
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">บันทึกผลการปรึกษา</label>
+          <textarea placeholder="กรอกผลการให้คำปรึกษา..." rows="3" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"></textarea>
+        </div>
+      </div>
+      <div class="p-6 bg-gray-50 flex justify-end gap-3">
+        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
+        <button (click)="closeModals()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">ตกลง</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (isEditModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-orange-500">edit_calendar</span>
+          แก้ไขนัดหมาย
+        </h2>
+        <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
+          <input type="text" [value]="selectedAppointment()?.studentName" readonly
+                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่นัดหมาย</label>
+            <input type="text" [value]="selectedAppointment()?.date" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
+            <input type="text" [value]="selectedAppointment()?.time" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
+          <textarea rows="3" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">{{ selectedAppointment()?.topic }}</textarea>
+        </div>
+      </div>
+      <div class="p-6 bg-gray-50 flex justify-end gap-3">
+        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
+        <button (click)="closeModals()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึกการแก้ไข</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (isConfirmCancelModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl overflow-hidden p-6 text-center">
+      <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-4xl">warning</span>
+      </div>
+
+      <h2 class="text-xl font-bold text-gray-800 mb-2">ยืนยันการยกเลิก</h2>
+      <p class="text-gray-500 text-sm mb-8">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายนี้? <br>การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+
+      <div class="flex gap-3">
+        <button (click)="closeModals()"
+                class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">
+          กลับไป
+        </button>
+        <button (click)="confirmCancel()"
+                class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-sm shadow-red-200">
+          ใช่, ยกเลิกเลย
+        </button>
+      </div>
+    </div>
+  </div>
+}
