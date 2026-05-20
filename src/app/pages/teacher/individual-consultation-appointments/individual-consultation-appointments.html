@@ -55,7 +55,8 @@
 
   <div class="space-y-4">
     @for (app of appointments(); track app.id) {
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow">
+
+      <div [id]="'appointment-' + app.id" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-all duration-500">
         <div class="flex items-center gap-5">
           <img [src]="app.img" class="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm">
           <div>

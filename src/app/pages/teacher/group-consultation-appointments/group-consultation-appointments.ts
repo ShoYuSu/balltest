@@ -2,6 +2,7 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -13,12 +14,11 @@ import { environment } from '../../../../environments/environment';
 })
 export class GroupConsultationAppointments implements OnInit {
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute); // รับค่า ID จาก URL
 
-  // 🔴 ข้อมูลรับจาก Database 100% (ไม่มี Mock)
   appointments = signal<any[]>([]);
-  myStudents = signal<any[]>([]); // ดึงรายชื่อนักศึกษาในความดูแลของอาจารย์
+  myStudents = signal<any[]>([]);
 
-  // 🔴 สถานะเปิด/ปิดหน้าต่าง Modal ต่างๆ
   isCreateModalOpen = signal(false);
   isEditModalOpen = signal(false);
   isLogModalOpen = signal(false);
@@ -28,21 +28,18 @@ export class GroupConsultationAppointments implements OnInit {
   appointmentToCancelId = signal<string | null>(null);
   activeDropdownId = signal<string | null>(null);
 
-  // 🔴 ตัวแปรควบคุม Custom Dropdown สถานะแถวบน
   isFilterDropdownOpen = signal(false);
   selectedFilter = signal('สถานะทั้งหมด');
   filterOptions = ['สถานะทั้งหมด', 'วิชาการ', 'กิจกรรม'];
 
-  // 🔴 ตัวแปรสำหรับฟอร์มสร้าง/แก้ไข
-  selectionMode = signal<'group' | 'all'>('group'); // โหมด 'กลุ่ม' หรือ 'ทั้งหมด'
-  selectedStudentIds = signal<string[]>([]); // เก็บ ID เด็กที่ถูกติ๊กเลือก
+  selectionMode = signal<'group' | 'all'>('group');
+  selectedStudentIds = signal<string[]>([]);
 
   ngOnInit() {
     this.loadAppointments();
     this.loadMyStudents();
   }
 
-  // 👉 1. ดึงรายชื่อเด็กในการดูแล (เพื่อเอามาโชว์ให้ติ๊กเลือกใน Modal)
   loadMyStudents() {
     this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
       next: (data) => {
@@ -52,7 +49,6 @@ export class GroupConsultationAppointments implements OnInit {
     });
   }
 
-  // 👉 2. ดึงข้อมูลนัดหมาย
   loadAppointments() {
     const url = `${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`;
     this.http.get<any[]>(url).subscribe({
@@ -61,7 +57,7 @@ export class GroupConsultationAppointments implements OnInit {
           (app: any) => app.students && app.students.length > 1,
         );
         const formattedApps = groupApps.map((app: any) => ({
-          id: (app.appointment_id || Math.random()).toString(),
+          id: (app.appointment_id || Math.random()).toString(), // ใช้ appointment_id ที่ตรงกับ DB
           topic: app.title || 'ไม่มีหัวข้อ',
           type: app.type || 'วิชาการ',
           status: app.status || 'นัดหมาย',
@@ -75,24 +71,40 @@ export class GroupConsultationAppointments implements OnInit {
           })),
         }));
         this.appointments.set(formattedApps);
+
+        // 👉 ระบบเลื่อนหน้าจออัตโนมัติมาหาการ์ดที่ถูกคลิกมาจาก Home
+        this.route.queryParams.subscribe((params) => {
+          const targetId = params['id'];
+          if (targetId) {
+            setTimeout(() => {
+              const element = document.getElementById('appointment-' + targetId);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add(
+                  'ring-2',
+                  'ring-orange-500',
+                  'transition-all',
+                  'duration-500',
+                );
+                setTimeout(() => element.classList.remove('ring-2', 'ring-orange-500'), 3000);
+              }
+            }, 300); // รอ DOM เรนเดอร์เสร็จค่อยเลื่อน
+          }
+        });
       },
       error: (err) => console.error('ดึงข้อมูลนัดหมายล้มเหลว:', err),
     });
   }
 
-  // 👉 สลับโหมดการเลือกนักศึกษา (กลุ่ม / ทั้งหมด)
   setSelectionMode(mode: 'group' | 'all') {
     this.selectionMode.set(mode);
     if (mode === 'all') {
-      // ติ๊กทุกคน
       this.selectedStudentIds.set(this.myStudents().map((s) => s.student_code));
     } else {
-      // ล้างค่าที่ติ๊กไว้
       this.selectedStudentIds.set([]);
     }
   }
 
-  // 👉 กดติ๊กเลือก/เอาออก นักศึกษาทีละคน
   toggleStudentSelection(studentCode: string) {
     const current = this.selectedStudentIds();
     if (current.includes(studentCode)) {
@@ -102,7 +114,6 @@ export class GroupConsultationAppointments implements OnInit {
     }
   }
 
-  // แปลงรูปแบบวันที่
   formatThaiDate(dateString: string): string {
     if (!dateString) return '';
     const months = [
@@ -123,7 +134,6 @@ export class GroupConsultationAppointments implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  // แปลงเวลา (ตัดวินาที)
   formatTime(timeString: string): string {
     if (!timeString) return '';
     return timeString.substring(0, 5) + ' น.';
@@ -160,7 +170,6 @@ export class GroupConsultationAppointments implements OnInit {
   openEditModal(app: any, event: Event) {
     event.stopPropagation();
     this.selectedAppointment.set(app);
-    // ดึงเด็กที่มีอยู่ในกลุ่มนี้มาติ๊กไว้ให้เลย
     this.selectedStudentIds.set(app.students.map((s: any) => s.id));
     this.selectionMode.set('group');
     this.isEditModalOpen.set(true);
@@ -188,7 +197,7 @@ export class GroupConsultationAppointments implements OnInit {
     this.isEditModalOpen.set(false);
     this.isLogModalOpen.set(false);
     this.isConfirmCancelModalOpen.set(false);
-    this.selectedStudentIds.set([]); // ล้างค่าที่เลือกไว้
+    this.selectedStudentIds.set([]);
   }
 
   exportToExcel() {

@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router'; // 👉 อย่าลืม import Router
 import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
@@ -13,6 +13,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router); // 👉 Inject Router สำหรับเปลี่ยนหน้า
 
   dashboardStats = [
     {
@@ -63,22 +64,18 @@ export class HomeComponent implements OnInit {
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   ngOnInit() {
-    this.loadData();
-  }
-
-  loadData() {
     // 1. ดึงข้อมูลนักศึกษา
     this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
       next: (data) => {
-        const formattedStudents = data.map((s: any) => ({
-          id: s.student_code,
-          name: s.full_name,
-          year: s.year,
-          gpa: s.gpa,
-          ploStatus: s.ploStatus,
-          img: s.image
-            ? `${environment.apiUrl}/${s.image}`
-            : `https://i.pravatar.cc/150?u=${s.student_code}`,
+        const formattedStudents = data.map((student: any) => ({
+          id: student.student_code,
+          name: student.full_name,
+          year: student.year,
+          gpa: student.gpa,
+          ploStatus: student.ploStatus,
+          img: student.image
+            ? `${environment.apiUrl}/${student.image}`
+            : `https://i.pravatar.cc/150?u=${student.student_code}`,
         }));
         this.studentsInCare.set(formattedStudents);
         this.dashboardStats[0].value = formattedStudents.length;
@@ -88,7 +85,7 @@ export class HomeComponent implements OnInit {
       },
     });
 
-    // 2. ดึงข้อมูลนัดหมายล่าสุด (ไม่ใช้ Mock)
+    // 2. ดึงข้อมูลนัดหมายล่าสุด
     this.http
       .get<
         any[]
@@ -98,7 +95,7 @@ export class HomeComponent implements OnInit {
           const formatted = (data || []).map((app: any) => {
             const first = app.students?.[0];
             return {
-              id: first?.id || '-',
+              id: app.appointment_id || first?.id || '-',
               name: first
                 ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
                 : 'ไม่ระบุ',
@@ -147,5 +144,14 @@ export class HomeComponent implements OnInit {
   }
   prevPage() {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
+  }
+
+  // 👉 ฟังก์ชันกระโดดข้ามหน้า
+  goToAppointment(app: any) {
+    // ⚠️ ตรงนี้สำคัญมาก! ถ้าหน้าเว็บของพี่ชื่ออื่น ให้แก้ตรง '/group' และ '/individual' ให้ตรงกับระบบของพี่นะครับ
+    const targetPath = app.isGroup ? '/group' : '/individual';
+
+    // สั่งเปลี่ยนหน้า พร้อมส่ง ID ไปด้วย
+    this.router.navigate([targetPath], { queryParams: { id: app.id } });
   }
 }

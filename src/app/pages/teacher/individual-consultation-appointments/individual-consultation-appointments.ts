@@ -2,6 +2,7 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -13,23 +14,20 @@ import { environment } from '../../../../environments/environment';
 })
 export class IndividualConsultationAppointments implements OnInit {
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute); // รับ ID จากหน้า Home
 
-  // ข้อมูลนัดหมายรอรับจากฐานข้อมูลจริง
   appointments = signal<any[]>([]);
 
-  // สถานะเปิด/ปิดหน้าต่าง Modal
   isCreateModalOpen = signal(false);
   isEditModalOpen = signal(false);
   isLogModalOpen = signal(false);
-  isConfirmCancelModalOpen = signal(false); // Pop-up ยืนยันยกเลิก
+  isConfirmCancelModalOpen = signal(false);
 
   selectedAppointment = signal<any>(null);
   appointmentToCancelId = signal<string | null>(null);
 
-  // ตัวแปรควบคุมเมนูจัดการ (Dropdown ในตาราง)
   activeDropdownId = signal<string | null>(null);
 
-  // ตัวแปรควบคุม Custom Dropdown สถานะ (แถวบน)
   isFilterDropdownOpen = signal(false);
   selectedFilter = signal('สถานะทั้งหมด');
   filterOptions = ['สถานะทั้งหมด', 'วิชาการ', 'อาชีพ/ฝึกงาน', 'ส่วนตัว'];
@@ -38,16 +36,13 @@ export class IndividualConsultationAppointments implements OnInit {
     this.loadAppointments();
   }
 
-  // ดึงข้อมูลการนัดหมายจริงจากหลังบ้าน
   loadAppointments() {
     this.http.get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14`).subscribe({
       next: (data) => {
-        // กรองเอาเฉพาะการนัดหมายที่มีนักศึกษาคนเดียว (รายบุคคล)
         const individualApps = data.filter((app: any) => app.students && app.students.length === 1);
 
-        // จัด Format ข้อมูลแปลงเข้าตัวแปรที่หน้า HTML รอรับ
         const formattedApps = individualApps.map((app: any) => ({
-          id: app.appointment_id.toString(),
+          id: app.appointment_id.toString(), // ใช้ appointment_id เป็นหลัก
           topic: app.title,
           type: app.type,
           status: app.status,
@@ -62,6 +57,26 @@ export class IndividualConsultationAppointments implements OnInit {
         }));
 
         this.appointments.set(formattedApps);
+
+        // 👉 ระบบเลื่อนหน้าจออัตโนมัติมาหาการ์ดที่ถูกคลิก
+        this.route.queryParams.subscribe((params) => {
+          const targetId = params['id'];
+          if (targetId) {
+            setTimeout(() => {
+              const element = document.getElementById('appointment-' + targetId);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add(
+                  'ring-2',
+                  'ring-orange-500',
+                  'transition-all',
+                  'duration-500',
+                );
+                setTimeout(() => element.classList.remove('ring-2', 'ring-orange-500'), 3000);
+              }
+            }, 300);
+          }
+        });
       },
       error: (err) => {
         console.error('ดึงข้อมูลนัดหมายรายบุคคลล้มเหลว:', err);
@@ -69,7 +84,6 @@ export class IndividualConsultationAppointments implements OnInit {
     });
   }
 
-  // แปลงรูปแบบวันที่พุทธศักราช (เช่น 2026-01-20 -> 20 ม.ค. 2569)
   formatThaiDate(dateString: string): string {
     if (!dateString) return '';
     const months = [
@@ -90,27 +104,23 @@ export class IndividualConsultationAppointments implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  // แปลงรูปแบบเวลา (เช่น 14:00:00 -> 14:00 น.)
   formatTime(timeString: string): string {
     if (!timeString) return '';
     return timeString.substring(0, 5) + ' น.';
   }
 
-  // เปิด/ปิด Custom Dropdown กรองสถานะแถวบน
   toggleFilterDropdown(event: Event) {
     event.stopPropagation();
     this.isFilterDropdownOpen.update((v) => !v);
     this.activeDropdownId.set(null);
   }
 
-  // คลืกเลือกสถานะจาก Custom Dropdown
   selectFilter(option: string, event: Event) {
     event.stopPropagation();
     this.selectedFilter.set(option);
     this.isFilterDropdownOpen.set(false);
   }
 
-  // เปิด/ปิด เมนูจัดการในแถวข้อมูล
   toggleDropdown(id: string, event: Event) {
     event.stopPropagation();
     this.isFilterDropdownOpen.set(false);
@@ -121,14 +131,12 @@ export class IndividualConsultationAppointments implements OnInit {
     }
   }
 
-  // เปิดบันทึกผลคำปรึกษา
   openLogModal(app: any) {
     this.selectedAppointment.set(app);
     this.isLogModalOpen.set(true);
     this.activeDropdownId.set(null);
   }
 
-  // เปิดหน้าต่างแก้ไข
   openEditModal(app: any, event: Event) {
     event.stopPropagation();
     this.selectedAppointment.set(app);
@@ -136,7 +144,6 @@ export class IndividualConsultationAppointments implements OnInit {
     this.activeDropdownId.set(null);
   }
 
-  // กดปุ่มยกเลิกจากใน Dropdown (เปิด Pop-up ยืนยัน)
   promptCancelAppointment(id: string, event: Event) {
     event.stopPropagation();
     this.activeDropdownId.set(null);
@@ -144,7 +151,6 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isConfirmCancelModalOpen.set(true);
   }
 
-  // กดยืนยันจากหน้า Pop-up ลบข้อมูลจริงออกจากลิสต์
   confirmCancel() {
     const id = this.appointmentToCancelId();
     if (id) {
@@ -154,7 +160,6 @@ export class IndividualConsultationAppointments implements OnInit {
     this.appointmentToCancelId.set(null);
   }
 
-  // สั่งปิดหน้าต่าง Modal ทั้งหมด
   closeModals() {
     this.isCreateModalOpen.set(false);
     this.isEditModalOpen.set(false);
@@ -162,7 +167,6 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isConfirmCancelModalOpen.set(false);
   }
 
-  // ส่งออกข้อมูลรายบุคคลเป็น Excel (CSV)
   exportToExcel() {
     const data = this.appointments();
     if (data.length === 0) {
@@ -171,7 +175,6 @@ export class IndividualConsultationAppointments implements OnInit {
     }
 
     const headers = ['ชื่อนักศึกษา', 'รหัสนักศึกษา', 'ประเภท', 'สถานะ', 'หัวข้อ', 'วันที่', 'เวลา'];
-
     const csvRows = data.map((app) =>
       [
         `"${app.studentName}"`,
@@ -185,9 +188,8 @@ export class IndividualConsultationAppointments implements OnInit {
     );
 
     const csvContent = [headers.join(','), ...csvRows].join('\n');
-    const bom = '\uFEFF'; // ป้องกันภาษาไทยเพี้ยนใน Excel
+    const bom = '\uFEFF';
     const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
-
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);

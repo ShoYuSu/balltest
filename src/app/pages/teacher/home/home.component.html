@@ -81,7 +81,9 @@
 
       <div class="space-y-4">
         @for (app of appointments().slice(0, 4); track app.id + app.date) {
-          <div class="p-5 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+
+          <div (click)="goToAppointment(app)" class="p-5 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
 
