@@ -56,23 +56,22 @@
         </li>
 
         <li class="flex flex-col group">
-
-          <div (click)="isSidebarOpen ? toggleAppointmentMenu() : toggleSidebar()"
+          <div (click)="isSidebarOpen ? toggleMenu('appointment') : toggleSidebar()"
                class="py-3 !rounded-lg hover:text-white hover:bg-primary hover:cursor-pointer transition duration-200 flex items-center
-                      text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold  group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
+              text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
                [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.justify-between]="isSidebarOpen">
             <div class="flex items-center font-semibold text-[16px]">
               <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> calendar_month </span>
               @if (isSidebarOpen) { <span>การนัดหมายปรึกษา</span> }
             </div>
             @if (isSidebarOpen) {
-              <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="isAppointmentOpen">
-                expand_more
-              </span>
+              <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="activeMenu === 'appointment'">
+        expand_more
+      </span>
             }
           </div>
 
-          @if (isSidebarOpen && isAppointmentOpen) {
+          @if (isSidebarOpen && activeMenu === 'appointment') {
             <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
               <ul class="flex flex-col gap-1">
                 <li routerLink="/individual" routerLinkActive="bg-primary text-white is-active"
@@ -87,14 +86,38 @@
             </div>
           }
         </li>
-        <li routerLink="/consultation-record" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> chat </span>
-            @if (isSidebarOpen) { <span>บันทึกการปรึกษา</span> }
-          </a>
+        <li class="flex flex-col group">
+          <div (click)="isSidebarOpen ? toggleMenu('record') : toggleSidebar()"
+               class="py-3 !rounded-lg hover:text-white hover:bg-primary hover:cursor-pointer transition duration-200 flex items-center
+              text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
+               [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.justify-between]="isSidebarOpen">
+            <div class="flex items-center font-semibold text-[16px]">
+              <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> chat </span>
+              @if (isSidebarOpen) { <span>บันทึกการปรึกษา</span> }
+            </div>
+            @if (isSidebarOpen) {
+              <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="activeMenu === 'record'">
+        expand_more
+      </span>
+            }
+          </div>
+
+          @if (isSidebarOpen && activeMenu === 'record') {
+            <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
+              <ul class="flex flex-col gap-1">
+                <li routerLink="/individual-record" routerLinkActive="bg-primary text-white is-active"
+                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                  <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> บันทึกรายบุคคล</a>
+                </li>
+                <li routerLink="/group-record" routerLinkActive="bg-primary text-white is-active"
+                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
+                  <a class="flex items-center"><span class="material-symbols-outlined icon-filled pr-1" > group </span> บันทึกรายกลุ่ม</a>
+                </li>
+              </ul>
+            </div>
+          }
         </li>
+
       </ul>
 
     </nav>

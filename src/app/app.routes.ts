@@ -61,11 +61,18 @@ export const routes: Routes = [
         data: { role: 'teacher' },
       },
       {
-        path: 'consultation-record',
+        path: 'individual-record',
         loadComponent: () =>
-          import('./pages/teacher/consultation-record/consultation-record').then(
-            (m) => m.ConsultationRecord,
+          import('./pages/teacher/individual-record/individual-record').then(
+            (m) => m.IndividualRecord,
           ),
+        canActivate: [authGuard],
+        data: { role: 'teacher' },
+      },
+      {
+        path: 'group-record',
+        loadComponent: () =>
+          import('./pages/teacher/group-record/group-record').then((m) => m.GroupRecord),
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
