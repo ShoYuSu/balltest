@@ -18,7 +18,7 @@
             </div>
           </div>
 
-          <button  routerLink="/all-students"  class="ml-auto px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+          <button routerLink="/all-students" class="ml-auto px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
             ดูทั้งหมด
           </button>
         </div>
@@ -73,46 +73,74 @@
       }
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
       <div class="flex items-center justify-between gap-4 mb-6">
         <h2 class="text-xl font-bold text-gray-800">การนัดหมายล่าสุด</h2>
-        <button class="text-primary text-sm font-semibold hover:text-primary_hover  ">ดูทั้งหมด</button>
+        <button routerLink="/individual" class="text-primary text-sm font-semibold hover:text-primary_hover transition-colors">ดูทั้งหมด</button>
       </div>
 
-      <div class="space-y-5">
-        @for (app of appointments(); track app.id + app.date) {
+      <div class="space-y-4">
+        @for (app of appointments().slice(0, 4); track app.id + app.date) {
           <div class="p-5 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-                <img [src]="app.img" class="w-12 h-12 rounded-full object-cover">
+
+                @if (app.isGroup) {
+                  <div class="relative">
+                    <div class="w-12 h-12 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500">
+                      <span class="material-symbols-outlined text-2xl">groups</span>
+                    </div>
+                  </div>
+                } @else {
+                  <img [src]="app.img" class="w-12 h-12 rounded-full object-cover border border-gray-100">
+                }
+
                 <div>
-                  <div class="font-bold text-sm text-gray-900">{{ app.name }}</div>
-                  <div class="text-[11px] text-gray-400">รหัส {{ app.id }}</div>
+                  <div class="font-bold text-sm text-gray-900 line-clamp-1">{{ app.name }}</div>
+
+                  @if (app.isGroup) {
+                    <div class="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded-md">
+                      <span class="material-symbols-outlined text-[12px]">group</span>
+                      นัดหมายกลุ่ม ({{ app.memberCount }} คน)
+                    </div>
+                  } @else {
+                    <div class="text-[11px] text-gray-400 mt-0.5">รหัส {{ app.id }}</div>
+                  }
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <span [class]="'px-2 py-0.5 text-[11px] font-bold rounded-full ' + (app.type === 'อาชีพ/ฝึกงาน' ? 'bg-cyan-50 text-cyan-600' : 'bg-blue-50 text-blue-600')">{{ app.type }}</span>
-                <span class="px-2 py-0.5 text-[11px] font-bold text-orange-600 bg-orange-50 rounded-full">นัดหมาย</span>
+
+              <div class="flex flex-col items-end gap-1">
+                <span [class]="'px-2 py-0.5 text-[10px] font-bold rounded-full ' + (app.type === 'อาชีพ/ฝึกงาน' ? 'bg-cyan-50 text-cyan-600' : (app.type === 'กิจกรรม' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'))">
+                  {{ app.type }}
+                </span>
               </div>
             </div>
 
             <div class="text-sm text-gray-800 font-medium mb-2">{{ app.topic }}</div>
+
             @if (app.note) {
               <div class="p-3 mb-4 text-xs text-gray-600 bg-gray-50 rounded-lg border border-gray-100 line-clamp-2">
                 บันทึก: {{ app.note }}
               </div>
             }
 
-            <div class="flex items-center gap-5 text-sm ">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined icon-filled text-red-500 text-base">calendar_today</span>
+            <div class="flex items-center gap-5 text-[13px] text-gray-500 font-medium">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined icon-filled text-red-400 text-[18px]">calendar_today</span>
                 {{ app.date }}
               </div>
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined icon-filled text-blue-700 text-base">schedule</span>
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined icon-filled text-blue-500 text-[18px]">schedule</span>
                 {{ app.time }}
               </div>
             </div>
+          </div>
+        }
+
+        @if (appointments().length === 0) {
+          <div class="text-center py-10 text-gray-400">
+            <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
+            <p class="text-sm">ยังไม่มีการนัดหมาย</p>
           </div>
         }
       </div>

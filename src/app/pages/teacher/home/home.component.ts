@@ -12,7 +12,7 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-  private http = inject(HttpClient); // Inject HTTP สำหรับยิง XAMPP
+  private http = inject(HttpClient);
 
   dashboardStats = [
     {
@@ -40,7 +40,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFFDF0]',
     },
     {
-      label: 'บันทึกการบึกษา',
+      label: 'บันทึกการปรึกษา',
       value: 0,
       icon: 'assignment',
       bgColor: 'bg-purple-100',
@@ -49,42 +49,79 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  // --- 1. ตัวแปรสำหรับ Pagination ---
   currentPage = signal(1);
   itemsPerPage = 5;
-
-  // --- 2. รอรับข้อมูลนักศึกษาจากฐานข้อมูล ---
   studentsInCare = signal<any[]>([]);
+  appointments = signal<any[]>([]);
 
-  // --- 3. ฟังก์ชันคำนวณหน้า ---
   totalItems = computed(() => this.studentsInCare().length);
   totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
-
   paginatedStudents = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
     return this.studentsInCare().slice(start, start + this.itemsPerPage);
   });
-
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  // --- 4. ฟังก์ชันเปลี่ยนหน้า ---
-  goToPage(page: number) {
-    this.currentPage.set(page);
-  }
-  nextPage() {
-    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
-  }
-  prevPage() {
-    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
+  ngOnInit() {
+    this.loadData();
   }
 
-  // 👉 5. เปลี่ยนมารอรับข้อมูลการนัดหมายจริงจากฐานข้อมูล (ลบข้อมูล Mock ออกแล้ว)
-  appointments = signal<any[]>([]);
+  loadData() {
+    // 1. ดึงข้อมูลนักศึกษา
+    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
+      next: (data) => {
+        const formattedStudents = data.map((s: any) => ({
+          id: s.student_code,
+          name: s.full_name,
+          year: s.year,
+          gpa: s.gpa,
+          ploStatus: s.ploStatus,
+          img: s.image
+            ? `${environment.apiUrl}/${s.image}`
+            : `https://i.pravatar.cc/150?u=${s.student_code}`,
+        }));
+        this.studentsInCare.set(formattedStudents);
+        this.dashboardStats[0].value = formattedStudents.length;
+        this.dashboardStats[1].value = formattedStudents.filter(
+          (s) => s.ploStatus === 'PLO ผ่าน',
+        ).length;
+      },
+    });
 
-  // ฟังก์ชันแปลงรูปแบบวันที่ (เช่น 2026-01-20 -> 20 ม.ค. 2569)
-  formatThaiDate(dateString: string): string {
-    if (!dateString) return '';
-    const months = [
+    // 2. ดึงข้อมูลนัดหมายล่าสุด (ไม่ใช้ Mock)
+    this.http
+      .get<
+        any[]
+      >(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`)
+      .subscribe({
+        next: (data) => {
+          const formatted = (data || []).map((app: any) => {
+            const first = app.students?.[0];
+            return {
+              id: first?.id || '-',
+              name: first
+                ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
+                : 'ไม่ระบุ',
+              topic: app.title,
+              type: app.type,
+              note: app.note,
+              date: this.formatDate(app.appointment_date),
+              time: app.start_time?.substring(0, 5) + ' น.',
+              img: first?.img
+                ? `${environment.apiUrl}/${first.img}`
+                : `https://i.pravatar.cc/150?u=${first?.id}`,
+              isGroup: app.students.length > 1,
+              memberCount: app.students.length,
+            };
+          });
+          this.appointments.set(formatted);
+          this.dashboardStats[2].value = formatted.length;
+        },
+      });
+  }
+
+  formatDate(d: string) {
+    const m = [
       'ม.ค.',
       'ก.พ.',
       'มี.ค.',
@@ -98,81 +135,17 @@ export class HomeComponent implements OnInit {
       'พ.ย.',
       'ธ.ค.',
     ];
-    const d = new Date(dateString);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+    const date = new Date(d);
+    return `${date.getDate()} ${m[date.getMonth()]} ${date.getFullYear() + 543}`;
   }
 
-  // ฟังก์ชันแปลงเวลา (ตัดวินาทีออก)
-  formatTime(timeString: string): string {
-    if (!timeString) return '';
-    return timeString.substring(0, 5) + ' น.';
+  goToPage(p: number) {
+    this.currentPage.set(p);
   }
-
-  ngOnInit() {
-    // --------------------------------------------------------
-    // 👉 ดึงข้อมูลรายชื่อนักศึกษาในการดูแล
-    // --------------------------------------------------------
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const formattedStudents = data.map((student: any) => ({
-          id: student.student_code,
-          name: student.full_name,
-          year: student.year,
-          gpa: student.gpa,
-          ploStatus: student.ploStatus,
-          img: student.image
-            ? `${environment.apiUrl}/${student.image}`
-            : `https://i.pravatar.cc/150?u=${student.student_code}`,
-        }));
-
-        this.studentsInCare.set(formattedStudents);
-
-        // อัปเดตจำนวนตัวเลขบนการ์ดสรุปผล
-        this.dashboardStats[0].value = formattedStudents.length;
-        const passedPLO = formattedStudents.filter((s) => s.ploStatus === 'PLO ผ่าน').length;
-        this.dashboardStats[1].value = passedPLO;
-      },
-      error: (error) => {
-        console.error('ดึงรายชื่อเด็กพังดิครับ:', error.message);
-      },
-    });
-
-    // --------------------------------------------------------
-    // 👉 ดึงข้อมูลการนัดหมายล่าสุดจาก Database จริง 100%
-    // --------------------------------------------------------
-    const appointmentsUrl = `${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`;
-    this.http.get<any[]>(appointmentsUrl).subscribe({
-      next: (data) => {
-        const formattedAppointments = (data || []).map((app: any) => {
-          // หาข้อมูลนักศึกษาคนแรกในนัดหมายเพื่อดึงชื่อและรูปโปรไฟล์มาแสดงผลหน้า Home
-          const firstStudent = app.students && app.students.length > 0 ? app.students[0] : null;
-
-          return {
-            id: firstStudent ? firstStudent.id : '-',
-            // ถ้าเป็นนัดหมายแบบกลุ่ม (มีเด็กมากกว่า 1 คน) จะเติมข้อความ ' (และคณะ)' ต่อท้ายชื่อคนแรกให้โดยอัตโนมัติ
-            name: firstStudent
-              ? firstStudent.name + (app.students.length > 1 ? ' (และคณะ)' : '')
-              : 'ไม่ระบุชื่อ',
-            type: app.type,
-            topic: app.title,
-            note: app.note, // ผูกบันทึกข้อความผลการปรึกษา
-            date: this.formatThaiDate(app.appointment_date),
-            time: this.formatTime(app.start_time),
-            img:
-              firstStudent && firstStudent.img
-                ? `${environment.apiUrl}/${firstStudent.img}`
-                : `https://i.pravatar.cc/150?u=${firstStudent ? firstStudent.id : 'default'}`,
-          };
-        });
-
-        this.appointments.set(formattedAppointments);
-
-        // อัปเดตตัวเลข 'นัดหมายทั้งหมด' บนการ์ดสีเหลืองตามจริง
-        this.dashboardStats[2].value = formattedAppointments.length;
-      },
-      error: (error) => {
-        console.error('ดึงข้อมูลตารางนัดหมายพังดิครับ:', error.message);
-      },
-    });
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
+  }
+  prevPage() {
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
 }
