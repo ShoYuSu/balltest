@@ -17,22 +17,21 @@ export class IndividualConsultationAppointments implements OnInit {
   appointments = signal<any[]>([]);
   myStudents = signal<any[]>([]);
 
+  // Search & Filter
   searchQuery = signal('');
-  selectedFilter = signal('สถานะทั้งหมด');
-  filterOptions = signal<string[]>([
-    'สถานะทั้งหมด',
-    'วิชาการ',
-    'อาชีพ/ฝึกงาน',
-    'กิจกรรม',
-    'ส่วนตัว',
-  ]);
+  selectedFilter = signal('ทั้งหมด');
+
+  // Types โหลดจาก DB จริง ไม่มี mock
+  availableTypes = signal<string[]>([]);
+
+  // filterOptions computed จาก availableTypes เสมอ
+  filterOptions = computed(() => ['ทั้งหมด', ...this.availableTypes()]);
 
   filteredAppointments = computed(() => {
     let list = this.appointments();
     const query = this.searchQuery().toLowerCase();
     const filter = this.selectedFilter();
-
-    if (filter !== 'สถานะทั้งหมด') {
+    if (filter !== 'ทั้งหมด') {
       list = list.filter((a) => a.type === filter);
     }
     if (query) {
@@ -46,22 +45,28 @@ export class IndividualConsultationAppointments implements OnInit {
     return list;
   });
 
+  // Modal states
   isCreateModalOpen = signal(false);
   isEditModalOpen = signal(false);
   isLogModalOpen = signal(false);
   isConfirmCancelModalOpen = signal(false);
+  isManageTypesModalOpen = signal(false);
+
   activeDropdownId = signal<string | null>(null);
   isFilterDropdownOpen = signal(false);
-
-  availableTypes = signal<string[]>(['วิชาการ', 'อาชีพ/ฝึกงาน', 'กิจกรรม', 'ส่วนตัว']);
   isCreateTypeOpen = signal(false);
   isEditTypeOpen = signal(false);
+  isStudentDropdownOpen = signal(false);
 
+  // New type input สำหรับ manage types modal
+  newTypeInput = signal('');
+
+  // Form models
   newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
   selectedApp: any = null;
   appointmentToCancelId: string | null = null;
 
-  isStudentDropdownOpen = signal(false);
+  // Student search
   studentSearch = signal('');
 
   selectStudent(std: any) {
@@ -72,6 +77,7 @@ export class IndividualConsultationAppointments implements OnInit {
 
   filteredStudents = computed(() => {
     const query = this.studentSearch().toLowerCase();
+    if (!query) return this.myStudents();
     return this.myStudents().filter(
       (s) => s.full_name.toLowerCase().includes(query) || s.student_code.includes(query),
     );
@@ -82,58 +88,73 @@ export class IndividualConsultationAppointments implements OnInit {
     this.loadMyStudents();
   }
 
-  // ✅ แก้ตรงนี้: pre-process imgUrl ให้พร้อมใช้งานเลย
   loadMyStudents() {
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`)
-      .subscribe((data) => {
-        const processed = (data || []).map((s) => ({
-          ...s,
-
-          imgUrl:
-            s.image && s.image.trim() !== ''
-              ? `${environment.apiUrl}/${s.image}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
-        }));
-        this.myStudents.set(processed);
+      .subscribe({
+        next: (data) => {
+          const processed = (data || []).map((s) => ({
+            ...s,
+            imgUrl:
+              s.image && s.image.trim() !== ''
+                ? `${environment.apiUrl}/${s.image}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
+          }));
+          this.myStudents.set(processed);
+        },
+        error: () => this.myStudents.set([]),
       });
   }
 
   loadAppointments() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const types = [...new Set(data.map((item) => item.type))];
-        this.filterOptions.set(['สถานะทั้งหมด', ...types]);
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14`)
+      .subscribe({
+        next: (data) => {
+          // ดึง types จาก DB จริง ไม่ hardcode
+          const typesFromDb = [
+            ...new Set(data.map((item) => item.type).filter((t) => t && t.trim() !== '')),
+          ] as string[];
 
-        const formattedApps = data
-          .filter((a) => a.students?.length === 1)
-          .map((app) => ({
-            id: app.appointment_id.toString(),
-            topic: app.title,
-            type: app.type,
-            status: app.status,
-            date: this.formatThaiDate(app.appointment_date),
-            rawDate: app.appointment_date,
-            time: this.formatTime(app.start_time),
-            rawTime: app.start_time.substring(0, 5),
-            details: app.description,
-            studentName: app.students[0].name,
-            studentId: app.students[0].id,
-            img: app.students[0].img
-              ? `${environment.apiUrl}/${app.students[0].img}`
-              : `https://i.pravatar.cc/150?u=${app.students[0].id}`,
-          }));
-        this.appointments.set(formattedApps);
-      },
-    });
+          // Merge กับ types ที่ user เพิ่มในเซสชันนี้ (ยังไม่ได้บันทึก)
+          const existing = this.availableTypes();
+          const merged = [...new Set([...typesFromDb, ...existing])];
+          this.availableTypes.set(merged);
+
+          const formattedApps = data
+            .filter((a) => a.students?.length === 1)
+            .map((app) => ({
+              id: app.appointment_id.toString(),
+              topic: app.title,
+              type: app.type ?? '',
+              status: app.status ?? '',
+              date: this.formatThaiDate(app.appointment_date),
+              rawDate: app.appointment_date,
+              time: this.formatTime(app.start_time),
+              rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
+              details: app.description ?? '',
+              studentName: app.students[0].name,
+              studentId: app.students[0].id,
+              img: app.students[0].img
+                ? `${environment.apiUrl}/${app.students[0].img}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.students[0].name)}&background=fed7aa&color=c2410c`,
+            }));
+          this.appointments.set(formattedApps);
+        },
+        error: () => this.appointments.set([]),
+      });
   }
 
   apiUrl = environment.apiUrl;
 
   onImgError(event: Event, name: string) {
-    const element = event.target as HTMLImageElement;
-    element.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`;
+    (event.target as HTMLImageElement).src =
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fed7aa&color=c2410c`;
   }
+
+  // =============================================
+  // CRUD
+  // =============================================
 
   submitCreateAppointment() {
     if (!this.newApp.studentId || !this.newApp.topic || !this.newApp.date || !this.newApp.type) {
@@ -149,19 +170,24 @@ export class IndividualConsultationAppointments implements OnInit {
       type: this.newApp.type,
       student_ids: [this.newApp.studentId],
     };
-    this.http
-      .post(`${environment.apiUrl}/create_appointment.php`, payload)
-      .subscribe((res: any) => {
+    this.http.post(`${environment.apiUrl}/create_appointment.php`, payload).subscribe({
+      next: (res: any) => {
         if (res.status === 'success') {
           this.closeModals();
           this.loadAppointments();
-          this.newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
-          this.studentSearch.set('');
-        } else alert('เกิดข้อผิดพลาด: ' + res.message);
-      });
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + res.message);
+        }
+      },
+      error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+    });
   }
 
   submitEditAppointment() {
+    if (!this.selectedApp?.topic || !this.selectedApp?.rawDate || !this.selectedApp?.type) {
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      return;
+    }
     const payload = {
       appointment_id: this.selectedApp.id,
       title: this.selectedApp.topic,
@@ -170,92 +196,125 @@ export class IndividualConsultationAppointments implements OnInit {
       time: this.selectedApp.rawTime,
       type: this.selectedApp.type,
     };
-    this.http
-      .post(`${environment.apiUrl}/update_appointment.php`, payload)
-      .subscribe((res: any) => {
+    this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
+      next: (res: any) => {
         if (res.status === 'success') {
           this.closeModals();
           this.loadAppointments();
-        } else alert('เกิดข้อผิดพลาด: ' + res.message);
-      });
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + res.message);
+        }
+      },
+      error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+    });
   }
 
   confirmCancel() {
-    if (this.appointmentToCancelId) {
-      this.http
-        .post(`${environment.apiUrl}/delete_appointment.php`, {
-          appointment_id: this.appointmentToCancelId,
-        })
-        .subscribe((res: any) => {
+    if (!this.appointmentToCancelId) { this.closeModals(); return; }
+    this.http
+      .post(`${environment.apiUrl}/delete_appointment.php`, {
+        appointment_id: this.appointmentToCancelId,
+      })
+      .subscribe({
+        next: (res: any) => {
           if (res.status === 'success') {
             this.loadAppointments();
-          } else alert('เกิดข้อผิดพลาด: ' + res.message);
-        });
-    }
-    this.closeModals();
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + res.message);
+          }
+          this.closeModals();
+        },
+        error: () => {
+          alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+          this.closeModals();
+        },
+      });
   }
 
+  // =============================================
+  // Type Management
+  // =============================================
+
   get filteredCreateTypes() {
-    return this.availableTypes().filter((t) =>
-      t.toLowerCase().includes((this.newApp.type || '').toLowerCase()),
-    );
+    const q = (this.newApp.type || '').toLowerCase();
+    return this.availableTypes().filter((t) => t.toLowerCase().includes(q));
   }
+
   get filteredEditTypes() {
-    return this.availableTypes().filter((t) =>
-      t.toLowerCase().includes((this.selectedApp?.type || '').toLowerCase()),
-    );
+    const q = (this.selectedApp?.type || '').toLowerCase();
+    return this.availableTypes().filter((t) => t.toLowerCase().includes(q));
   }
 
   selectCreateType(type: string) {
     this.newApp.type = type;
     this.isCreateTypeOpen.set(false);
   }
+
+  selectEditType(type: string) {
+    if (this.selectedApp) this.selectedApp.type = type;
+    this.isEditTypeOpen.set(false);
+  }
+
   addCreateType() {
-    if (!this.availableTypes().includes(this.newApp.type)) {
-      this.availableTypes.update((t) => [...t, this.newApp.type]);
+    const val = this.newApp.type.trim();
+    if (val && !this.availableTypes().includes(val)) {
+      this.availableTypes.update((t) => [...t, val]);
     }
     this.isCreateTypeOpen.set(false);
   }
 
-  selectEditType(type: string) {
-    this.selectedApp.type = type;
-    this.isEditTypeOpen.set(false);
-  }
   addEditType() {
-    if (!this.availableTypes().includes(this.selectedApp.type)) {
-      this.availableTypes.update((t) => [...t, this.selectedApp.type]);
+    const val = this.selectedApp?.type?.trim();
+    if (val && !this.availableTypes().includes(val)) {
+      this.availableTypes.update((t) => [...t, val]);
     }
     this.isEditTypeOpen.set(false);
   }
+
+  // ลบ type พร้อมเช็คว่ายังใช้งานอยู่ไหม
+  deleteType(type: string, e: Event) {
+    e.stopPropagation();
+    const inUseCount = this.appointments().filter((a) => a.type === type).length;
+    if (inUseCount > 0) {
+      if (
+        !confirm(
+          `ประเภท "${type}" ยังถูกใช้งานอยู่ใน ${inUseCount} นัดหมาย\nต้องการลบออกจากรายการประเภทหรือไม่?`,
+        )
+      )
+        return;
+    }
+    this.availableTypes.update((t) => t.filter((x) => x !== type));
+    if (this.newApp.type === type) this.newApp.type = '';
+    if (this.selectedApp?.type === type) this.selectedApp.type = '';
+    if (this.selectedFilter() === type) this.selectedFilter.set('ทั้งหมด');
+  }
+
+  // สำหรับ manage types modal
+  addNewTypeFromModal() {
+    const val = this.newTypeInput().trim();
+    if (!val) return;
+    if (this.availableTypes().includes(val)) {
+      alert(`ประเภท "${val}" มีอยู่แล้ว`);
+      return;
+    }
+    this.availableTypes.update((t) => [...t, val]);
+    this.newTypeInput.set('');
+  }
+
+  typeUsageCount(type: string): number {
+    return this.appointments().filter((a) => a.type === type).length;
+  }
+
+  // =============================================
+  // Modal & Dropdown helpers
+  // =============================================
 
   closeDropdowns() {
     this.activeDropdownId.set(null);
     this.isFilterDropdownOpen.set(false);
     this.isCreateTypeOpen.set(false);
     this.isEditTypeOpen.set(false);
-  }
-
-  formatThaiDate(dStr: string) {
-    if (!dStr) return '';
-    const m = [
-      'ม.ค.',
-      'ก.พ.',
-      'มี.ค.',
-      'เม.ย.',
-      'พ.ค.',
-      'มิ.ย.',
-      'ก.ค.',
-      'ส.ค.',
-      'ก.ย.',
-      'ต.ค.',
-      'พ.ย.',
-      'ธ.ค.',
-    ];
-    const d = new Date(dStr);
-    return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
-  }
-  formatTime(tStr: string) {
-    return tStr ? tStr.substring(0, 5) + ' น.' : '';
+    this.isStudentDropdownOpen.set(false);
   }
 
   toggleFilterDropdown(e: Event) {
@@ -263,15 +322,34 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isFilterDropdownOpen.update((v) => !v);
     this.activeDropdownId.set(null);
   }
+
   selectFilter(opt: string, e: Event) {
     e.stopPropagation();
     this.selectedFilter.set(opt);
     this.isFilterDropdownOpen.set(false);
   }
+
   toggleDropdown(id: string, e: Event) {
     e.stopPropagation();
     this.isFilterDropdownOpen.set(false);
     this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
+  }
+
+  openCreateModal() {
+    // Reset ทุกอย่างก่อนเปิด — ป้องกันข้อมูลค้างจากครั้งก่อน
+    this.newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
+    this.studentSearch.set('');
+    this.isStudentDropdownOpen.set(false);
+    this.isCreateTypeOpen.set(false);
+    this.isCreateModalOpen.set(true);
+  }
+
+  openEditModal(app: any, e: Event) {
+    e.stopPropagation();
+    this.selectedApp = { ...app };
+    this.isEditTypeOpen.set(false);
+    this.isEditModalOpen.set(true);
+    this.activeDropdownId.set(null);
   }
 
   openLogModal(app: any) {
@@ -279,12 +357,7 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isLogModalOpen.set(true);
     this.activeDropdownId.set(null);
   }
-  openEditModal(app: any, e: Event) {
-    e.stopPropagation();
-    this.selectedApp = { ...app };
-    this.isEditModalOpen.set(true);
-    this.activeDropdownId.set(null);
-  }
+
   promptCancelAppointment(id: string, e: Event) {
     e.stopPropagation();
     this.activeDropdownId.set(null);
@@ -292,28 +365,52 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isConfirmCancelModalOpen.set(true);
   }
 
+  openManageTypesModal(e: Event) {
+    e.stopPropagation();
+    this.newTypeInput.set('');
+    this.isManageTypesModalOpen.set(true);
+    this.isCreateTypeOpen.set(false);
+    this.isEditTypeOpen.set(false);
+  }
+
   closeModals() {
     this.isCreateModalOpen.set(false);
     this.isEditModalOpen.set(false);
     this.isLogModalOpen.set(false);
     this.isConfirmCancelModalOpen.set(false);
+    this.isManageTypesModalOpen.set(false);
     this.appointmentToCancelId = null;
+    // Reset form
+    this.newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
+    this.studentSearch.set('');
+    this.isStudentDropdownOpen.set(false);
+    this.isCreateTypeOpen.set(false);
+    this.isEditTypeOpen.set(false);
+    this.newTypeInput.set('');
+  }
+
+  // =============================================
+  // Formatting
+  // =============================================
+
+  formatThaiDate(dStr: string) {
+    if (!dStr) return '';
+    const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    const d = new Date(dStr);
+    return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
+  }
+
+  formatTime(tStr: string) {
+    return tStr ? tStr.substring(0, 5) + ' น.' : '';
   }
 
   exportToExcel() {
     const data = this.filteredAppointments();
     if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
-    const headers = ['ชื่อนักศึกษา', 'รหัสนักศึกษา', 'ประเภท', 'สถานะ', 'หัวข้อ', 'วันที่', 'เวลา'];
+    const headers = ['ชื่อนักศึกษา','รหัสนักศึกษา','ประเภท','สถานะ','หัวข้อ','วันที่','เวลา'];
     const csvRows = data.map((app) =>
-      [
-        `"${app.studentName}"`,
-        `"${app.studentId}"`,
-        `"${app.type}"`,
-        `"${app.status}"`,
-        `"${app.topic}"`,
-        `"${app.date}"`,
-        `"${app.time}"`,
-      ].join(','),
+      [`"${app.studentName}"`,`"${app.studentId}"`,`"${app.type}"`,`"${app.status}"`,
+        `"${app.topic}"`,`"${app.date}"`,`"${app.time}"`].join(','),
     );
     const bom = '\uFEFF';
     const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
