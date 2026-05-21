@@ -29,8 +29,8 @@ export class GroupConsultationAppointments implements OnInit {
   activeDropdownId = signal<string | null>(null);
 
   isFilterDropdownOpen = signal(false);
-  selectedFilter = signal('สถานะทั้งหมด');
-  filterOptions = ['สถานะทั้งหมด', 'วิชาการ', 'กิจกรรม'];
+  selectedFilter = signal('ทั้งหมด');
+  filterOptions = ['ทั้งหมด', 'วิชาการ', 'กิจกรรม'];
 
   selectionMode = signal<'group' | 'all'>('group');
   selectedStudentIds = signal<string[]>([]);
