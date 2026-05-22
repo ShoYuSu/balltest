@@ -1,77 +1,98 @@
-<div class="p-8 bg-gray-50 min-h-screen" (click)="closeDropdowns()">
+<div class="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeDropdowns()">
 
   @if (!selectedStudent()) {
-    <div class="animate-fadeIn">
+    <div class="max-w-6xl mx-auto animate-fadeIn">
+
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">บันทึกการปรึกษา-รายบุคคล</h1>
-        <p class="text-gray-500 mt-1">ติดตามประวัติบันทึกการให้คำปรึกษานักศึกษาและผลการให้คำปรึกษา</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">บันทึกการปรึกษา</h1>
+        <p class="text-gray-500 mt-2 text-sm md:text-base">ตรวจสอบและติดตามประวัติการให้คำปรึกษานักศึกษาในที่ปรึกษาของคุณ</p>
       </div>
 
-      <div class="flex flex-wrap gap-4 mb-6 items-center">
-        <div class="relative flex-grow max-w-md">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+      <div class="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <div class="relative w-full sm:max-w-md group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
-                 placeholder="ค้นหาชื่อหรือรหัสนักศึกษา..."
-                 class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+                 placeholder="ค้นหาด้วยชื่อ หรือ รหัสนักศึกษา..."
+                 class="w-full pl-12 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+          @if (searchQuery()) {
+            <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          }
         </div>
         <button (click)="exportMainToExcel()"
-                class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm font-medium">
-          <span class="material-symbols-outlined text-green-600">output</span> Excel
+                class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 hover:shadow-sm transition-all font-bold text-sm border border-green-100">
+          <span class="material-symbols-outlined text-lg">description</span> Export Excel
         </button>
       </div>
 
       <div class="space-y-4">
         @for (student of paginatedStudents(); track student.student_id) {
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-all duration-300 group">
+          <div (click)="viewStudentLogs(student)"
+               class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
+
             <div class="flex items-center gap-5">
-              <img [src]="student.imgUrl" (error)="onImgError($event, student.full_name)"
-                   class="w-16 h-16 rounded-full object-cover border-2 border-gray-50 shadow-sm">
+              <div class="relative">
+                <img [src]="student.imgUrl" (error)="onImgError($event, student.full_name)"
+                     class="w-16 h-16 rounded-full object-cover border-2 border-gray-50 shadow-sm">
+               
+              </div>
               <div>
                 <div class="flex items-center gap-3 mb-1">
-                  <h3 class="font-bold text-gray-900 text-lg">{{ student.full_name }}</h3>
-                  <span class="text-gray-400 text-sm">รหัส {{ student.student_code }}</span>
+                  <h3 class="font-bold text-gray-900 text-lg group-hover:text-orange-600 transition-colors">{{ student.full_name }}</h3>
+                  <span class="px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-md tracking-wider">{{ student.student_code }}</span>
                 </div>
-                <div class="flex items-center gap-6 mt-2 text-sm text-gray-500">
-                  <div class="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-lg">
-                    <span class="material-symbols-outlined text-gray-400 text-lg">description</span>
-                    <span class="font-medium text-gray-700">{{ student.total_records }} รายการที่ปรึกษา</span>
+                <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                  <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-orange-400 text-lg">history_edu</span>
+                    <span>ให้คำปรึกษาไปแล้ว <strong class="text-gray-800">{{ student.total_records }}</strong> ครั้ง</span>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-orange-400 text-lg">event_available</span>
-                    ล่าสุด {{ student.formattedLatestDate }}
-                  </div>
+                  @if (student.total_records > 0) {
+                    <div class="hidden md:block w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-gray-400 text-lg">schedule</span>
+                      <span>ล่าสุดเมื่อ: <span class="font-medium text-gray-700">{{ student.formattedLatestDate }}</span></span>
+                    </div>
+                  }
                 </div>
               </div>
             </div>
 
-            <button (click)="viewStudentLogs(student)"
-                    class="px-5 py-2.5 border-2 border-gray-100 rounded-xl text-gray-600 font-semibold hover:border-orange-500 hover:text-orange-600 flex items-center gap-2 transition-all bg-white group-hover:shadow-sm">
-              <span class="material-symbols-outlined">visibility</span> ดูบันทึก
-            </button>
+            <div class="mt-4 md:mt-0 flex items-center justify-end text-orange-500 opacity-50 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
+              <span class="font-bold text-sm mr-1">ดูประวัติ</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
           </div>
         }
 
         @if (filteredStudents().length === 0) {
-          <div class="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100 border-dashed">
-            <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">search_off</span>
-            <p>ไม่พบข้อมูลนักศึกษา</p>
+          <div class="text-center py-20 bg-white rounded-3xl border border-gray-200 border-dashed">
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="material-symbols-outlined text-4xl text-gray-400">person_search</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-700 mb-1">ไม่พบข้อมูลนักศึกษา</h3>
+            <p class="text-sm text-gray-500">ลองค้นหาด้วยชื่อหรือรหัสนักศึกษาใหม่อีกครั้ง</p>
           </div>
         }
       </div>
 
       @if (totalPages() > 1) {
-        <div class="mt-8 flex justify-between items-center">
-          <p class="text-sm text-gray-500">แสดง {{ paginatedStudents().length }} จาก {{ filteredStudents().length }} รายการ</p>
-          <div class="flex gap-2">
-            <button (click)="prevPage()" [disabled]="currentPage() === 1" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">ก่อนหน้า</button>
-            @for (page of getPagesArray(); track page) {
-              <button (click)="goToPage(page)"
-                      class="px-3.5 py-1.5 rounded-lg text-sm font-bold transition-colors"
-                      [ngClass]="currentPage() === page ? 'bg-orange-500 text-white shadow-sm shadow-orange-200' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'">
-                {{ page }}
-              </button>
-            }
-            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">ถัดไป</button>
+        <div class="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p class="text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+            แสดง <span class="text-gray-900">{{ paginatedStudents().length }}</span> จาก <span class="text-gray-900">{{ filteredStudents().length }}</span> รายการ
+          </p>
+          <div class="flex items-center bg-white p-1 rounded-full shadow-sm border border-gray-100">
+            <button (click)="prevPage()" [disabled]="currentPage() === 1" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+            <div class="flex px-2 gap-1">
+              @for (page of getPagesArray(); track page) {
+                <button (click)="goToPage(page)"
+                        class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all"
+                        [ngClass]="currentPage() === page ? 'bg-orange-500 text-white shadow-md shadow-orange-200' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'">
+                  {{ page }}
+                </button>
+              }
+            </div>
+            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
           </div>
         </div>
       }
@@ -79,86 +100,110 @@
   }
 
   @else {
-    <div class="animate-fadeIn">
+    <div class="max-w-4xl mx-auto animate-fadeIn pb-12">
 
-      <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-5">
+      <button (click)="goBack()" class="mb-6 flex items-center gap-2 text-gray-500 hover:text-orange-600 font-bold transition-colors group">
+        <span class="material-symbols-outlined bg-white rounded-full p-1 shadow-sm border border-gray-100 group-hover:border-orange-200 transition-colors">arrow_back</span>
+        ย้อนกลับไปหน้ารวม
+      </button>
+
+      <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-100 to-transparent opacity-50 rounded-bl-full pointer-events-none"></div>
+
+        <div class="flex items-center gap-5 z-10">
           <img [src]="selectedStudent().imgUrl" (error)="onImgError($event, selectedStudent().full_name)"
-               class="w-[72px] h-[72px] rounded-full object-cover border-4 border-white shadow-md">
+               class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white shadow-md">
           <div>
-            <h1 class="text-2xl font-bold text-gray-800">{{ selectedStudent().full_name }}</h1>
-            <div class="flex items-center gap-6 mt-1.5 text-sm text-gray-500">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-gray-400 text-lg">description</span>
-                <span class="font-medium text-gray-700">{{ selectedStudent().total_records }} รายการที่ปรึกษา</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-orange-400 text-lg">event_available</span>
-                ล่าสุด {{ selectedStudent().formattedLatestDate }}
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">{{ selectedStudent().full_name }}</h1>
+            <div class="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
+              <span class="px-3 py-1 bg-gray-100 text-gray-600 font-bold rounded-lg tracking-wider border border-gray-200">{{ selectedStudent().student_code }}</span>
+              <div class="flex items-center gap-1.5 text-gray-500">
+                <span class="material-symbols-outlined text-lg">history</span>
+                <span>ให้คำปรึกษา <strong class="text-gray-800">{{ selectedStudent().total_records }}</strong> ครั้ง</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="flex gap-3">
-          <button (click)="exportDetailToExcel()"
-                  class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-medium">
-            <span class="material-symbols-outlined text-green-600">output</span> Excel
-          </button>
-          <button (click)="goBack()"
-                  class="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-bold">
-            ย้อนกลับ
-          </button>
+        <button (click)="exportDetailToExcel()"
+                class="z-10 flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-bold text-sm">
+          <span class="material-symbols-outlined text-green-600">file_download</span> โหลดประวัติ
+        </button>
+      </div>
+
+      <div class="px-4">
+        <div class="flex justify-between items-end mb-8">
+          <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="material-symbols-outlined text-orange-500">timeline</span> ไทม์ไลน์การปรึกษา
+          </h2>
+          <select [(ngModel)]="sortOrder"
+                  class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 focus:ring-2 focus:ring-orange-500/20 outline-none cursor-pointer shadow-sm">
+            <option value="desc">ใหม่สุด - เก่าสุด</option>
+            <option value="asc">เก่าสุด - ใหม่สุด</option>
+          </select>
         </div>
-      </div>
 
-      <div class="mb-4 flex justify-end">
-        <select [(ngModel)]="sortOrder"
-                class="px-4 py-2 bg-transparent border-none text-gray-600 font-medium focus:ring-0 cursor-pointer">
-          <option value="desc">ล่าสุด - เก่าสุด</option>
-          <option value="asc">เก่าสุด - ล่าสุด</option>
-        </select>
-      </div>
+        @if (studentLogs().length > 0) {
+          <div class="relative border-l-2 border-gray-200 ml-4 md:ml-6 space-y-8 pb-4">
 
-      <div class="space-y-4">
-        @for (log of sortedLogs(); track log.appointment_id) {
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
+            @for (log of sortedLogs(); track log.appointment_id; let isFirst = $first) {
+              <div class="relative pl-8 md:pl-12 group">
 
-            <div class="absolute top-5 right-5">
-              <button (click)="toggleDropdown(log.appointment_id, $event)"
-                      class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
-                <span class="material-symbols-outlined">more_vert</span>
-              </button>
+                <div class="absolute -left-[9px] top-4 w-4 h-4 rounded-full border-4 shadow-sm transition-transform duration-300 group-hover:scale-125"
+                     [ngClass]="isFirst && sortOrder() === 'desc' ? 'bg-orange-500 border-orange-100 w-5 h-5 -left-[11px]' : 'bg-gray-300 border-white'"></div>
 
-              @if (activeDropdownId() === log.appointment_id) {
-                <div class="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn">
-                  <button (click)="openEditLogModal(log, $event)"
-                          class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined text-blue-500 text-base">edit_note</span> แก้ไขบันทึก
-                  </button>
-                  <button (click)="promptRevertLog(log.appointment_id, $event)"
-                          class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50 transition-colors">
-                    <span class="material-symbols-outlined text-red-500 text-base">undo</span> ยกเลิกบันทึก
-                  </button>
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
+
+                  <div class="absolute top-4 right-4">
+                    <button (click)="toggleDropdown(log.appointment_id, $event)"
+                            class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                      <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+
+                    @if (activeDropdownId() === log.appointment_id) {
+                      <div class="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-20 animate-fadeIn origin-top-right">
+                        <button (click)="openEditLogModal(log, $event)"
+                                class="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600 flex items-center gap-2 transition-colors">
+                          <span class="material-symbols-outlined text-lg">edit</span> แก้ไขบันทึก
+                        </button>
+                        <div class="my-1 border-t border-gray-50"></div>
+                        <button (click)="promptRevertLog(log.appointment_id, $event)"
+                                class="w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                          <span class="material-symbols-outlined text-lg">undo</span> ยกเลิกบันทึก
+                        </button>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 pr-8">
+                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                      <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
+                      <span class="text-sm font-bold text-gray-700">{{ formatThaiDate(log.date) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                      <span class="material-symbols-outlined text-gray-400 text-sm">schedule</span>
+                      <span class="text-sm font-bold text-gray-700">{{ log.time }} น.</span>
+                    </div>
+                    <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ log.type }}</span>
+                  </div>
+
+                  <h3 class="text-xl font-bold text-gray-800 mb-3">{{ log.title }}</h3>
+
+                  <div class="relative bg-blue-50/50 p-5 rounded-xl border border-blue-100/50 text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                    <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-blue-200 rotate-180 bg-white rounded-full">format_quote</span>
+                    <span class="relative z-10 block pt-1">{{ log.note }}</span>
+                  </div>
                 </div>
-              }
-            </div>
-
-            <div class="flex items-center gap-3 mb-3 pr-10">
-              <div class="text-sm font-bold text-gray-500">{{ formatThaiDate(log.date) }} <span class="ml-1 text-gray-400 font-medium">{{ log.time }} น.</span></div>
-              <span class="px-3 py-1 bg-cyan-50 text-cyan-700 text-xs font-bold rounded-full border border-cyan-100">{{ log.type }}</span>
-            </div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ log.title }}</h3>
-            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 mt-3">
-              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{{ log.note }}</p>
-            </div>
+              </div>
+            }
           </div>
-        }
-
-        @if (studentLogs().length === 0) {
-          <div class="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100 border-dashed">
-            <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">history_toggle_off</span>
-            <p>ยังไม่มีประวัติการให้คำปรึกษา</p>
+        } @else {
+          <div class="text-center py-20 bg-white rounded-3xl border border-gray-200 border-dashed shadow-sm">
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="material-symbols-outlined text-4xl text-gray-400">speaker_notes_off</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-700 mb-1">ยังไม่มีประวัติการให้คำปรึกษา</h3>
+            <p class="text-sm text-gray-500">นักศึกษาคนนี้ยังไม่เคยได้รับการบันทึกผลการปรึกษา</p>
           </div>
         }
       </div>
@@ -167,46 +212,58 @@
 </div>
 
 @if (isEditModalOpen() && editingLog) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeModals()">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden" (click)="$event.stopPropagation()">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-blue-500">edit_note</span> แก้ไขบันทึกการปรึกษา
-        </h2>
-        <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeModals()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all" (click)="$event.stopPropagation()">
+      <div class="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined">edit_note</span>
+          </div>
+          <h2 class="text-xl font-bold text-gray-800">แก้ไขบันทึก</h2>
+        </div>
+        <button (click)="closeModals()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
       </div>
-      <div class="p-6 space-y-4">
+      <div class="p-6 md:p-8 space-y-5">
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
-          <input type="text" [value]="editingLog.title" readonly class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed">
+          <label class="block text-sm font-bold text-gray-700 mb-1.5">หัวข้อ</label>
+          <div class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm font-medium">
+            {{ editingLog.title }}
+          </div>
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1 text-orange-600">รายละเอียดผลการปรึกษา</label>
-          <textarea [(ngModel)]="editingLog.note" rows="5" placeholder="กรอกผลการให้คำปรึกษาที่ต้องการแก้ไข..."
-                    class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"></textarea>
+          <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between">
+            รายละเอียดที่บันทึก
+            <span class="text-xs font-normal text-gray-400">แก้ไขข้อความด้านล่าง</span>
+          </label>
+          <textarea [(ngModel)]="editingLog.note" rows="6" placeholder="พิมพ์รายละเอียด..."
+                    class="w-full p-4 bg-white border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none text-sm leading-relaxed"></textarea>
         </div>
       </div>
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+      <div class="p-6 md:p-8 bg-gray-50/80 flex justify-end gap-3 border-t border-gray-100">
         <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
-        <button (click)="submitEditLog()" class="px-8 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-sm">บันทึกการแก้ไข</button>
+        <button (click)="submitEditLog()" class="px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-200 flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">save</span> บันทึกการแก้ไข
+        </button>
       </div>
     </div>
   </div>
 }
 
 @if (isConfirmRevertModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 text-center">
-      <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden p-8 text-center transform transition-all scale-100">
+      <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
         <span class="material-symbols-outlined text-4xl">undo</span>
       </div>
-      <h2 class="text-xl font-bold text-gray-800 mb-2">ยกเลิกการบันทึกนี้?</h2>
+      <h2 class="text-2xl font-extrabold text-gray-900 mb-2">ดึงกลับเป็นนัดหมาย?</h2>
       <p class="text-gray-500 text-sm mb-8 leading-relaxed">
-        บันทึกนี้จะถูกลบออกจากประวัติ <br>และกลับไปอยู่ใน <b>"รายการนัดหมาย"</b> อีกครั้ง
+        บันทึกนี้จะถูกลบออกจากหน้านี้ <br>และกลับไปรอจัดการที่ <b>"ตารางนัดหมาย"</b>
       </p>
-      <div class="flex gap-3">
-        <button (click)="closeModals()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">กลับไป</button>
-        <button (click)="confirmRevertLog()" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-sm">ใช่, ยกเลิกบันทึก</button>
+      <div class="flex flex-col gap-3">
+        <button (click)="confirmRevertLog()" class="w-full py-3.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-200">ใช่, ดึงกลับไปเลย</button>
+        <button (click)="closeModals()" class="w-full py-3.5 bg-white border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-200 transition-colors">ยกเลิก, ไม่ทำแล้ว</button>
       </div>
     </div>
   </div>

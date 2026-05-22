@@ -15,9 +15,11 @@ export class IndividualRecord implements OnInit {
   private http = inject(HttpClient);
   apiUrl = environment.apiUrl;
 
-  // --- State สำหรับหน้าหลัก ---
+  // --- State สำหรับหน้าหลัก (รายชื่อนักศึกษา) ---
   students = signal<any[]>([]);
   searchQuery = signal('');
+
+  // Pagination State
   currentPage = signal(1);
   pageSize = signal(5);
 
@@ -39,7 +41,7 @@ export class IndividualRecord implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.pageSize()));
 
-  // --- State สำหรับหน้าประวัติ ---
+  // --- State สำหรับหน้าประวัติ (รายบุคคล) ---
   selectedStudent = signal<any>(null);
   studentLogs = signal<any[]>([]);
   sortOrder = signal<'desc' | 'asc'>('desc');
@@ -75,7 +77,7 @@ export class IndividualRecord implements OnInit {
             imgUrl:
               s.image && s.image.trim() !== ''
                 ? `${this.apiUrl}/${s.image}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=f1f5f9&color=64748b`,
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fff7ed&color=ea580c`,
             formattedLatestDate: s.latest_date ? this.formatThaiDate(s.latest_date) : '-',
           }));
           this.students.set(processed);
@@ -114,7 +116,7 @@ export class IndividualRecord implements OnInit {
 
   openEditLogModal(log: any, e: Event) {
     e.stopPropagation();
-    this.editingLog = { ...log }; // Copy ข้อมูลกันพลาด
+    this.editingLog = { ...log };
     this.isEditModalOpen.set(true);
     this.closeDropdowns();
   }
@@ -133,10 +135,9 @@ export class IndividualRecord implements OnInit {
     this.revertingLogId = null;
   }
 
-  // ==================== API Calls: แก้ไข & ยกเลิกบันทึก ====================
+  // ==================== API Calls ====================
   submitEditLog() {
     if (!this.editingLog || !this.editingLog.note) return alert('กรุณากรอกรายละเอียด');
-
     this.http
       .post(`${this.apiUrl}/update_appointment_log.php`, {
         appointment_id: this.editingLog.appointment_id,
@@ -146,7 +147,7 @@ export class IndividualRecord implements OnInit {
         next: (res: any) => {
           if (res.status === 'success') {
             this.closeModals();
-            this.viewStudentLogs(this.selectedStudent()); // โหลดประวัติใหม่
+            this.viewStudentLogs(this.selectedStudent());
           } else alert('เกิดข้อผิดพลาด: ' + res.message);
         },
         error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
@@ -155,7 +156,6 @@ export class IndividualRecord implements OnInit {
 
   confirmRevertLog() {
     if (!this.revertingLogId) return;
-
     this.http
       .post(`${this.apiUrl}/revert_appointment_log.php`, {
         appointment_id: this.revertingLogId,
@@ -164,8 +164,8 @@ export class IndividualRecord implements OnInit {
         next: (res: any) => {
           if (res.status === 'success') {
             this.closeModals();
-            this.viewStudentLogs(this.selectedStudent()); // โหลดประวัติใหม่ (รายการนั้นจะหายไป)
-            this.loadStudentsSummary(); // อัปเดตตัวเลขหน้าหลักด้วย
+            this.viewStudentLogs(this.selectedStudent());
+            this.loadStudentsSummary();
           } else alert('เกิดข้อผิดพลาด: ' + res.message);
         },
         error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
@@ -173,26 +173,31 @@ export class IndividualRecord implements OnInit {
   }
 
   // Helpers
+  clearSearch() {
+    this.searchQuery.set('');
+    this.currentPage.set(1);
+  }
+
   onImgError(event: Event, name: string) {
     (event.target as HTMLImageElement).src =
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f1f5f9&color=64748b`;
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fff7ed&color=ea580c`;
   }
 
   formatThaiDate(dStr: string) {
     if (!dStr) return '';
     const m = [
-      'ม.ค.',
-      'ก.พ.',
-      'มี.ค.',
-      'เม.ย.',
-      'พ.ค.',
-      'มิ.ย.',
-      'ก.ค.',
-      'ส.ค.',
-      'ก.ย.',
-      'ต.ค.',
-      'พ.ย.',
-      'ธ.ค.',
+      'มกราคม',
+      'กุมภาพันธ์',
+      'มีนาคม',
+      'เมษายน',
+      'พฤษภาคม',
+      'มิถุนายน',
+      'กรกฎาคม',
+      'สิงหาคม',
+      'กันยายน',
+      'ตุลาคม',
+      'พฤศจิกายน',
+      'ธันวาคม',
     ];
     const d = new Date(dStr);
     return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
