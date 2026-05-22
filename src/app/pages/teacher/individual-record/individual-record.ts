@@ -15,11 +15,9 @@ export class IndividualRecord implements OnInit {
   private http = inject(HttpClient);
   apiUrl = environment.apiUrl;
 
-  // --- State สำหรับหน้าหลัก (รายชื่อนักศึกษา) ---
+  // --- State สำหรับหน้าหลัก ---
   students = signal<any[]>([]);
   searchQuery = signal('');
-
-  // Pagination State
   currentPage = signal(1);
   pageSize = signal(5);
 
@@ -34,7 +32,6 @@ export class IndividualRecord implements OnInit {
     return list;
   });
 
-  // ตัดข้อมูลสำหรับ Pagination
   paginatedStudents = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredStudents().slice(start, start + this.pageSize());
@@ -42,10 +39,17 @@ export class IndividualRecord implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.pageSize()));
 
-  // --- State สำหรับหน้าประวัติ (รายบุคคล) ---
-  selectedStudent = signal<any>(null); // ถ้ามีค่า = อยู่หน้าประวัติรายบุคคล
+  // --- State สำหรับหน้าประวัติ ---
+  selectedStudent = signal<any>(null);
   studentLogs = signal<any[]>([]);
   sortOrder = signal<'desc' | 'asc'>('desc');
+
+  // --- State สำหรับเมนูและ Modal ---
+  activeDropdownId = signal<string | null>(null);
+  isEditModalOpen = signal(false);
+  isConfirmRevertModalOpen = signal(false);
+  editingLog: any = null;
+  revertingLogId: string | null = null;
 
   sortedLogs = computed(() => {
     let logs = [...this.studentLogs()];
@@ -61,7 +65,6 @@ export class IndividualRecord implements OnInit {
     this.loadStudentsSummary();
   }
 
-  // 1. ดึงข้อมูลสรุปของนักศึกษาทุกคน
   loadStudentsSummary() {
     this.http
       .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=14`)
@@ -81,7 +84,6 @@ export class IndividualRecord implements OnInit {
       });
   }
 
-  // 2. กดปุ่ม "ดูบันทึก" -> สลับหน้าและดึงประวัติ
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
     this.http
@@ -89,18 +91,85 @@ export class IndividualRecord implements OnInit {
         any[]
       >(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=14&student_id=${student.student_id}`)
       .subscribe({
-        next: (data) => {
-          this.studentLogs.set(data || []);
-        },
+        next: (data) => this.studentLogs.set(data || []),
         error: () => this.studentLogs.set([]),
       });
   }
 
-  // 3. กดปุ่ม "ย้อนกลับ"
   goBack() {
     this.selectedStudent.set(null);
     this.studentLogs.set([]);
-    this.loadStudentsSummary(); // รีเฟรชข้อมูลเผื่อมีการอัปเดต
+    this.loadStudentsSummary();
+  }
+
+  // ==================== ฟังก์ชันจัดการ Dropdown และ Modal ====================
+  toggleDropdown(id: string, e: Event) {
+    e.stopPropagation();
+    this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
+  }
+
+  closeDropdowns() {
+    this.activeDropdownId.set(null);
+  }
+
+  openEditLogModal(log: any, e: Event) {
+    e.stopPropagation();
+    this.editingLog = { ...log }; // Copy ข้อมูลกันพลาด
+    this.isEditModalOpen.set(true);
+    this.closeDropdowns();
+  }
+
+  promptRevertLog(id: string, e: Event) {
+    e.stopPropagation();
+    this.revertingLogId = id;
+    this.isConfirmRevertModalOpen.set(true);
+    this.closeDropdowns();
+  }
+
+  closeModals() {
+    this.isEditModalOpen.set(false);
+    this.isConfirmRevertModalOpen.set(false);
+    this.editingLog = null;
+    this.revertingLogId = null;
+  }
+
+  // ==================== API Calls: แก้ไข & ยกเลิกบันทึก ====================
+  submitEditLog() {
+    if (!this.editingLog || !this.editingLog.note) return alert('กรุณากรอกรายละเอียด');
+
+    this.http
+      .post(`${this.apiUrl}/update_appointment_log.php`, {
+        appointment_id: this.editingLog.appointment_id,
+        note: this.editingLog.note,
+      })
+      .subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') {
+            this.closeModals();
+            this.viewStudentLogs(this.selectedStudent()); // โหลดประวัติใหม่
+          } else alert('เกิดข้อผิดพลาด: ' + res.message);
+        },
+        error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+      });
+  }
+
+  confirmRevertLog() {
+    if (!this.revertingLogId) return;
+
+    this.http
+      .post(`${this.apiUrl}/revert_appointment_log.php`, {
+        appointment_id: this.revertingLogId,
+      })
+      .subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') {
+            this.closeModals();
+            this.viewStudentLogs(this.selectedStudent()); // โหลดประวัติใหม่ (รายการนั้นจะหายไป)
+            this.loadStudentsSummary(); // อัปเดตตัวเลขหน้าหลักด้วย
+          } else alert('เกิดข้อผิดพลาด: ' + res.message);
+        },
+        error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+      });
   }
 
   // Helpers
@@ -112,24 +181,23 @@ export class IndividualRecord implements OnInit {
   formatThaiDate(dStr: string) {
     if (!dStr) return '';
     const m = [
-      'มกราคม',
-      'กุมภาพันธ์',
-      'มีนาคม',
-      'เมษายน',
-      'พฤษภาคม',
-      'มิถุนายน',
-      'กรกฎาคม',
-      'สิงหาคม',
-      'กันยายน',
-      'ตุลาคม',
-      'พฤศจิกายน',
-      'ธันวาคม',
+      'ม.ค.',
+      'ก.พ.',
+      'มี.ค.',
+      'เม.ย.',
+      'พ.ค.',
+      'มิ.ย.',
+      'ก.ค.',
+      'ส.ค.',
+      'ก.ย.',
+      'ต.ค.',
+      'พ.ย.',
+      'ธ.ค.',
     ];
     const d = new Date(dStr);
     return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  // Pagination Controls
   nextPage() {
     if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
   }
@@ -143,7 +211,6 @@ export class IndividualRecord implements OnInit {
     return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
   }
 
-  // Export Excel
   exportMainToExcel() {
     const data = this.filteredStudents();
     if (!data.length) return alert('ไม่มีข้อมูล');
