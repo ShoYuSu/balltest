@@ -1,1 +1,144 @@
-<p>individual-record works!</p>
+<div class="p-8 bg-gray-50 min-h-screen">
+
+  @if (!selectedStudent()) {
+    <div class="animate-fadeIn">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">บันทึกการปรึกษา-รายบุคคล</h1>
+        <p class="text-gray-500 mt-1">ติดตามประวัติบันทึกการให้คำปรึกษานักศึกษาและผลการให้คำปรึกษา</p>
+      </div>
+
+      <div class="flex flex-wrap gap-4 mb-6 items-center">
+        <div class="relative flex-grow max-w-md">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
+                 placeholder="ค้นหาชื่อหรือรหัสนักศึกษา..."
+                 class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+        </div>
+        <button (click)="exportMainToExcel()"
+                class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm font-medium">
+          <span class="material-symbols-outlined text-green-600">output</span> Excel
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        @for (student of paginatedStudents(); track student.student_id) {
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center gap-5">
+              <img [src]="student.imgUrl" (error)="onImgError($event, student.full_name)"
+                   class="w-16 h-16 rounded-full object-cover border-2 border-gray-50 shadow-sm">
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <h3 class="font-bold text-gray-900 text-lg">{{ student.full_name }}</h3>
+                  <span class="text-gray-400 text-sm">รหัส {{ student.student_code }}</span>
+                </div>
+                <div class="flex items-center gap-6 mt-2 text-sm text-gray-500">
+                  <div class="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-lg">
+                    <span class="material-symbols-outlined text-gray-400 text-lg">description</span>
+                    <span class="font-medium text-gray-700">{{ student.total_records }} รายการที่ปรึกษา</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-orange-400 text-lg">event_available</span>
+                    ล่าสุด {{ student.formattedLatestDate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button (click)="viewStudentLogs(student)"
+                    class="px-5 py-2.5 border-2 border-gray-100 rounded-xl text-gray-600 font-semibold hover:border-orange-500 hover:text-orange-600 flex items-center gap-2 transition-all bg-white group-hover:shadow-sm">
+              <span class="material-symbols-outlined">visibility</span> ดูบันทึก
+            </button>
+          </div>
+        }
+
+        @if (filteredStudents().length === 0) {
+          <div class="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100 border-dashed">
+            <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">search_off</span>
+            <p>ไม่พบข้อมูลนักศึกษา</p>
+          </div>
+        }
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="mt-8 flex justify-between items-center">
+          <p class="text-sm text-gray-500">แสดง {{ paginatedStudents().length }} จาก {{ filteredStudents().length }} รายการ</p>
+          <div class="flex gap-2">
+            <button (click)="prevPage()" [disabled]="currentPage() === 1" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">ก่อนหน้า</button>
+            @for (page of getPagesArray(); track page) {
+              <button (click)="goToPage(page)"
+                      class="px-3.5 py-1.5 rounded-lg text-sm font-bold transition-colors"
+                      [ngClass]="currentPage() === page ? 'bg-orange-500 text-white shadow-sm shadow-orange-200' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'">
+                {{ page }}
+              </button>
+            }
+            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">ถัดไป</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @else {
+    <div class="animate-fadeIn">
+
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-5">
+          <img [src]="selectedStudent().imgUrl" (error)="onImgError($event, selectedStudent().full_name)"
+               class="w-[72px] h-[72px] rounded-full object-cover border-4 border-white shadow-md">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ selectedStudent().full_name }}</h1>
+            <div class="flex items-center gap-6 mt-1.5 text-sm text-gray-500">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-gray-400 text-lg">description</span>
+                <span class="font-medium text-gray-700">{{ selectedStudent().total_records }} รายการที่ปรึกษา</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-orange-400 text-lg">event_available</span>
+                ล่าสุด {{ selectedStudent().formattedLatestDate }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button (click)="exportDetailToExcel()"
+                  class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-medium">
+            <span class="material-symbols-outlined text-green-600">output</span> Excel
+          </button>
+          <button (click)="goBack()"
+                  class="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm font-bold">
+            ย้อนกลับ
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <select [(ngModel)]="sortOrder"
+                class="px-4 py-2 bg-transparent border-none text-gray-600 font-medium focus:ring-0 cursor-pointer">
+          <option value="desc">ล่าสุด - เก่าสุด</option>
+          <option value="asc">เก่าสุด - ล่าสุด</option>
+        </select>
+      </div>
+
+      <div class="space-y-4">
+        @for (log of sortedLogs(); track log.appointment_id) {
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-3">
+              <div class="text-sm font-medium text-gray-500">{{ formatThaiDate(log.date) }} <span class="ml-2 text-gray-400">{{ log.time }}</span></div>
+              <span class="px-3 py-1 bg-cyan-50 text-cyan-700 text-xs font-bold rounded-full border border-cyan-100">{{ log.type }}</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ log.title }}</h3>
+            <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{{ log.note }}</p>
+          </div>
+        }
+
+        @if (studentLogs().length === 0) {
+          <div class="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100 border-dashed">
+            <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">history_toggle_off</span>
+            <p>ยังไม่มีประวัติการให้คำปรึกษา</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -6,7 +6,6 @@
     </div>
   </div>
 
-  <!-- Toolbar -->
   <div class="flex flex-wrap gap-3 mb-6 items-center">
     <div class="relative flex-grow max-w-md">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
@@ -14,7 +13,6 @@
              class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
     </div>
 
-    <!-- Filter Dropdown -->
     <div class="relative min-w-[170px]">
       <button (click)="toggleFilterDropdown($event)"
               class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm font-medium">
@@ -45,17 +43,15 @@
       <span class="material-symbols-outlined text-green-600">table_view</span> Export Excel
     </button>
     <button (click)="openManageTypesModal($event)"
-            class="px-4 py-2.5 bg-white hover:bg-yellow-50  border border-gray-200 text-yellow-600 hover:border-yellow-500 text-sm font-medium rounded-md flex items-center gap-1 transition-all shadow-sm">
+            class="px-4 py-2.5 bg-white hover:bg-yellow-50 border border-gray-200 text-yellow-600 hover:border-yellow-500 text-sm font-medium rounded-md flex items-center gap-1 transition-all shadow-sm">
       <span class="material-symbols-outlined ">settings</span> จัดการประเภท
     </button>
     <button (click)="openCreateModal()"
             class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
       <span class="material-symbols-outlined">add</span> เพิ่มนัดหมาย
     </button>
-
   </div>
 
-  <!-- Appointment List -->
   <div class="space-y-4">
     @for (app of filteredAppointments(); track app.id) {
       <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-all">
@@ -68,7 +64,7 @@
               @if (app.type) {
                 <span class="px-3 py-0.5 bg-cyan-50 text-cyan-600 text-xs font-bold rounded-full">{{ app.type }}</span>
               }
-              @if (app.status) {
+              @if (app.status && app.status !== 'ดำเนินการแล้ว') {
                 <span class="px-3 py-0.5 bg-orange-50 text-orange-600 text-xs font-bold rounded-full">{{ app.status }}</span>
               }
             </div>
@@ -115,7 +111,7 @@
     @if (filteredAppointments().length === 0) {
       <div class="text-center py-16 text-gray-400">
         <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">event_busy</span>
-        <p class="text-sm">ไม่พบข้อมูลการนัดหมาย</p>
+        <p class="text-sm">ไม่พบข้อมูลการนัดหมายที่ต้องดำเนินการ</p>
       </div>
     }
   </div>
@@ -125,7 +121,6 @@
   </div>
 </div>
 
-<!-- ==================== CREATE MODAL ==================== -->
 @if (isCreateModalOpen()) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
@@ -140,7 +135,6 @@
 
       <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
 
-        <!-- เลือกนักศึกษา -->
         <div class="relative">
           <label class="block text-sm font-bold text-gray-700 mb-2">เลือกนักศึกษา</label>
           <div class="relative">
@@ -176,7 +170,6 @@
           }
         </div>
 
-        <!-- วันที่ / เวลา -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
@@ -190,11 +183,9 @@
           </div>
         </div>
 
-        <!-- ประเภทหัวข้อ -->
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
-
           </div>
           <div class="relative">
             <input type="text" [(ngModel)]="newApp.type"
@@ -242,7 +233,6 @@
           </div>
         </div>
 
-        <!-- หัวข้อ / รายละเอียด -->
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
           <input type="text" [(ngModel)]="newApp.topic" placeholder="ระบุหัวข้อหลัก..."
@@ -263,7 +253,6 @@
   </div>
 }
 
-<!-- ==================== EDIT MODAL ==================== -->
 @if (isEditModalOpen() && selectedApp) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
@@ -296,7 +285,6 @@
           </div>
         </div>
 
-        <!-- ประเภทหัวข้อ (edit) -->
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
@@ -367,7 +355,6 @@
   </div>
 }
 
-<!-- ==================== LOG MODAL ==================== -->
 @if (isLogModalOpen() && selectedApp) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
@@ -380,7 +367,7 @@
       <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
         <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
           <span class="material-symbols-outlined text-orange-500">info</span>
-          <p class="text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที</p>
+          <p class="text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที และจะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา-รายบุคคล"</p>
         </div>
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
@@ -410,19 +397,18 @@
         </div>
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">บันทึกผลการปรึกษา</label>
-          <textarea placeholder="กรอกผลการให้คำปรึกษา..." rows="3"
+          <textarea [(ngModel)]="selectedApp.note" placeholder="กรอกผลการให้คำปรึกษา..." rows="3"
                     class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"></textarea>
         </div>
       </div>
       <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
         <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
-        <button (click)="closeModals()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึก</button>
+        <button (click)="submitConsultationLog()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึก</button>
       </div>
     </div>
   </div>
 }
 
-<!-- ==================== CONFIRM CANCEL MODAL ==================== -->
 @if (isConfirmCancelModalOpen()) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 text-center">
@@ -439,7 +425,6 @@
   </div>
 }
 
-<!-- ==================== MANAGE TYPES MODAL ==================== -->
 @if (isManageTypesModalOpen()) {
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
@@ -476,7 +461,6 @@
         }
       </div>
 
-      <!-- เพิ่มประเภทใหม่ -->
       <div class="p-6 border-t border-gray-100 bg-gray-50 space-y-3">
         <label class="block text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
         <div class="flex gap-2">
