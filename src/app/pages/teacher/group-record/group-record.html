@@ -1,1 +1,213 @@
-<p>group-record works!</p>
+<div class="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeAllDropdowns()">
+
+  <div class="max-w-6xl mx-auto animate-fadeIn pb-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">บันทึกการปรึกษา — รายกลุ่ม</h1>
+      <p class="text-gray-500 mt-2 text-sm md:text-base">ตรวจสอบประวัติและผลการให้คำปรึกษานักศึกษาแบบกลุ่มที่ได้ดำเนินการไปแล้ว</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+
+      <div class="flex w-full sm:w-auto flex-grow gap-4">
+        <div class="relative w-full sm:max-w-md group flex-grow">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
+                 placeholder="ค้นหาหัวข้อ, บันทึก หรือชื่อนักศึกษา..."
+                 class="w-full pl-12 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+          @if (searchQuery()) {
+            <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          }
+        </div>
+
+        <div class="relative min-w-[170px]">
+          <button (click)="toggleFilterDropdown($event)"
+                  class="w-full h-full flex items-center justify-between bg-gray-50/50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+            {{ selectedFilter() }}
+            <span class="material-symbols-outlined text-gray-400 transition-transform duration-200" [class.rotate-180]="isFilterDropdownOpen()">expand_more</span>
+          </button>
+
+          @if (isFilterDropdownOpen()) {
+            <div class="absolute left-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn">
+              @for (option of filterOptions(); track option) {
+                <button (click)="selectFilter(option, $event)"
+                        class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
+                        [class]="selectedFilter() === option ? 'bg-orange-50 text-orange-600 font-bold' : 'text-gray-700 hover:bg-gray-50 hover:text-orange-500'">
+                  {{ option }}
+                  @if (selectedFilter() === option) {
+                    <span class="material-symbols-outlined text-orange-500 text-base font-bold">check</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <button (click)="exportToExcel()"
+              class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 hover:shadow-sm transition-all font-bold text-sm border border-green-100">
+        <span class="material-symbols-outlined text-lg">description</span> Export Excel
+      </button>
+    </div>
+
+    <div class="space-y-6">
+      @for (app of paginatedAppointments(); track app.id) {
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 relative group transition-all duration-300 hover:shadow-md">
+
+          <div class="absolute top-6 right-6">
+            <button (click)="toggleDropdown(app.id, $event)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+
+            @if (activeDropdownId() === app.id) {
+              <div class="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-20 animate-fadeIn origin-top-right">
+                <button (click)="openEditLogModal(app, $event)"
+                        class="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                  <span class="material-symbols-outlined text-lg">edit_note</span> แก้ไขบันทึก
+                </button>
+                <div class="my-1 border-t border-gray-50"></div>
+                <button (click)="promptRevertLog(app.id, $event)"
+                        class="w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                  <span class="material-symbols-outlined text-lg">undo</span> ยกเลิกบันทึก
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 pr-10">
+            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+              <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
+              <span class="text-sm font-bold text-gray-700">{{ app.date }}</span>
+            </div>
+            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+              <span class="material-symbols-outlined text-gray-400 text-sm">schedule</span>
+              <span class="text-sm font-bold text-gray-700">{{ app.time }}</span>
+            </div>
+            <span class="px-3 py-1.5 bg-cyan-50 text-cyan-700 text-xs font-extrabold rounded-lg border border-cyan-100">{{ app.type }}</span>
+          </div>
+
+          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ app.topic }}</h3>
+          @if (app.details) {
+            <p class="text-sm text-gray-500 mb-4">{{ app.details }}</p>
+          }
+
+          <div class="relative bg-orange-50/50 p-5 rounded-2xl border border-orange-100 mb-6">
+            <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-orange-200 rotate-180 bg-white rounded-full">format_quote</span>
+            <p class="relative z-10 pt-1 text-gray-800 text-sm leading-relaxed whitespace-pre-wrap font-medium">{{ app.note }}</p>
+          </div>
+
+          <div class="pt-5 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <span class="text-sm font-bold text-gray-500">นักศึกษาที่เข้าร่วมกลุ่ม ({{ app.students.length }} คน):</span>
+            <div class="flex items-center flex-wrap gap-2">
+              @for (student of app.students; track student.id) {
+                <div class="flex items-center gap-2 bg-white border border-gray-200 px-2 py-1 rounded-full shadow-sm">
+                  <img [src]="student.img" (error)="onImgError($event, student.name)" class="w-6 h-6 rounded-full object-cover">
+                  <span class="text-xs font-bold text-gray-700 pr-1">{{ student.name }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+      }
+
+      @if (filteredAppointments().length === 0) {
+        <div class="text-center py-20 bg-white rounded-3xl border border-gray-200 border-dashed shadow-sm">
+          <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-4xl text-gray-400">speaker_notes_off</span>
+          </div>
+          <h3 class="text-lg font-bold text-gray-700 mb-1">ไม่พบประวัติการปรึกษากลุ่ม</h3>
+          <p class="text-sm text-gray-500">ยังไม่มีนัดหมายแบบกลุ่มที่ได้รับการบันทึกผล</p>
+        </div>
+      }
+    </div>
+
+    @if (totalItems() > 0) {
+      <div class="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+          แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }}-{{ (currentPage() * itemsPerPage) > totalItems() ? totalItems() : (currentPage() * itemsPerPage) }}
+          จาก {{ totalItems() }} รายการ
+        </p>
+        <div class="flex items-center bg-white p-1 rounded-full shadow-sm border border-gray-100">
+          <button (click)="prevPage()" [disabled]="currentPage() === 1"
+                  class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <div class="flex px-1 gap-1">
+            @for (page of pageNumbers(); track page) {
+              <button (click)="goToPage(page)"
+                      class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all"
+                      [class]="currentPage() === page ? 'bg-orange-500 text-white shadow-md shadow-orange-200' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'">
+                {{ page }}
+              </button>
+            }
+          </div>
+          <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                  class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+@if (isEditModalOpen() && editingLog) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeModals()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all" (click)="$event.stopPropagation()">
+      <div class="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined">edit_note</span>
+          </div>
+          <h2 class="text-xl font-bold text-gray-800">แก้ไขบันทึกกลุ่ม</h2>
+        </div>
+        <button (click)="closeModals()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 md:p-8 space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1.5">หัวข้อ</label>
+          <div class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm font-medium">
+            {{ editingLog.topic }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between">
+            รายละเอียดผลการปรึกษา
+            <span class="text-xs font-normal text-gray-400">แก้ไขข้อความด้านล่าง</span>
+          </label>
+          <textarea [(ngModel)]="editingLog.note" rows="6" placeholder="พิมพ์รายละเอียดที่ต้องการแก้ไข..."
+                    class="w-full p-4 bg-white border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none text-sm leading-relaxed"></textarea>
+        </div>
+      </div>
+      <div class="p-6 md:p-8 bg-gray-50/80 flex justify-end gap-3 border-t border-gray-100">
+        <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
+        <button (click)="submitEditLog()" class="px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-200 flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">save</span> บันทึกการแก้ไข
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (isConfirmRevertModalOpen()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden p-8 text-center transform transition-all scale-100">
+      <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5">
+        <span class="material-symbols-outlined text-4xl">undo</span>
+      </div>
+      <h2 class="text-2xl font-extrabold text-gray-900 mb-2">ดึงกลับเป็นนัดหมาย?</h2>
+      <p class="text-gray-500 text-sm mb-8 leading-relaxed">
+        บันทึกกลุ่มนี้จะถูกลบออกจากประวัติ <br>และกลับไปรอจัดการที่ <b>"นัดหมายรายกลุ่ม"</b>
+      </p>
+      <div class="flex flex-col gap-3">
+        <button (click)="confirmRevertLog()" class="w-full py-3.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-200">ใช่, ดึงกลับไปเลย</button>
+        <button (click)="closeModals()" class="w-full py-3.5 bg-white border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-200 transition-colors">ยกเลิก, ไม่ทำแล้ว</button>
+      </div>
+    </div>
+  </div>
+}

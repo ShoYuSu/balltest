@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { RouterModule, Router } from '@angular/router'; // 👉 อย่าลืม import Router
+import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
@@ -13,7 +13,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
-  private router = inject(Router); // 👉 Inject Router สำหรับเปลี่ยนหน้า
+  private router = inject(Router);
 
   dashboardStats = [
     {
@@ -92,25 +92,28 @@ export class HomeComponent implements OnInit {
       >(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`)
       .subscribe({
         next: (data) => {
-          const formatted = (data || []).map((app: any) => {
-            const first = app.students?.[0];
-            return {
-              id: app.appointment_id || first?.id || '-',
-              name: first
-                ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
-                : 'ไม่ระบุ',
-              topic: app.title,
-              type: app.type,
-              note: app.note,
-              date: this.formatDate(app.appointment_date),
-              time: app.start_time?.substring(0, 5) + ' น.',
-              img: first?.img
-                ? `${environment.apiUrl}/${first.img}`
-                : `https://i.pravatar.cc/150?u=${first?.id}`,
-              isGroup: app.students.length > 1,
-              memberCount: app.students.length,
-            };
-          });
+          const formatted = (data || [])
+            // 👉 เพิ่มบรรทัดนี้: เพื่อกรองเอาเฉพาะการนัดหมายที่ยังไม่ถูกบันทึก (ตัดอันที่ดำเนินการแล้วออกไป)
+            .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
+            .map((app: any) => {
+              const first = app.students?.[0];
+              return {
+                id: app.appointment_id || first?.id || '-',
+                name: first
+                  ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
+                  : 'ไม่ระบุ',
+                topic: app.title,
+                type: app.type,
+                note: app.note,
+                date: this.formatDate(app.appointment_date),
+                time: app.start_time?.substring(0, 5) + ' น.',
+                img: first?.img
+                  ? `${environment.apiUrl}/${first.img}`
+                  : `https://i.pravatar.cc/150?u=${first?.id}`,
+                isGroup: app.students.length > 1,
+                memberCount: app.students.length,
+              };
+            });
           this.appointments.set(formatted);
           this.dashboardStats[2].value = formatted.length;
         },
@@ -146,12 +149,8 @@ export class HomeComponent implements OnInit {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
 
-  // 👉 ฟังก์ชันกระโดดข้ามหน้า
   goToAppointment(app: any) {
-    // ⚠️ ตรงนี้สำคัญมาก! ถ้าหน้าเว็บของพี่ชื่ออื่น ให้แก้ตรง '/group' และ '/individual' ให้ตรงกับระบบของพี่นะครับ
     const targetPath = app.isGroup ? '/group' : '/individual';
-
-    // สั่งเปลี่ยนหน้า พร้อมส่ง ID ไปด้วย
     this.router.navigate([targetPath], { queryParams: { id: app.id } });
   }
 }
