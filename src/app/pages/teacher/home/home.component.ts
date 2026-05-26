@@ -75,12 +75,12 @@ export class HomeComponent implements OnInit {
           ploStatus: student.ploStatus,
           img: student.image
             ? `${environment.apiUrl}/${student.image}`
-            : `https://i.pravatar.cc/150?u=${student.student_code}`,
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
         }));
         this.studentsInCare.set(formattedStudents);
         this.dashboardStats[0].value = formattedStudents.length;
         this.dashboardStats[1].value = formattedStudents.filter(
-          (s) => s.ploStatus === 'PLO ผ่าน',
+          (s) => s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน',
         ).length;
       },
     });
@@ -93,12 +93,12 @@ export class HomeComponent implements OnInit {
       .subscribe({
         next: (data) => {
           const formatted = (data || [])
-            // 👉 เพิ่มบรรทัดนี้: เพื่อกรองเอาเฉพาะการนัดหมายที่ยังไม่ถูกบันทึก (ตัดอันที่ดำเนินการแล้วออกไป)
             .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
             .map((app: any) => {
               const first = app.students?.[0];
               return {
-                id: app.appointment_id || first?.id || '-',
+                id: app.appointment_id, // 👉 ตัวนี้คือรหัสคิว (13, 14) เก็บไว้ใช้สำหรับกดเปลี่ยนหน้า
+                studentCode: first?.id || '-', // 👉 ตัวนี้คือรหัสนักศึกษาของจริง!
                 name: first
                   ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
                   : 'ไม่ระบุ',
@@ -109,7 +109,7 @@ export class HomeComponent implements OnInit {
                 time: app.start_time?.substring(0, 5) + ' น.',
                 img: first?.img
                   ? `${environment.apiUrl}/${first.img}`
-                  : `https://i.pravatar.cc/150?u=${first?.id}`,
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
                 isGroup: app.students.length > 1,
                 memberCount: app.students.length,
               };
@@ -151,6 +151,7 @@ export class HomeComponent implements OnInit {
 
   goToAppointment(app: any) {
     const targetPath = app.isGroup ? '/group' : '/individual';
+    // ส่ง id ที่เป็นรหัสคิวนัดหมาย (appointment_id) ไปหน้าอื่น
     this.router.navigate([targetPath], { queryParams: { id: app.id } });
   }
 }
