@@ -4,7 +4,10 @@
       <h1 class="text-3xl font-bold tracking-tight">หลักสูตรและผลลัพธ์การเรียนรู้</h1>
       <p class="text-slate-500 mt-1">จัดการหลักสูตรและ PLO (Program Learning Outcomes)</p>
     </div>
-    <button (click)="openAddCourse()" class="bg-[#6366f1] text-white px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all font-medium">
+    <button
+      (click)="openAddCourse()"
+      class="bg-[#6366f1] text-white px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all font-medium"
+    >
       + สร้างหลักสูตร
     </button>
   </div>
@@ -15,8 +18,14 @@
         <tr>
           @for (col of columns; track col.columnDef) {
             @if (col.display) {
-              <th class="p-5 text-sm font-semibold text-slate-600" 
-                  [ngClass]="{'w-32': col.width === 'small', 'w-64': col.width === 'medium', 'text-center': col.align === 'center'}">
+              <th
+                class="p-5 text-sm font-semibold text-slate-600"
+                [ngClass]="{
+                  'w-32': col.width === 'small',
+                  'w-64': col.width === 'medium',
+                  'text-center': col.align === 'center',
+                }"
+              >
                 {{ col.header }}
               </th>
             }
@@ -24,29 +33,39 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
-        @for (row of dataSource; track row.id) {
+        @for (row of dataSource; track row.curriculum_id) {
           <tr class="hover:bg-slate-50/50 transition">
             @for (col of columns; track col.columnDef) {
               @if (col.display) {
-                <td class="p-5 text-sm" [ngClass]="{'text-center': col.align === 'center'}">
-                  @if (col.tag === 'text') { <span class="text-slate-700">{{ col.cell(row) }}</span> }
-                  @if (col.tag === 'text-color') { <span [style.color]="col.color" class="font-bold">{{ col.cell(row) }}</span> }
-                  
-                  <div class="flex justify-center gap-2">
-                    @if (col.tag === 'icon') { 
-                      <button (click)="openDetail(row)" class="p-1.5 text-slate-400 hover:text-blue-600 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button> 
+                <td class="p-5 text-sm" [ngClass]="{ 'text-center': col.align === 'center' }">
+                  @if (col.tag === 'text') {
+                    <span>{{ col.cell(row) }}</span>
+                  }
+
+                  <div class="flex justify-center gap-1">
+                    @if (col.columnDef === 'view_curriculum') {
+                      <button
+                        (click)="openDetail(row)"
+                        class="text-blue-500 hover:bg-blue-50 p-1.5 rounded-lg"
+                      >
+                        <span class="material-symbols-outlined text-xl">visibility</span>
+                      </button>
                     }
-                    @if (col.tag === 'edit') { 
-                      <button (click)="openEditCourse(row)" class="p-1.5 text-indigo-500 hover:text-indigo-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                      </button> 
+                    @if (col.tag === 'edit') {
+                      <button
+                        (click)="openEditCourse(row)"
+                        class="text-amber-500 hover:bg-amber-50 p-1.5 rounded-lg"
+                      >
+                        <span class="material-symbols-outlined text-xl">edit</span>
+                      </button>
                     }
-                    @if (col.tag === 'delete') { 
-                      <button (click)="confirmDeleteCourse(row)" class="p-1.5 text-red-400 hover:text-red-600 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                      </button> 
+                    @if (col.tag === 'delete') {
+                      <button
+                        (click)="confirmDeleteCourse(row)"
+                        class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg"
+                      >
+                        <span class="material-symbols-outlined text-xl">delete</span>
+                      </button>
                     }
                   </div>
                 </td>
@@ -54,7 +73,11 @@
             }
           </tr>
         } @empty {
-          <tr><td [attr.colspan]="columns.length" class="p-20 text-center text-slate-400">ยังไม่มีข้อมูลหลักสูตร กรุณากดปุ่มสร้างหลักสูตร</td></tr>
+          <tr>
+            <td [attr.colspan]="columns.length" class="p-20 text-center text-slate-400">
+              ยังไม่มีข้อมูลหลักสูตร
+            </td>
+          </tr>
         }
       </tbody>
     </table>
@@ -62,218 +85,429 @@
 </div>
 
 @if (showCourseModal) {
-<div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]">
-  <div class="bg-white rounded-[2rem] p-10 w-full max-w-lg shadow-2xl">
-    <div class="flex justify-between items-center mb-8 font-bold text-2xl text-slate-800">
-      <span>{{ isEditMode ? 'แก้ไขหลักสูตร' : 'สร้างหลักสูตรใหม่' }}</span>
-      <button (click)="closeModals()" class="text-slate-400 hover:text-slate-600">✕</button>
-    </div>
-    
-    <form [formGroup]="courseForm" class="space-y-6">
-      <div>
-        <label class="block text-sm font-semibold mb-2">ชื่อหลักสูตร</label>
-        <input type="text" formControlName="name" placeholder="ชื่อหลักสูตร..." 
-               class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
-               [ngClass]="isInvalid(courseForm, 'name') ? 'border-red-500 ring-red-50' : 'border-slate-200 focus:ring-indigo-500'">
-        <p *ngIf="isInvalid(courseForm, 'name')" class="text-red-500 text-xs mt-1">กรุณากรอกชื่อหลักสูตร</p>
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]">
+    <div class="bg-white rounded-[2rem] p-10 w-full max-w-lg shadow-2xl">
+      <div class="flex justify-between items-center mb-8 font-bold text-2xl text-slate-800">
+        <span>{{ isEditMode ? 'แก้ไขหลักสูตร' : 'สร้างหลักสูตรใหม่' }}</span>
+        <button (click)="closeModals()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-2">ภาควิชา</label>
-        <select formControlName="department" class="w-full border rounded-xl p-3 bg-white outline-none focus:ring-2 transition-all"
-                [ngClass]="isInvalid(courseForm, 'department') ? 'border-red-500' : 'border-slate-200 focus:ring-indigo-500'">
-          <option value="">เลือกภาควิชา</option>
-          <option value="วิทยาการคอมพิวเตอร์">วิทยาการคอมพิวเตอร์</option>
-          <option value="เทคโนโลยีการอาหาร">เทคโนโลยีการอาหาร</option>
-        </select>
-        <p *ngIf="isInvalid(courseForm, 'department')" class="text-red-500 text-xs mt-1">กรุณาเลือกภาควิชา</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
+      <form [formGroup]="courseForm" class="space-y-6">
         <div>
-          <label class="text-sm font-semibold block mb-2">รหัสหลักสูตร</label>
-          <input type="text" formControlName="id" class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
-                 [ngClass]="isInvalid(courseForm, 'id') ? 'border-red-500' : 'border-slate-200 focus:ring-indigo-500'">
-          <p *ngIf="isInvalid(courseForm, 'id')" class="text-red-500 text-xs mt-1">กรุณากรอกรหัส</p>
+          <label class="block text-sm font-semibold mb-2">ชื่อหลักสูตร</label>
+          <input
+            type="text"
+            formControlName="curriculum_name"
+            placeholder="เช่น หลักสูตรวิทยาศาสตรบัณฑิต สาขา..."
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+            [ngClass]="
+              isInvalid(courseForm, 'curriculum_name')
+                ? 'border-red-500 ring-red-50'
+                : 'border-slate-200 focus:ring-indigo-500'
+            "
+          />
+          <p *ngIf="isInvalid(courseForm, 'curriculum_name')" class="text-red-500 text-xs mt-1">
+            กรุณากรอกชื่อหลักสูตร
+          </p>
         </div>
-        <div>
-          <label class="text-sm font-semibold block mb-2">ปีหลักสูตร</label>
-          <input type="number" formControlName="year" class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
-                 [ngClass]="isInvalid(courseForm, 'year') ? 'border-red-500' : 'border-slate-200 focus:ring-indigo-500'">
-        </div>
-      </div>
-    </form>
 
-    <div class="mt-10 flex gap-4">
-      <button (click)="closeModals()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-500 hover:bg-slate-50">ยกเลิก</button>
-      <button (click)="saveCourse()" class="flex-1 py-3 bg-[#6366f1] text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all">
-        {{ isEditMode ? 'บันทึกการแก้ไข' : 'สร้างหลักสูตร' }}
-      </button>
+        <div>
+          <label class="block text-sm font-semibold mb-2">สาขา / ภาควิชา</label>
+          <select
+            formControlName="dept_id"
+            class="w-full border rounded-xl p-3 bg-white outline-none focus:ring-2 transition-all"
+            [ngClass]="
+              isInvalid(courseForm, 'dept_id')
+                ? 'border-red-500'
+                : 'border-slate-200 focus:ring-indigo-500'
+            "
+          >
+            <option value="">เลือกสาขา</option>
+            <option value="1">วิทยาการคอมพิวเตอร์</option>
+            <option value="2">เทคโนโลยีการอาหาร</option>
+          </select>
+          <p *ngIf="isInvalid(courseForm, 'dept_id')" class="text-red-500 text-xs mt-1">
+            กรุณาเลือกสาขาหรือภาควิชา
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-semibold block mb-2">รหัสหลักสูตร</label>
+            <input
+              type="text"
+              formControlName="curriculum_id"
+              placeholder="เช่น CS-2567"
+              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+              [ngClass]="
+                isInvalid(courseForm, 'curriculum_id')
+                  ? 'border-red-500'
+                  : 'border-slate-200 focus:ring-indigo-500'
+              "
+            />
+            <p *ngIf="isInvalid(courseForm, 'curriculum_id')" class="text-red-500 text-xs mt-1">
+              กรุณากรอกรหัสหลักสูตร
+            </p>
+          </div>
+          <div>
+            <label class="text-sm font-semibold block mb-2">ปีหลักสูตร</label>
+            <input
+              type="number"
+              formControlName="year"
+              placeholder="เช่น 2567"
+              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+              [ngClass]="
+                isInvalid(courseForm, 'year')
+                  ? 'border-red-500'
+                  : 'border-slate-200 focus:ring-indigo-500'
+              "
+            />
+            <p *ngIf="isInvalid(courseForm, 'year')" class="text-red-500 text-xs mt-1">
+              กรุณากรอกปีหลักสูตร
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-10 flex gap-4">
+          <button
+            type="button"
+            (click)="closeModals()"
+            class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-500 hover:bg-slate-50"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            (click)="saveCourse()"
+            class="flex-1 py-3 bg-[#6366f1] text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all"
+          >
+            {{ isEditMode ? 'บันทึกการแก้ไข' : 'สร้างหลักสูตร' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 }
 
 @if (showDetailModal) {
-<div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[110]">
-  <div class="bg-white rounded-[2rem] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
-    <div class="p-8 border-b border-slate-100 flex justify-between items-start bg-white z-10">
-      <div>
-        <h2 class="text-xl font-bold text-slate-800 tracking-tight">PLO - หลักสูตร {{selectedCourse?.name}}</h2>
-        <p class="text-slate-400 mt-1">รหัส: {{selectedCourse?.id}}</p>
-      </div>
-      <div class="flex gap-3">
-        <button (click)="openAddPlo()" class="bg-[#3b82f6] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-blue-600 transition-all">
-          + เพิ่ม PLO
-        </button>
-        <button (click)="closeModals()" class="text-slate-300 hover:text-slate-500 transition-colors p-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-      </div>
-    </div>
-    
-    <div class="p-8 overflow-y-auto bg-slate-50/50 space-y-6">
-      @for (plo of selectedCourse?.ploDetails; track plo.id) {
-        <div class="bg-white border border-blue-100 rounded-[1.5rem] p-6 shadow-sm">
-          <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-4">
-              <span class="bg-[#3b82f6] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{{plo.id}}</span>
-              <span class="font-medium text-slate-700">{{plo.description}}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <button (click)="openAddYlo(plo)" class="text-xs font-bold text-slate-400 hover:text-blue-500 transition-colors">+ เพิ่ม YLO</button>
-              <button (click)="openEditPlo(plo)" class="text-slate-400 hover:text-indigo-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              </button>
-              <button (click)="confirmDeletePlo(plo)" class="text-slate-400 hover:text-red-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-              </button>
-            </div>
-          </div>
-          
-          <div class="ml-10 space-y-4">
-            @for (ylo of plo.ylos; track ylo.id) {
-              <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center group transition-all hover:border-blue-200">
-                <div class="flex items-center gap-4">
-                  <span class="bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-tight">{{ylo.id}}</span>
-                  <span class="text-sm text-slate-600 font-medium">{{ylo.description}}</span>
-                </div>
-                <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                  <button (click)="openEditYlo(plo, ylo)" class="text-slate-400 hover:text-indigo-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                  </button>
-                  <button (click)="confirmDeleteYlo(plo, ylo)" class="text-slate-400 hover:text-red-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[110]">
+    <div
+      class="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col border border-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.15)]"
+    >
+      <!-- Header -->
+      <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 tracking-tight">
+            {{ selectedCourse?.curriculum_name }}
+          </h2>
+          <p class="text-slate-400 mt-1 text-sm">
+            รหัสหลักสูตร : {{ selectedCourse?.curriculum_id }}
+          </p>
         </div>
-      }
+
+        <div class="flex gap-3">
+          <button
+            (click)="openAddPlo()"
+            class="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-semibold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center gap-2"
+          >
+            <span class="material-symbols-outlined text-lg">add</span>
+            เพิ่ม PLO
+          </button>
+
+          <button
+            (click)="closeModals()"
+            class="w-11 h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="p-8 overflow-y-auto bg-slate-50/70 space-y-6">
+        @for (plo of selectedCourse?.ploDetails; track plo.plo_id) {
+          <div
+            class="bg-white border border-slate-200 rounded-[2rem] p-7 shadow-sm hover:shadow-md transition-all"
+          >
+            <!-- PLO Header -->
+            <div class="flex justify-between items-center mb-6">
+              <div class="flex items-center gap-4">
+                <span
+                  class="bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-bold tracking-wide"
+                >
+                  {{ plo.plo_name || plo.code }}
+                </span>
+
+                <span class="text-slate-700 font-medium text-base">
+                  {{ plo.description }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="openAddYlo(plo)"
+                  class="text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-lg">add</span>
+                  YLO
+                </button>
+
+                <button
+                  (click)="openEditPlo(plo)"
+                  class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-all"
+                >
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+
+                <button
+                  (click)="confirmDeletePlo(plo)"
+                  class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-all"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- YLO -->
+            <div class="ml-8 space-y-6">
+              @for (year of [1, 2, 3, 4]; track year) {
+                @let yearYlos = getYlosByYear(plo, year);
+
+                @if (yearYlos.length > 0) {
+                  <div class="space-y-3">
+                    <h4 class="font-bold text-slate-400 text-sm uppercase tracking-wider">
+                      ชั้นปีที่ {{ year }}
+                    </h4>
+
+                    @for (ylo of yearYlos; track ylo.ylo_id; let i = $index) {
+                      <div
+                        class="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-indigo-200 transition-all"
+                      >
+                        <div class="flex items-center gap-4">
+                          <span
+                            class="bg-white border border-slate-200 px-3 py-1 rounded-xl text-xs font-bold text-indigo-600"
+                          >
+                            YLO{{ year }}.{{ i + 1 }}
+                          </span>
+                          <span class="text-slate-700 font-medium">{{ ylo.description }}</span>
+                        </div>
+
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            (click)="openEditYlo(plo, ylo)"
+                            class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center"
+                          >
+                            <span class="material-symbols-outlined">edit</span>
+                          </button>
+                          <button
+                            (click)="confirmDeleteYlo(plo, ylo)"
+                            class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center"
+                          >
+                            <span class="material-symbols-outlined">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
     </div>
   </div>
-</div>
 }
 
 @if (showPloModal) {
-<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[120]">
-  <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
-    <div class="flex justify-between mb-8 items-center text-slate-800 font-bold">
-      <h2 class="text-2xl">{{ isEditMode ? 'แก้ไข PLO' : 'เพิ่ม PLO ใหม่' }}</h2>
-      <button (click)="showPloModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
-    </div>
-    
-    <form [formGroup]="ploForm" class="space-y-6">
-      <div>
-        <label class="block text-sm font-semibold mb-2">รหัส PLO</label>
-        <input type="text" formControlName="id" class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
-               [ngClass]="isInvalid(ploForm, 'id') ? 'border-red-500' : 'border-slate-200 focus:ring-blue-500'">
-        <p *ngIf="isInvalid(ploForm, 'id')" class="text-red-500 text-xs mt-1">กรุณากรอกรหัส PLO</p>
+  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[120]">
+    <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
+      <div class="flex justify-between mb-8 items-center text-slate-800 font-bold">
+        <h2 class="text-2xl">{{ isEditMode ? 'แก้ไข PLO' : 'เพิ่ม PLO ใหม่' }}</h2>
+        <button (click)="showPloModal = false" class="text-slate-400 hover:text-slate-600">
+          ✕
+        </button>
       </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">รายละเอียด PLO</label>
-        <textarea formControlName="description" rows="5" class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all resize-none"
-                  [ngClass]="isInvalid(ploForm, 'description') ? 'border-red-500' : 'border-slate-200 focus:ring-blue-400'"></textarea>
-        <p *ngIf="isInvalid(ploForm, 'description')" class="text-red-500 text-xs mt-1">กรุณากรอกรายละเอียด (ขั้นต่ำ 5 ตัวอักษอน)</p>
-      </div>
-    </form>
 
-    <div class="mt-10 flex justify-end gap-3 font-bold">
-      <button (click)="showPloModal = false" class="px-8 py-3 border border-slate-200 rounded-xl text-slate-500">ยกเลิก</button>
-      <button (click)="savePlo()" class="px-8 py-3 bg-[#bfdbfe] text-[#2563eb] rounded-xl hover:bg-blue-200 shadow-sm transition-all">
-        บันทึก
-      </button>
+      <form [formGroup]="ploForm" class="space-y-6">
+        <div>
+          <label class="block text-sm font-semibold mb-2">รหัส PLO (เช่น PLO1)</label>
+          <input
+            type="text"
+            formControlName="plo_name"
+            placeholder="เช่น PLO1"
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+            [ngClass]="
+              isInvalid(ploForm, 'plo_name')
+                ? 'border-red-500'
+                : 'border-slate-200 focus:ring-blue-500'
+            "
+          />
+          <p *ngIf="isInvalid(ploForm, 'plo_name')" class="text-red-500 text-xs mt-1">
+            กรุณากรอกรหัส PLO
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">รายละเอียด PLO</label>
+          <textarea
+            formControlName="description"
+            rows="5"
+            placeholder="อธิบายผลลัพธ์การเรียนรู้..."
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all resize-none"
+            [ngClass]="
+              isInvalid(ploForm, 'description')
+                ? 'border-red-500'
+                : 'border-slate-200 focus:ring-blue-400'
+            "
+          ></textarea>
+          <p *ngIf="isInvalid(ploForm, 'description')" class="text-red-500 text-xs mt-1">
+            กรุณากรอกรายละเอียดเนื้อหา
+          </p>
+        </div>
+      </form>
+
+      <div class="mt-10 flex justify-end gap-3 font-bold">
+        <button
+          (click)="showPloModal = false"
+          class="px-8 py-3 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50"
+        >
+          ยกเลิก
+        </button>
+        <button
+          (click)="savePlo()"
+          class="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md transition-all"
+        >
+          บันทึก PLO
+        </button>
+      </div>
     </div>
   </div>
-</div>
 }
 
 @if (showYloModal) {
-<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[120]">
-  <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
-    <div class="flex justify-between mb-8 items-center text-slate-800">
-      <h2 class="text-2xl font-bold">{{ isEditMode ? 'แก้ไข YLO' : 'เพิ่ม YLO' }}</h2>
-      <button (click)="showYloModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
-    </div>
+  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[120]">
+    <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
+      <div class="flex justify-between mb-8 items-center text-slate-800">
+        <h2 class="text-2xl font-bold">{{ isEditMode ? 'แก้ไข YLO' : 'เพิ่ม YLO' }}</h2>
+        <button (click)="showYloModal = false" class="text-slate-400 hover:text-slate-600">
+          ✕
+        </button>
+      </div>
 
-    <form [formGroup]="yloForm" class="space-y-6">
-      <div class="grid grid-cols-2 gap-4">
+      <form [formGroup]="yloForm" class="space-y-6">
         <div>
-          <label class="block text-sm font-semibold mb-2">รหัส YLO</label>
-          <input type="text" formControlName="id" class="w-full border rounded-xl p-3 bg-slate-50 text-slate-400" readonly>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2">ชั้นปี</label>
-          <select formControlName="year" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+          <label class="block text-sm font-semibold mb-2">ระดับชั้นปี</label>
+          <select
+            formControlName="year"
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          >
             <option [value]="1">ชั้นปีที่ 1</option>
             <option [value]="2">ชั้นปีที่ 2</option>
             <option [value]="3">ชั้นปีที่ 3</option>
             <option [value]="4">ชั้นปีที่ 4</option>
           </select>
         </div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">รายละเอียด YLO</label>
-        <textarea formControlName="description" rows="5" placeholder="อธิบายผลลัพธ์การเรียนรู้..." 
-                  class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all resize-none"
-                  [ngClass]="isInvalid(yloForm, 'description') ? 'border-red-500' : 'border-slate-200 focus:ring-blue-400'"></textarea>
-        <p *ngIf="isInvalid(yloForm, 'description')" class="text-red-500 text-xs mt-1">กรุณากรอกรายละเอียด YLO</p>
-      </div>
-    </form>
+        <div>
+          <label class="block text-sm font-semibold mb-2">รายละเอียด YLO</label>
+          <textarea
+            formControlName="description"
+            rows="5"
+            placeholder="อธิบายผลลัพธ์การเรียนรู้รายชั้นปี..."
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all resize-none"
+            [ngClass]="
+              isInvalid(yloForm, 'description')
+                ? 'border-red-500'
+                : 'border-slate-200 focus:ring-blue-400'
+            "
+          ></textarea>
+          <p *ngIf="isInvalid(yloForm, 'description')" class="text-red-500 text-xs mt-1">
+            กรุณากรอกรายละเอียด YLO
+          </p>
+        </div>
+      </form>
 
-    <div class="mt-10 flex justify-end gap-3 font-bold">
-      <button (click)="showYloModal = false" class="px-8 py-3 border border-slate-200 rounded-xl text-slate-500">ยกเลิก</button>
-      <button (click)="saveYlo()" class="px-8 py-3 bg-[#bfdbfe] text-[#2563eb] rounded-xl hover:bg-[#93c5fd] transition-all shadow-sm">
-        บันทึก
-      </button>
+      <div class="mt-10 flex justify-end gap-3 font-bold">
+        <button
+          (click)="showYloModal = false"
+          class="px-8 py-3 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50"
+        >
+          ยกเลิก
+        </button>
+        <button
+          (click)="saveYlo()"
+          class="px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md"
+        >
+          บันทึก YLO
+        </button>
+      </div>
     </div>
   </div>
-</div>
 }
 
 @if (showDeleteModal) {
-<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[130]">
-  <div class="bg-white rounded-3xl p-10 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-150">
-    <div class="flex flex-col items-center text-center">
-      <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6 text-red-500 shadow-inner">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[130]">
+    <div
+      class="bg-white rounded-3xl p-10 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-150"
+    >
+      <div class="flex flex-col items-center text-center">
+        <div
+          class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mb-6 text-red-500 shadow-inner"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">{{ getDeleteModalTitle() }}</h2>
+        <p class="text-slate-600 font-medium whitespace-pre-line">{{ getDeleteModalMessage() }}</p>
+        <p
+          class="text-red-500 font-bold mt-3 text-sm flex items-center gap-1.5 bg-red-50 px-3 py-1.5 rounded-full border border-red-100"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/xl"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          การดำเนินการนี้ไม่สามารถย้อนกลับได้
+        </p>
       </div>
-      <h2 class="text-2xl font-bold text-slate-900 mb-2">{{getDeleteModalTitle()}}</h2>
-      <p class="text-slate-600 font-medium whitespace-pre-line">{{getDeleteModalMessage()}}</p>
-      <p class="text-red-500 font-bold mt-3 text-sm flex items-center gap-1.5 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-        การดำเนินการนี้ไม่สามารถย้อนกลับได้
-      </p>
-    </div>
-    <div class="mt-12 flex gap-4">
-      <button (click)="closeModals()" class="flex-1 py-3.5 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-colors text-lg">
-        ยกเลิก
-      </button>
-      <button (click)="executeDelete()" class="flex-1 py-3.5 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all text-lg flex items-center justify-center gap-2">
-        ยืนยันการลบ
-      </button>
+      <div class="mt-12 flex gap-4">
+        <button
+          (click)="closeModals()"
+          class="flex-1 py-3.5 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-colors text-lg"
+        >
+          ยกเลิก
+        </button>
+        <button
+          (click)="executeDelete()"
+          class="flex-1 py-3.5 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all text-lg flex items-center justify-center gap-2"
+        >
+          ยืนยันการลบ
+        </button>
+      </div>
     </div>
   </div>
-</div>
 }

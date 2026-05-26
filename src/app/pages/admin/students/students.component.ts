@@ -188,13 +188,14 @@ export class StudentsComponent implements OnInit {
 
   initForm() {
     this.studentForm = this.fb.group({
-      student_code: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
-      full_name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      faculty: ['วิทยาศาสตร์', Validators.required],
-      major: ['', Validators.required],
-      year: ['1', Validators.required],
-    });
+  student_code: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+  full_name: ['', Validators.required],
+  email: ['', [Validators.required, Validators.email]],
+  faculty: ['วิทยาศาสตร์', Validators.required],
+  major: ['', Validators.required],
+  curriculum_year: [''],
+  year: ['1', Validators.required],
+});
   }
 
   // 2. ปรับการดึงข้อมูลให้นิ่งและรองรับ Change Detection
@@ -323,10 +324,20 @@ export class StudentsComponent implements OnInit {
   }
 
   closeModal() {
-    this.isModalOpen = false;
-    this.studentForm.reset();
-    this.submitted = false;
-  }
+  this.isModalOpen = false;
+  this.submitted = false;
+  this.isEditMode = false;
+
+  this.studentForm.reset({
+    faculty: 'วิทยาศาสตร์',
+    year: '1',
+    curriculum_year: '',
+  });
+
+  this.imagePreview = null;
+
+  this.cdr.detectChanges();
+}
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -341,22 +352,35 @@ export class StudentsComponent implements OnInit {
   }
 
   editStudent(student: any) {
-    this.studentToDelete = student
-    this.isEditMode = true;
-    this.isModalOpen = true;
-    this.imagePreview = student.image ? `http://localhost:8080/api/${student.image}` : null;
+  this.studentToDelete = student;
+  this.isEditMode = true;
 
-    // Patch ข้อมูลเดิมเข้าสู่ Form
-    this.studentForm.patchValue({
-      student_code: student.student_code,
-      full_name: student.full_name,
-      email: student.email,
-      faculty: student.faculty,
-      major: student.major,
-      year: student.year,
-      img_profile: student.image, // เก็บชื่อไฟล์ภาพเดิมไว้
-    });
-  }
+  // reset ก่อน patch ค่า
+  this.studentForm.reset();
+
+  // เปิด modal ทีหลัง
+  this.isModalOpen = true;
+
+  this.imagePreview = student.image
+    ? `http://localhost:8080/api/${student.image}`
+    : null;
+
+  this.studentForm.patchValue({
+    student_code: student.student_code,
+    full_name: student.full_name,
+    email: student.email,
+    faculty: student.faculty,
+    major: student.major,
+    year: student.year,
+    curriculum_year:
+      student.major === 'เทคโนโลยีการอาหาร'
+        ? '2567'
+        : '2566',
+  });
+
+  // บังคับ refresh
+  this.cdr.detectChanges();
+}
 
   deleteStudent(student: any) {
     this.studentToDelete = student;
@@ -538,10 +562,39 @@ export class StudentsComponent implements OnInit {
     if (this.isFormYearDropdownOpen) this.isFormMajorDropdownOpen = false;
   }
 
-  selectFormMajor(major: string) {
-    this.studentForm.patchValue({ major: major }); // ⭐️ ยัดค่าเข้า FormGroup
-    this.isFormMajorDropdownOpen = false; // เลือกเสร็จปิดกล่องสาขาในฟอร์ม
+selectFormMajor(major: string) {
+  // หาปีหลักสูตรโดยอัตโนมัติตามเงื่อนไขบรีฟของอาจารย์
+  let curriculumYear = '';
+  if (major === 'เทคโนโลยีการอาหาร') {
+    curriculumYear = '2567';
+  } else if (major === 'วิทยาการคอมพิวเตอร์' || major === 'วิทยาการคอม') {
+    curriculumYear = '2566';
   }
+
+  // ⭐️ แพทช์ค่าทั้งชื่อสาขา และ ปีหลักสูตร เข้าไปใน FormGroup พร้อมกันทันที
+  this.studentForm.patchValue({ 
+    major: major,
+    curriculum_year: curriculumYear // มั่นใจว่าฟอร์มมี Control ชื่อนี้ หรือเพิ่มฟิลด์นี้ใน FormBuilder
+  });
+  
+  this.isFormMajorDropdownOpen = false;
+}
+prepareStudentData() {
+  const formValue = this.studentForm.value;
+  let detectedYear = formValue.curriculum_year;
+
+  if (formValue.major === 'เทคโนโลยีการอาหาร') {
+    detectedYear = '2567';
+  } else if (formValue.major === 'วิทยาการคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
+    detectedYear = '2566';
+  }
+
+  // คืนค่าออบเจกต์ข้อมูลที่จะยิงไปหา API หลังบ้าน
+  return {
+    ...formValue,
+    curriculum_year: detectedYear
+  };
+}
 
   selectFormYear(year: number) {
     this.studentForm.patchValue({ year: year.toString() }); // ⭐️ ยัดค่าเข้า FormGroup

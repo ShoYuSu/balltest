@@ -191,7 +191,8 @@
 
           <button
             *ngIf="col.tag === 'edit'"
-            (click)="editStudent(s)"
+            type="button"
+            (click)="editStudent(s); $event.stopPropagation()"
             [disabled]="s.status === 'inactive'"
             class="text-blue-500 hover:text-blue-600 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
           >
@@ -403,6 +404,41 @@
         </div>
       </div>
 
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-gray-600 uppercase"
+          >ปีหลักสูตร (กำหนดอัตโนมัติตามสาขา)</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            formControlName="curriculum_year"
+            readonly
+            placeholder="ระบบจะระบุปีหลักสูตรให้อัตโนมัติ"
+            class="w-full px-4 py-2.5 bg-gray-100/70 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed"
+          />
+          <span
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold"
+            [ngClass]="
+              studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
+                ? 'text-emerald-600'
+                : studentForm.get('major')?.value === 'วิทยาการคอมพิวเตอร์' ||
+                    studentForm.get('major')?.value === 'วิทยาการคอม'
+                  ? 'text-blue-600'
+                  : 'text-gray-400'
+            "
+          >
+            {{
+              studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
+                ? 'มคอ.2 - 67'
+                : studentForm.get('major')?.value === 'วิทยาการคอมพิวเตอร์' ||
+                    studentForm.get('major')?.value === 'วิทยาการคอม'
+                  ? 'มคอ.2 - 66'
+                  : 'โปรดเลือกสาขา'
+            }}
+          </span>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1 relative">
           <label class="text-xs font-semibold text-gray-600 uppercase">ชั้นปี</label>
@@ -585,7 +621,7 @@
                   <button
                     type="button"
                     (click)="toggleGradeDropdown(course.course_id)"
-                   class="w-full flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                    class="w-full flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-md active:scale-[0.98] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100"
                   >
                     <span
                       [class.text-blue-600]="

@@ -32,6 +32,7 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
   curriculumData: any[] = [];
   major: string[] = ['วิทยาการคอมพิวเตอร์', 'เทคโนโลยีการอาหาร']; // มีค่าเริ่มต้นรอไว้
   selectedMajor: string = 'วิทยาการคอมพิวเตอร์'; // ล็อกสาขาเริ่มต้นที่จะใช้ค้นหา
+  selectedYear: string = '2566';
 
   isMajorDropdownOpen = false;
 
@@ -54,7 +55,10 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
   deleteId: number | null = null;
 
   selectedDeleteId: number | null = null;
-  
+  selectedEditCategoryId: number | null = null;
+  selectedEditModuleId: number | null = null;
+  isEditCategoryMode = false;
+  isEditModuleMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -83,7 +87,7 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
     });
     this.moduleForm = this.fb.group({
       module_name: ['', Validators.required],
-      required_credit: [0],
+      required_credit: [0, [Validators.required, Validators.min(0)]],
     });
     this.courseForm = this.fb.group({
       course_code: ['', Validators.required],
@@ -101,7 +105,14 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
   selectMajor(majorName: string) {
     this.selectedMajor = majorName; // เปลี่ยนชื่อสาขาปัจจุบัน
     this.isMajorDropdownOpen = false; // คลิกเลือกเสร็จให้หุบเมนูปิดลงทันที
-    this.loadCurriculumData(); // สั่งรีโหลดวิชาด้านล่างให้เปลี่ยนตามสาขาทันที
+    // สั่งรีโหลดวิชาด้านล่างให้เปลี่ยนตามสาขาทันที
+
+    if (this.selectedMajor === 'เทคโนโลยีการอาหาร') {
+      this.selectedYear = '2567'; // ล็อกปีการศึกษาสำหรับสาขาเทคโนโลยีการอาหารเป็น 2567 เสมอ
+    } else if (this.selectedMajor === 'วิทยาการคอมพิวเตอร์') {
+      this.selectedYear = '2566'; // ล็อกปีการศึกษาสำหรับสาขาวิทยาการคอมพิวเตอร์เป็น 2566
+    }
+    this.loadCurriculumData();
   }
   toggleGradeDropdown() {
     this.isGradeDropdownOpen = !this.isGradeDropdownOpen;
@@ -191,7 +202,7 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
     this.isAddCourseModal = true;
   }
 
-saveCategory() {
+  saveCategory() {
   if (this.categoryForm.invalid) return;
 
   const payload = {
@@ -199,26 +210,49 @@ saveCategory() {
     major_name: this.selectedMajor
   };
 
-  this.http
-    .post(`${environment.apiUrl}/add_category.php`, payload)
-    .subscribe((res: any) => {
-      if (res.success) {
-        this.loadCurriculumData();
-        this.closeModal();
-      }
+  const url = this.isEditCategoryMode
+    ? `${environment.apiUrl}/update_category.php`
+    : `${environment.apiUrl}/add_category.php`;
+
+  if (this.isEditCategoryMode) {
+    Object.assign(payload, {
+      category_id: this.selectedEditCategoryId
     });
+  }
+
+  this.http.post(url, payload).subscribe((res: any) => {
+    if (res.success) {
+      this.loadCurriculumData();
+      this.closeModal();
+    }
+  });
 }
 
   saveModule() {
-    if (this.moduleForm.invalid || !this.selectedCatId) return;
-    const data = { ...this.moduleForm.value, category_id: this.selectedCatId };
-    this.http.post(`${environment.apiUrl}/modules.php`, data).subscribe((res: any) => {
-      if (res.success) {
-        this.loadCurriculumData();
-        this.closeModal();
-      }
+  if (this.moduleForm.invalid || !this.selectedCatId) return;
+
+  const data = {
+    ...this.moduleForm.value,
+    category_id: this.selectedCatId
+  };
+
+  const url = this.isEditModuleMode
+    ? `${environment.apiUrl}/update_module.php`
+    : `${environment.apiUrl}/modules.php`;
+
+  if (this.isEditModuleMode) {
+    Object.assign(data, {
+      module_id: this.selectedEditModuleId
     });
   }
+
+  this.http.post(url, data).subscribe((res: any) => {
+    if (res.success) {
+      this.loadCurriculumData();
+      this.closeModal();
+    }
+  });
+}
 
   saveCourse() {
     if (this.courseForm.invalid || !this.selectedModuleId) return;
@@ -259,28 +293,51 @@ saveCategory() {
     });
     this.isAddCourseModal = true; // เปิด Modal ฟอร์มวิชาขึ้นมา
   }
-  openDeleteModal(type: 'course' | 'module' | 'category', id: number) {
-  this.deleteType = type;
-  this.deleteId = id;
-  this.isDeleteModalOpen = true;
-}
-confirmDelete() {
-  if (!this.deleteType || !this.deleteId) return;
+  editCategory(cat: any) {
+    this.isEditCategoryMode = true;
+    this.selectedEditCategoryId = cat.category_id;
 
-  this.http
-    .post(`${environment.apiUrl}/delete_item.php`, {
-      type: this.deleteType,
-      id: this.deleteId,
-    })
-    .subscribe((res: any) => {
-      if (res.success) {
-        this.loadCurriculumData();
-        this.closeDeleteModal();
-      } else {
-        alert(res.message);
-      }
+    this.categoryForm.patchValue({
+      category_name: cat.category_name,
+      required_credit: cat.required_credit,
     });
-}
+
+    this.isAddCategoryModal = true;
+  }
+  editModule(mod: any, catId: number) {
+    this.isEditModuleMode = true;
+    this.selectedEditModuleId = mod.module_id;
+    this.selectedCatId = catId;
+
+    this.moduleForm.patchValue({
+      module_name: mod.module_name,
+      required_credit: mod.required_credit,
+    });
+
+    this.isAddModuleModal = true;
+  }
+  openDeleteModal(type: 'course' | 'module' | 'category', id: number) {
+    this.deleteType = type;
+    this.deleteId = id;
+    this.isDeleteModalOpen = true;
+  }
+  confirmDelete() {
+    if (!this.deleteType || !this.deleteId) return;
+
+    this.http
+      .post(`${environment.apiUrl}/delete_item.php`, {
+        type: this.deleteType,
+        id: this.deleteId,
+      })
+      .subscribe((res: any) => {
+        if (res.success) {
+          this.loadCurriculumData();
+          this.closeDeleteModal();
+        } else {
+          alert(res.message);
+        }
+      });
+  }
   // deleteCourse(courseId?: number) {
   //   const idToDelete = courseId || this.selectedCourseId;
 
@@ -313,16 +370,27 @@ confirmDelete() {
   }
 
   closeModal() {
-    this.isAddCategoryModal = false;
-    this.isAddModuleModal = false;
-    this.isAddCourseModal = false;
-    this.categoryForm.reset({ required_credit: 0 });
-    this.moduleForm.reset({ required_credit: 0 });
-    this.courseForm.reset({ credit: 3, grade_system: 'ปกติ (A-F)' });
-    this.selectedCatId = null;
-    this.selectedModuleId = null;
-    this.isGradeDropdownOpen = false;
-    this.isEditMode = false;
-    this.selectedCourseId = null;
-  }
+  this.isAddCategoryModal = false;
+  this.isAddModuleModal = false;
+  this.isAddCourseModal = false;
+
+  this.isEditCategoryMode = false;
+  this.isEditModuleMode = false;
+  this.isEditMode = false;
+
+  this.selectedEditCategoryId = null;
+  this.selectedEditModuleId = null;
+  this.selectedCourseId = null;
+
+  this.categoryForm.reset({ required_credit: 0 });
+  this.moduleForm.reset({ required_credit: 0 });
+  this.courseForm.reset({
+    credit: 3,
+    grade_system: 'ปกติ (A-F)'
+  });
+
+  this.selectedCatId = null;
+  this.selectedModuleId = null;
+  this.isGradeDropdownOpen = false;
+}
 }

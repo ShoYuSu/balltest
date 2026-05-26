@@ -3,7 +3,7 @@
   class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
 >
   <div
-    class="bg-white/90 backdrop-blur-2xl rounded-[34px] shadow-[0_30px_80px_rgba(15,23,42,0.15)] w-full max-w-6xl flex flex-col overflow-hidden border border-white/70"
+    class="bg-white/95 backdrop-blur-3xl rounded-[34px] shadow-[0_30px_80px_rgba(15,23,42,0.15)] w-full max-w-6xl flex flex-col border border-white/70 h-[92vh] overflow-hidden"
   >
     <div
       class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-white via-slate-50 to-blue-50/40"
@@ -27,7 +27,9 @@
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6 bg-white flex flex-col">
+    <div
+      class="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gradient-to-b from-white to-slate-50/60 flex flex-col min-h-0 scroll-smooth"
+    >
       <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-3">
           <span class="text-sm font-bold text-gray-700">สาขาวิชา:</span>
@@ -64,6 +66,17 @@
               </ul>
             </div>
           </div>
+
+          <span
+            class="text-xs px-3 py-1.5 rounded-full font-bold shadow-sm border transition-all duration-300"
+            [ngClass]="
+              selectedMajor === 'เทคโนโลยีการอาหาร'
+                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                : 'bg-blue-50 text-blue-600 border-blue-100'
+            "
+          >
+            หลักสูตร พ.ศ. {{ selectedYear }} (มคอ.2)
+          </span>
         </div>
 
         <button
@@ -78,15 +91,21 @@
         <p class="text-gray-400 text-sm font-medium">ยังไม่มีโครงสร้างหลักสูตรสำหรับสาขาวิชานี้</p>
       </div>
 
-      <div *ngIf="curriculumData.length > 0" class="space-y-4 flex-1">
+      <div
+        *ngIf="curriculumData.length > 0"
+        class="space-y-5 flex-1 overflow-y-auto pr-2 scroll-smooth"
+      >
         <div
           *ngFor="let cat of curriculumData"
-          class="border border-gray-100 rounded-2xl shadow-sm overflow-hidden bg-white"
+          class="border border-gray-100 rounded-3xl shadow-[0_10px_40px_rgba(15,23,42,0.06)] overflow-hidden bg-white hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)] transition-all duration-300"
         >
           <div
             class="flex items-center justify-between p-4 bg-green-50/40 border-b border-green-100/50"
           >
-            <div class="flex items-center gap-3 cursor-pointer select-none" (click)="toggleAccordion(cat)">
+            <div
+              class="flex items-center gap-3 cursor-pointer select-none"
+              (click)="toggleAccordion(cat)"
+            >
               <span
                 class="material-symbols-outlined text-green-600 transition-transform font-bold"
                 [class.rotate-90]="cat.isOpen"
@@ -95,7 +114,7 @@
               </span>
               <span class="font-bold text-green-800">{{ cat.category_name }}</span>
             </div>
-            
+
             <div class="flex items-center gap-4">
               <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
                 {{ cat.required_credit }} หน่วยกิต
@@ -105,6 +124,9 @@
                 class="text-gray-400 hover:text-green-600 p-1 rounded-lg transition-colors cursor-pointer flex items-center border-none bg-transparent outline-none"
               >
                 <span class="material-symbols-outlined text-xl">add</span>
+              </button>
+              <button (click)="editCategory(cat)">
+                <span class="material-symbols-outlined text-blue-500">edit</span>
               </button>
               <button
                 (click)="openDeleteModal('category', cat.category_id)"
@@ -116,12 +138,11 @@
           </div>
 
           <div *ngIf="cat.isOpen" class="p-4 space-y-3 bg-white">
-            
             <div
               *ngIf="!cat.modules || cat.modules.length === 0"
               class="text-center py-4 text-xs text-gray-400 font-medium"
             >
-              ยังไม่มีกลุ่มวิชา — 
+              ยังไม่มีกลุ่มวิชา —
               <button
                 (click)="selectedCatId = cat.category_id; isAddModuleModal = true"
                 class="text-blue-600 hover:underline cursor-pointer font-bold border-none bg-transparent outline-none"
@@ -132,7 +153,7 @@
 
             <div
               *ngFor="let mod of cat.modules"
-              class="rounded-2xl overflow-hidden bg-white border border-blue-100/70 shadow-sm hover:shadow-md transition-all duration-300"
+              class="rounded-3xl overflow-hidden bg-white border border-blue-100/70 shadow-[0_8px_24px_rgba(59,130,246,0.05)] hover:shadow-[0_16px_40px_rgba(59,130,246,0.12)] hover:-translate-y-0.5 transition-all duration-300"
             >
               <div class="flex justify-between items-center p-3 bg-blue-50/30">
                 <div
@@ -147,16 +168,28 @@
                   </span>
                   <span class="font-bold text-blue-800 text-sm">{{ mod.module_name }}</span>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
-                  <span class="text-xs font-semibold text-blue-500 bg-blue-50/80 px-2 py-0.5 rounded">
+                  <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                    {{ mod.required_credit }} หน่วยกิต
+                  </span>
+                  <span
+                    class="text-xs font-semibold text-blue-500 bg-blue-50/80 px-2 py-0.5 rounded"
+                  >
                     {{ mod.courses?.length || 0 }} วิชา
                   </span>
+
                   <button
                     (click)="selectedModuleId = mod.module_id; isAddCourseModal = true"
                     class="text-gray-400 hover:text-blue-600 transition-colors cursor-pointer flex items-center border-none bg-transparent outline-none"
                   >
                     <span class="material-symbols-outlined text-xl">add</span>
+                  </button>
+                  <button
+                    (click)="editModule(mod, cat.category_id)"
+                    class="text-gray-400 hover:text-blue-500 transition-colors cursor-pointer flex items-center border-none bg-transparent outline-none"
+                  >
+                    <span class="material-symbols-outlined text-lg">edit</span>
                   </button>
                   <button
                     (click)="openDeleteModal('module', mod.module_id)"
@@ -168,12 +201,11 @@
               </div>
 
               <div *ngIf="mod.isOpen" class="divide-y divide-gray-50 bg-white">
-                
                 <div
                   *ngIf="!mod.courses || mod.courses.length === 0"
                   class="p-4 text-center text-xs text-gray-400 font-medium"
                 >
-                  ยังไม่มีรายวิชา — 
+                  ยังไม่มีรายวิชา —
                   <button
                     (click)="selectedModuleId = mod.module_id; isAddCourseModal = true"
                     class="text-blue-600 hover:underline cursor-pointer font-bold border-none bg-transparent outline-none"
@@ -187,17 +219,24 @@
                   class="flex justify-between items-center p-3 hover:bg-gray-50/80 transition-colors"
                 >
                   <div class="flex items-center gap-4">
-                    <span class="text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded font-bold">
+                    <span
+                      class="text-[10px] font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded font-bold"
+                    >
                       {{ course.course_code }}
                     </span>
                     <div class="flex flex-col text-left">
-                      <span class="text-xs font-semibold text-gray-700">{{ course.course_name }}</span>
-                      <span *ngIf="course.course_name_en" class="text-[10px] text-gray-400 font-medium">
+                      <span class="text-xs font-semibold text-gray-700">{{
+                        course.course_name
+                      }}</span>
+                      <span
+                        *ngIf="course.course_name_en"
+                        class="text-[10px] text-gray-400 font-medium"
+                      >
                         {{ course.course_name_en }}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-center gap-6">
                     <div>
                       <span
@@ -217,7 +256,7 @@
                     <span class="text-xs font-bold text-gray-500 w-8 text-right">
                       {{ course.credit }} นก.
                     </span>
-                    
+
                     <div class="flex gap-2">
                       <button
                         type="button"
@@ -237,10 +276,8 @@
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -276,7 +313,9 @@
     >
       <span class="material-symbols-outlined text-lg">close</span>
     </button>
-    <h4 class="text-lg font-bold text-gray-800 mb-4">เพิ่มหมวดวิชา</h4>
+    <h4 class="text-lg font-bold text-gray-800 mb-4">
+      {{ isEditCategoryMode ? 'แก้ไขหมวดวิชา' : 'เพิ่มหมวดวิชา' }}
+    </h4>
     <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="space-y-4">
       <div class="space-y-1 text-left">
         <label class="text-xs font-bold text-gray-500">ชื่อหมวด</label>
@@ -325,7 +364,9 @@
     >
       <span class="material-symbols-outlined text-lg">close</span>
     </button>
-    <h4 class="text-lg font-bold text-gray-800 mb-4">เพิ่มกลุ่มวิชา</h4>
+    <h4 class="text-lg font-bold text-gray-800 mb-4">
+      {{ isEditModuleMode ? 'แก้ไขกลุ่มวิชา' : 'เพิ่มกลุ่มวิชา' }}
+    </h4>
     <form [formGroup]="moduleForm" (ngSubmit)="saveModule()" class="space-y-4">
       <div class="space-y-1 text-left">
         <label class="text-xs font-bold text-gray-500">ชื่อกลุ่ม</label>
@@ -335,6 +376,20 @@
           placeholder="เช่น วิชาแกน"
           class="w-full p-2.5 border border-gray-200 rounded-xl outline-none focus:border-blue-400 text-sm"
         />
+      </div>
+      <div class="space-y-1 text-left">
+        <label class="text-xs font-bold text-gray-500">จำนวนหน่วยกิตที่ต้องเก็บในกลุ่มนี้</label>
+        <div class="relative flex items-center">
+          <input
+            type="number"
+            formControlName="required_credit"
+            placeholder="เช่น 17"
+            class="w-full p-2.5 pr-16 border border-gray-200 rounded-xl outline-none focus:border-blue-400 text-sm"
+          />
+          <span class="absolute right-3 text-xs font-bold text-gray-400 select-none">
+            หน่วยกิต
+          </span>
+        </div>
       </div>
       <div class="flex gap-3 pt-2">
         <button
@@ -413,7 +468,7 @@
 
         <div class="space-y-1 relative text-left">
           <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">ระบบเกรด</label>
-          
+
           <div class="relative w-full">
             <button
               type="button"
@@ -445,8 +500,12 @@
                 <li
                   (click)="selectGradeSystem('ผ่าน/ไม่ผ่าน (S/U)')"
                   class="px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium cursor-pointer transition-colors"
-                  [class.bg-blue-50/50]="courseForm.get('grade_system')?.value === 'ผ่าน/ไม่ผ่าน (S/U)'"
-                  [class.text-blue-600]="courseForm.get('grade_system')?.value === 'ผ่าน/ไม่ผ่าน (S/U)'"
+                  [class.bg-blue-50/50]="
+                    courseForm.get('grade_system')?.value === 'ผ่าน/ไม่ผ่าน (S/U)'
+                  "
+                  [class.text-blue-600]="
+                    courseForm.get('grade_system')?.value === 'ผ่าน/ไม่ผ่าน (S/U)'
+                  "
                 >
                   ผ่าน/ไม่ผ่าน (S/U)
                 </li>

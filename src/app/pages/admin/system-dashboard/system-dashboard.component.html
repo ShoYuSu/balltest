@@ -1,2 +1,159 @@
-   <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
-   <app-action-menu></app-action-menu>
+<!-- <app-action-menu></app-action-menu> -->
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-8">
+  <div class="max-w-7xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="bg-white/80 backdrop-blur-xl border border-white/30 shadow-xl rounded-3xl p-7">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <h1
+            class="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-600 bg-clip-text text-transparent"
+          >
+            KPI Dashboard
+          </h1>
+          <p class="text-sm text-gray-500 mt-2">ระบบติดตามประสิทธิภาพและผลสัมฤทธิ์ทางการศึกษา</p>
+
+          <div
+            class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100"
+          >
+            <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse"></div>
+            <span class="text-sm font-semibold text-indigo-700 uppercase">
+              {{ userRole }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="flex gap-4 bg-slate-50 border border-gray-200 p-4 rounded-2xl shadow-sm">
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              ปีการศึกษา
+            </label>
+            <select
+              [(ngModel)]="selectedYear"
+              (change)="onFilterChange()"
+              class="w-36 px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+            >
+              <option [value]="2569">2569</option>
+              <option [value]="2570">2570</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              ภาคเรียน
+            </label>
+            <select
+              [(ngModel)]="selectedSemester"
+              (change)="onFilterChange()"
+              class="w-40 px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+            >
+              <option [value]="1">ภาคเรียนที่ 1</option>
+              <option [value]="2">ภาคเรียนที่ 2</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <!-- Advising KPI -->
+      <div
+        class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500"
+      >
+        <div class="mb-6">
+          <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            📊 อัตราความครอบคลุมการให้คำปรึกษา
+          </h3>
+          <p class="text-sm text-gray-400 mt-1">เปรียบเทียบความคืบหน้าการดูแลนักศึกษารายหลักสูตร</p>
+        </div>
+
+        <div class="space-y-6">
+          <div *ngFor="let item of advisingKpiData" class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-gray-700">
+                {{ item.major || 'ไม่ระบุหลักสูตร' }}
+              </span>
+
+              <span class="text-sm font-bold text-gray-900">
+                {{ item.advising_percentage }}%
+                <span class="text-gray-400 font-medium">
+                  ({{ item.advised_students }}/{{ item.total_students }})
+                </span>
+              </span>
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+              <div
+                [class]="
+                  item.colorClass + ' h-4 rounded-full transition-all duration-700 shadow-md'
+                "
+                [style.width]="item.advising_percentage + '%'"
+              ></div>
+            </div>
+          </div>
+
+          <div *ngIf="advisingKpiData.length === 0" class="text-center py-10 text-gray-400">
+            ยังไม่มีข้อมูลการให้คำปรึกษา
+          </div>
+        </div>
+      </div>
+
+      <!-- PLO KPI -->
+      <div
+        class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500"
+      >
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">🎯 คะแนนประเมินผลลัพธ์การเรียนรู้ PLO</h3>
+            <p class="text-sm text-gray-400 mt-1">วิเคราะห์สมรรถนะเฉลี่ยนักศึกษา</p>
+          </div>
+
+          <span
+            class="text-xs px-4 py-2 rounded-full font-semibold shadow-sm"
+            [ngClass]="
+              userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'
+            "
+          >
+            {{ userRole === 'admin' ? 'ภาพรวมคณะ' : 'กลุ่มดูแล' }}
+          </span>
+        </div>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let plo of ploKpiData"
+            class="group flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-slate-50 hover:bg-white hover:shadow-lg transition-all duration-300"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold shadow-md"
+              >
+                {{ plo.plo_code }}
+              </div>
+
+              <div>
+                <p class="font-semibold text-gray-700">คะแนนเฉลี่ยสมรรถนะ</p>
+                <p class="text-xs text-gray-400">Learning Outcome Assessment</p>
+              </div>
+            </div>
+
+            <span
+              class="text-xl font-bold"
+              [ngClass]="plo.avg_score >= 75 ? 'text-green-600' : 'text-amber-500'"
+            >
+              {{ plo.avg_score }}%
+            </span>
+          </div>
+
+          <div *ngIf="ploKpiData.length === 0" class="text-center py-12 text-gray-400">
+            ยังไม่มีข้อมูลประเมิน PLO
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
