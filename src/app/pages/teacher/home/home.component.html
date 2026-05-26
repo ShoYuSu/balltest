@@ -85,7 +85,14 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
       <div class="flex items-center justify-between gap-4 mb-6">
         <h2 class="text-xl font-bold text-gray-800">การนัดหมายล่าสุด</h2>
-        <button routerLink="/individual" class="text-primary text-sm font-semibold hover:text-primary_hover transition-colors">ดูทั้งหมด</button>
+        <div>
+        <button routerLink="/individual" class="mr-3 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+          รายบุคคล
+        </button>
+        <button routerLink="/group" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-200">
+          รายกลุ่ม
+        </button>
+        </div>
       </div>
 
       <div class="space-y-4">
