@@ -1,308 +1,207 @@
-<div
-  class="bg-white h-screen border-r-2 border-gray-100 px-4 py-2 flex flex-col transition-all duration-300 shadow-sm select-none"
-  [class.w-64]="isSidebarOpen"
-  [class.w-20]="!isSidebarOpen"
->
-  <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 shrink-0 mt-3 ml-1">
+<div class="bg-white h-screen border-r border-gray-100 flex flex-col transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.02)] select-none z-50"
+     [class.w-[260px]]="isSidebarOpen"
+     [class.w-[84px]]="!isSidebarOpen">
 
+  <div class="flex items-center justify-between p-4 mb-2 border-b border-gray-50 shrink-0 h-[80px]">
     @if (isSidebarOpen) {
-      <div class="flex items-center gap-3 transition-opacity duration-300">
-        <div class="flex items-center justify-center w-10 h-10 bg-[#F39C12] rounded-xl shrink-0 shadow-sm">
-          <span class="material-symbols-outlined text-white text-[24px]" style="font-variation-settings: 'FILL' 1;">
-            school
-          </span>
+      <div class="flex items-center gap-3 transition-opacity duration-300 animate-fadeIn pl-2">
+        <div class="flex items-center justify-center w-10 h-10 bg-[#F39C12] rounded-xl shrink-0 shadow-md shadow-primary/30 text-white">
+          <span class="material-symbols-outlined icon-filled text-[24px]" style="font-variation-settings: 'FILL' 1;">school</span>
         </div>
-
         <div class="flex flex-col justify-center">
-          <span class="text-[16px] font-bold text-gray-800 leading-tight">ระบบที่ปรึกษา</span>
-          <span class="text-[12px] font-semibold text-gray-500 leading-tight">Student Advisor</span>
+          <span class="text-[16px] font-extrabold text-gray-800 leading-tight tracking-tight">ระบบที่ปรึกษา</span>
+          <span class="text-[12px] font-bold text-gray-400 leading-tight">Student Advisor</span>
         </div>
       </div>
     }
 
-    <button (click)="toggleSidebar()" class="flex items-center justify-center w-10 h-10 hover:bg-primary/10 hover:text-primary rounded-xl transition-colors duration-200 shrink-0">
+    <button (click)="toggleSidebar()"
+            class="flex items-center justify-center w-10 h-10 text-gray-400 hover:bg-primary/10 hover:text-primary rounded-xl transition-all duration-200 shrink-0 mx-auto"
+            [class.mx-auto]="!isSidebarOpen">
       <span class="material-symbols-outlined text-[26px] leading-none">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
     </button>
   </div>
 
-  <div class="flex-1 overflow-y-auto overflow-x-hidden">
+  <div class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar px-3 py-2">
 
-  @if (userRole === 'teacher' || userRole === 'advisor') {
-    <nav>
-      <ul class="flex flex-col gap-2 text-[16px] font-semibold">
-        <li routerLink="/home" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> home </span>
-            @if (isSidebarOpen) { <span>หน้าหลัก</span> }
-          </a>
-        </li>
-        <li routerLink="/all-students" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> group </span>
-            @if (isSidebarOpen) { <span>นักศึกษาทั้งหมด</span> }
-          </a>
-        </li>
-        <li routerLink="/plo-assessment" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> assignment </span>
-            @if (isSidebarOpen) { <span>ประเมิน PLO</span> }
-          </a>
-        </li>
+    @if (userRole === 'teacher' || userRole === 'advisor') {
+      <nav>
+        <ul class="flex flex-col gap-1.5">
+          <li routerLink="/home" routerLinkActive="!bg-primary !text-white shadow-md shadow-primary/40 font-bold"
+              [title]="!isSidebarOpen ? 'หน้าหลัก' : ''"
+              class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
+              [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen"
+              [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+            <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">home</span>
+            @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">หน้าหลัก</span> }
+          </li>
 
-        <li class="flex flex-col group">
-          <div (click)="isSidebarOpen ? toggleMenu('appointment') : toggleSidebar()"
-               class="py-3 !rounded-lg hover:text-white hover:bg-primary hover:cursor-pointer transition duration-200 flex items-center
-              text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
-               [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.justify-between]="isSidebarOpen">
-            <div class="flex items-center font-semibold text-[16px]">
-              <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> calendar_month </span>
-              @if (isSidebarOpen) { <span>การนัดหมายปรึกษา</span> }
+          <li routerLink="/all-students" routerLinkActive="!bg-primary !text-white shadow-md shadow-primary/40 font-bold"
+              [title]="!isSidebarOpen ? 'นักศึกษาทั้งหมด' : ''"
+              class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
+              [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen"
+              [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+            <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">group</span>
+            @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">นักศึกษาทั้งหมด</span> }
+          </li>
+
+          <li routerLink="/plo-assessment" routerLinkActive="!bg-primary !text-white shadow-md shadow-primary/40 font-bold"
+              [title]="!isSidebarOpen ? 'ประเมิน PLO' : ''"
+              class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
+              [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen"
+              [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+            <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">assignment</span>
+            @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">ประเมิน PLO</span> }
+          </li>
+
+          <li class="flex flex-col">
+            <div (click)="isSidebarOpen ? toggleMenu('appointment') : toggleSidebar()"
+                 [title]="!isSidebarOpen ? 'การนัดหมายปรึกษา' : ''"
+                 class="text-black rounded-xl cursor-pointer transition-all duration-200 flex items-center group"
+                 [ngClass]="activeMenu === 'appointment' ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-primary/10 hover:text-primary'"
+                 [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen" [class.justify-between]="isSidebarOpen"
+                 [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+
+              <div class="flex items-center">
+                <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">calendar_month</span>
+                @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">การนัดหมาย</span> }
+              </div>
+              @if (isSidebarOpen) {
+                <span class="material-symbols-outlined text-[20px] transition-transform duration-300" [class.rotate-180]="activeMenu === 'appointment'">expand_more</span>
+              }
             </div>
+
+            @if (isSidebarOpen && activeMenu === 'appointment') {
+              <div class="ml-6 mt-1 pl-3 border-l-2 border-gray-100 flex flex-col gap-1 animate-fadeIn">
+                <a routerLink="/individual" routerLinkActive="!text-primary !font-bold bg-primary/10"
+                   class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2">
+                  <span class="material-symbols-outlined icon-filled text-[18px]">person</span> รายบุคคล
+                </a>
+                <a routerLink="/group" routerLinkActive="!text-primary !font-bold bg-primary/10"
+                   class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2">
+                  <span class="material-symbols-outlined icon-filled text-[18px]">group</span> รายกลุ่ม
+                </a>
+              </div>
+            }
+          </li>
+
+          <li class="flex flex-col">
+            <div (click)="isSidebarOpen ? toggleMenu('record') : toggleSidebar()"
+                 [title]="!isSidebarOpen ? 'บันทึกการปรึกษา' : ''"
+                 class="text-black rounded-xl cursor-pointer transition-all duration-200 flex items-center group"
+                 [ngClass]="activeMenu === 'record' ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-primary/10 hover:text-primary'"
+                 [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen" [class.justify-between]="isSidebarOpen"
+                 [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+
+              <div class="flex items-center">
+                <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">chat</span>
+                @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">บันทึกการปรึกษา</span> }
+              </div>
+              @if (isSidebarOpen) {
+                <span class="material-symbols-outlined text-[20px] transition-transform duration-300" [class.rotate-180]="activeMenu === 'record'">expand_more</span>
+              }
+            </div>
+
+            @if (isSidebarOpen && activeMenu === 'record') {
+              <div class="ml-6 mt-1 pl-3 border-l-2 border-gray-100 flex flex-col gap-1 animate-fadeIn">
+                <a routerLink="/individual-record" routerLinkActive="!text-primary !font-bold bg-primary/10"
+                   class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2">
+                  <span class="material-symbols-outlined icon-filled text-[18px]">person</span> บันทึกรายบุคคล
+                </a>
+                <a routerLink="/group-record" routerLinkActive="!text-primary !font-bold bg-primary/10"
+                   class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2">
+                  <span class="material-symbols-outlined icon-filled text-[18px]">group</span> บันทึกรายกลุ่ม
+                </a>
+              </div>
+            }
+          </li>
+        </ul>
+      </nav>
+    }
+
+    @if (userRole === 'student') {
+      <nav>
+        <ul class="flex flex-col gap-1.5">
+          @for (menu of [
+            { path: '/personal-data', icon: 'home', label: 'ข้อมูลส่วนตัว' },
+            { path: '/study-results', icon: 'group', label: 'ผลการเรียน' },
+            { path: '/plo-evaluation', icon: 'assignment', label: 'การประเมิน PLO' },
+            { path: '/activity', icon: 'event', label: 'กิจกรรม' },
+            { path: '/certification', icon: 'badge', label: 'Certification' },
+            { path: '/advisor-record', icon: 'history', label: 'บันทึกการปรึกษา' },
+            { path: '/advisor-information', icon: 'person_text', label: 'ข้อมูลที่ปรึกษา' },
+            { path: '/history-student-record', icon: 'history_edu', label: 'ระเบียนประวัติ' }
+          ]; track menu.path) {
+
+            <li [routerLink]="menu.path" routerLinkActive="!bg-primary !text-white shadow-md shadow-primary/40 font-bold"
+                [title]="!isSidebarOpen ? menu.label : ''"
+                class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
+                [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen"
+                [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+              <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">{{ menu.icon }}</span>
+              @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">{{ menu.label }}</span> }
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+
+    @if (userRole === 'admin') {
+      <nav>
+        <ul class="flex flex-col gap-1.5">
+          @for (menu of [
+            { path: '/system-dashboard', icon: 'dashboard', label: 'ภาพรวมระบบ' },
+            { path: '/users', icon: 'group', label: 'จัดการผู้ใช้งาน' },
+            { path: '/students', icon: 'school', label: 'นักศึกษา' },
+            { path: '/assign-advisor', icon: 'person_add', label: 'กำหนดอาจารย์ที่ปรึกษา' },
+            { path: '/plo', icon: 'track_changes', label: 'จัดการ PLO' },
+            { path: '/advisor-history', icon: 'history', label: 'ประวัติที่ปรึกษา' },
+            { path: '/reports', icon: 'description', label: 'รายงานระบบ' }
+          ]; track menu.path) {
+
+            <li [routerLink]="menu.path" routerLinkActive="!bg-primary !text-white shadow-md shadow-primary/40 font-bold"
+                [title]="!isSidebarOpen ? menu.label : ''"
+                class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
+                [class.px-4]="isSidebarOpen" [class.py-3]="isSidebarOpen"
+                [class.w-12]="!isSidebarOpen" [class.h-12]="!isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.mx-auto]="!isSidebarOpen">
+              <span class="material-symbols-outlined icon-filled transition-transform group-hover:scale-110" [class.mr-3]="isSidebarOpen">{{ menu.icon }}</span>
+              @if (isSidebarOpen) { <span class="text-[15px] font-medium tracking-wide">{{ menu.label }}</span> }
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  </div>
+
+  @if (userRole === 'admin' || userRole === 'teacher') {
+    <div class="px-5 mt-2 mb-4 shrink-0">
+      <div class="h-px w-full bg-gray-100 mb-4"></div>
+
+      <div (click)="goBack()"
+           [title]="!isSidebarOpen ? 'กลับไป SCIENCE MIS' : ''"
+           class="group relative flex items-center p-2.5 bg-[#3D2521] hover:bg-[#2d1b18] active:scale-[0.98] rounded-xl cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg"
+           [class.justify-center]="!isSidebarOpen"
+           [class.px-4]="isSidebarOpen">
+
+        <div class="flex items-center w-full" [class.justify-between]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center p-2 bg-[#F9BD15]/10 group-hover:bg-[#F9BD15]/20 rounded-xl transition-colors shrink-0">
+              <span class="material-symbols-outlined icon-filled text-[#F9BD15] select-none text-[20px] font-bold" style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">group</span>
+            </div>
+
             @if (isSidebarOpen) {
-              <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="activeMenu === 'appointment'">
-        expand_more
-      </span>
+              <div class="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
+                <span class="text-[10px] text-gray-400 font-semibold whitespace-nowrap uppercase tracking-widest leading-tight">ไปยังระบบอื่น</span>
+                <span class="text-white font-bold text-sm leading-tight whitespace-nowrap group-hover:text-[#F9BD15] transition-colors">SCIENCE MIS</span>
+              </div>
             }
           </div>
 
-          @if (isSidebarOpen && activeMenu === 'appointment') {
-            <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
-              <ul class="flex flex-col gap-1">
-                <li routerLink="/individual" routerLinkActive="bg-primary text-white is-active"
-                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> นัดหมายรายบุคคล</a>
-                </li>
-                <li routerLink="/group" routerLinkActive="bg-primary text-white is-active"
-                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center"><span class="material-symbols-outlined icon-filled pr-1" > group </span> นัดหมายรายกลุ่ม</a>
-                </li>
-              </ul>
-            </div>
-          }
-        </li>
-        <li class="flex flex-col group">
-          <div (click)="isSidebarOpen ? toggleMenu('record') : toggleSidebar()"
-               class="py-3 !rounded-lg hover:text-white hover:bg-primary hover:cursor-pointer transition duration-200 flex items-center
-              text-black group-has-[.is-active]:text-white group-has-[.is-active]:font-bold group-has-[.is-active]:bg-primary group-has-[.child-menu:hover]:bg-primary group-has-[.child-menu:hover]:text-white"
-               [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen" [class.justify-between]="isSidebarOpen">
-            <div class="flex items-center font-semibold text-[16px]">
-              <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> chat </span>
-              @if (isSidebarOpen) { <span>บันทึกการปรึกษา</span> }
-            </div>
-            @if (isSidebarOpen) {
-              <span class="material-symbols-outlined transition-transform duration-200" [class.rotate-180]="activeMenu === 'record'">
-        expand_more
-      </span>
-            }
-          </div>
-
-          @if (isSidebarOpen && activeMenu === 'record') {
-            <div class="ml-8 mt-1 border-l-2 border-x-gray-500 flex flex-col gap-1">
-              <ul class="flex flex-col gap-1">
-                <li routerLink="/individual-record" routerLinkActive="bg-primary text-white is-active"
-                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center"> <span class="material-symbols-outlined icon-filled pr-1" > person </span> บันทึกรายบุคคล</a>
-                </li>
-                <li routerLink="/group-record" routerLinkActive="bg-primary text-white is-active"
-                    class="child-menu relative py-2 px-4 text-[15px] text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 ml-2">
-                  <a class="flex items-center"><span class="material-symbols-outlined icon-filled pr-1" > group </span> บันทึกรายกลุ่ม</a>
-                </li>
-              </ul>
-            </div>
-          }
-        </li>
-
-      </ul>
-
-    </nav>
-  }
-
-  @if (userRole === 'student') {
-    <nav>
-      <ul class="flex flex-col gap-2 text-[16px] font-semibold">
-        <li routerLink="/personal-data" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> home </span>
-            @if (isSidebarOpen) { <span>ข้อมูลส่วนตัว</span> }
-          </a>
-        </li>
-        <li routerLink="/study-results" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> group </span>
-            @if (isSidebarOpen) { <span>ผลการเรียน</span> }
-          </a>
-        </li>
-        <li routerLink="/plo-evaluation" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> assignment </span>
-            @if (isSidebarOpen) { <span>การประเมิน PLO</span> }
-          </a>
-        </li>
-        <li routerLink="/activity" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> event </span>
-            @if (isSidebarOpen) { <span>กิจกรรม</span> }
-          </a>
-        </li>
-        <li routerLink="/certification" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> badge </span>
-            @if (isSidebarOpen) { <span>Certification</span> }
-          </a>
-        </li>
-        <li routerLink="/advisor-record" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> history </span>
-            @if (isSidebarOpen) { <span>บันทึกการปรึกษา</span> }
-          </a>
-        </li>
-        <li routerLink="/advisor-information" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> person_text </span>
-            @if (isSidebarOpen) { <span>ข้อมูลที่ปรึกษา</span> }
-          </a>
-        </li>
-        <li routerLink="/history-student-record" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> history_edu </span>
-            @if (isSidebarOpen) { <span>ระเบียนประวัติ</span> }
-          </a>
-        </li>
-      </ul>
-    </nav>
-  }
-
-  @if (userRole === 'admin') {
-    <nav>
-      <ul class="flex flex-col gap-2 text-[16px] font-semibold">
-        <li routerLink="/system-dashboard" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> dashboard </span>
-            @if (isSidebarOpen) { <span>ภาพรวมระบบ</span> }
-          </a>
-        </li>
-        <li routerLink="/users" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> group </span>
-            @if (isSidebarOpen) { <span>จัดการผู้ใช้งาน</span> }
-          </a>
-        </li>
-        <li routerLink="/students" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> school </span>
-            @if (isSidebarOpen) { <span>นักศึกษา</span> }
-          </a>
-        </li>
-        <li routerLink="/assign-advisor" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> person_add </span>
-            @if (isSidebarOpen) { <span>กำหนดอาจารย์ที่ปรึกษา</span> }
-          </a>
-        </li>
-        <li routerLink="/plo" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> track_changes </span>
-            @if (isSidebarOpen) { <span>จัดการ PLO</span> }
-          </a>
-        </li>
-        <li routerLink="/advisor-history" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> history </span>
-            @if (isSidebarOpen) { <span>ประวัติที่ปรึกษา</span> }
-          </a>
-        </li>
-        <li routerLink="/reports" routerLinkActive="bg-primary text-white rounded-lg"
-            class="py-3 text-black !rounded-lg hover:bg-primary hover:text-white hover:cursor-pointer transition duration-200 flex items-center"
-            [class.px-4]="isSidebarOpen" [class.justify-center]="!isSidebarOpen">
-          <a class="flex items-center">
-            <span class="material-symbols-outlined icon-filled" [class.pr-2]="isSidebarOpen"> description </span>
-            @if (isSidebarOpen) { <span>รายงานระบบ</span> }
-          </a>
-        </li>
-
-
-
-      </ul>
-    </nav>
-  }
-    @if (userRole === 'admin' || userRole === 'teacher') {
-      <div class="px-7 my-4">
-        <div class="h-px w-full bg-gray-300"></div>
-      </div>
-    <div (click)="goBack()"
-         class="group relative flex items-center mt-5 p-2 bg-[#3D2521] hover:bg-[#4D312C] active:scale-[0.98] rounded-2xl cursor-pointer transition-all duration-200 shadow-md"
-         [class.justify-center]="!isSidebarOpen"
-         [class.px-4]="isSidebarOpen">
-
-      <div class="flex items-center w-full"
-           [class.justify-between]="isSidebarOpen"
-           [class.justify-center]="!isSidebarOpen">
-
-        <div class="flex items-center gap-3">
-          <!-- Icon หลัก: ใช้ Material Symbols แทน SVG -->
-          <div class="flex items-center justify-center p-2 bg-[#F9BD15]/10 group-hover:bg-[#F9BD15]/20 rounded-xl transition-colors shrink-0">
-        <span class="material-symbols-outlined text-[#F9BD15] select-none text-[20px] font-bold"
-              style="font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;">
-          group
-        </span>
-          </div>
-
-          <!-- ข้อความ Label -->
           @if (isSidebarOpen) {
-            <div class="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
-          <span class="text-[10px] text-gray-400 font-semibold whitespace-nowrap uppercase tracking-widest">
-            ไปยังระบบอื่น
-          </span>
-              <span class="text-white font-bold text-sm leading-tight whitespace-nowrap group-hover:text-[#F9BD15] transition-colors">
-            SCIENCE MIS
-          </span>
-            </div>
+            <span class="material-symbols-outlined text-white opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all select-none text-[18px]">open_in_new</span>
           }
         </div>
-
-        <!-- Icon External Link: ใช้ Material Symbols แทน SVG -->
-        @if (isSidebarOpen) {
-          <span class="material-symbols-outlined text-white opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all select-none text-[18px]"
-                style="font-variation-settings: 'wght' 500;">
-        open_in_new
-      </span>
-        }
       </div>
     </div>
-    }
-</div>
+  }
 </div>

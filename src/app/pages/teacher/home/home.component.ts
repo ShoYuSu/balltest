@@ -51,7 +51,7 @@ export class HomeComponent implements OnInit {
   ];
 
   currentPage = signal(1);
-  itemsPerPage = 5;
+  itemsPerPage = 6;
   studentsInCare = signal<any[]>([]);
   appointments = signal<any[]>([]);
 

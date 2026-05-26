@@ -13,7 +13,7 @@ export class HeaderComponent implements OnInit {
   userRole: string = '';
   studentCode: string = '';
   isDropdownOpen: boolean = false;
-  userImageUrl: string | null = null; // ตัวแปรเก็บ URL รูปภาพ
+  userImageUrl: string | null = null;
 
   ngOnInit() {
     // 1. ดึงค่าพื้นฐาน
@@ -21,17 +21,17 @@ export class HeaderComponent implements OnInit {
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
     this.studentCode = localStorage.getItem('student_code') || '';
 
-
-    // 2. ดึงค่ารูปภาพที่เก็บไว้ตอน Login (สมมติว่าใช้คีย์ชื่อ 'student_image')
+    // 2. ดึงค่ารูปภาพที่เก็บไว้ตอน Login
     const savedImagePath = localStorage.getItem('img_profile');
 
     if (savedImagePath && savedImagePath !== 'null' && savedImagePath !== '') {
-
       const cleanPath = savedImagePath.startsWith('/')
         ? savedImagePath.substring(1)
         : savedImagePath;
-
       this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
+    } else {
+      // 👉 เพิ่ม UI Avatars ถ้ารูปไม่มี จะได้ดูสวยเนียนตาไปกับหน้าระบบอื่นๆ
+      this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
     }
   }
 
