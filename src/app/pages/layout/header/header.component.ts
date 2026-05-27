@@ -19,7 +19,8 @@ export class HeaderComponent implements OnInit {
     // 1. ดึงค่าพื้นฐาน
     this.userName = localStorage.getItem('full_name') || 'ผู้ใช้งาน';
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
-    this.studentCode = localStorage.getItem('student_code') || '';
+    this.studentCode =
+      localStorage.getItem('student_code') || localStorage.getItem('username') || '6504800006';
 
     // 2. ดึงค่ารูปภาพที่เก็บไว้ตอน Login
     const savedImagePath = localStorage.getItem('img_profile');
@@ -30,7 +31,7 @@ export class HeaderComponent implements OnInit {
         : savedImagePath;
       this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
     } else {
-      // 👉 เพิ่ม UI Avatars ถ้ารูปไม่มี จะได้ดูสวยเนียนตาไปกับหน้าระบบอื่นๆ
+      // เพิ่ม UI Avatars ถ้ารูปไม่มี จะได้ดูสวยเนียนตาไปกับหน้าระบบอื่นๆ
       this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
     }
   }

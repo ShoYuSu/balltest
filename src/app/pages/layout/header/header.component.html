@@ -38,7 +38,7 @@
     </button>
 
     @if (isDropdownOpen) {
-      <div class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-gray-100 py-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+      <div class="absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-gray-100 py-3 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
 
         <div class="px-6 py-4 flex items-center gap-3 border-b border-gray-50">
           <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
@@ -51,7 +51,12 @@
         </div>
 
         <div class="px-3 pt-2">
-
+          <button class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-2xl transition-all font-bold group mb-1">
+            <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+              <span class="material-symbols-outlined text-[20px] text-gray-600">settings</span>
+            </div>
+            ตั้งค่าบัญชี
+          </button>
 
           <button
             (click)="onLogout()"

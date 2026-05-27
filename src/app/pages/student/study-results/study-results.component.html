@@ -1,156 +1,223 @@
-<div class="p-6 bg-[#EEF2F6] min-h-screen">
+<div class="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800 animate-fadeIn">
 
-  <!-- ===== STATS ===== -->
- <div class="grid grid-cols-3 gap-6">
-
-  <!-- GPA -->
-  <div class="stat-card flex justify-between items-center">
-    <div>
-      <p class="label">เกรดเฉลี่ยล่าสุด (GPA)</p>
-      <p class="value">3.85</p>
-    </div>
-    <div class="icon-box bg-green-50 text-green-500">
-      <span class="material-symbols-outlined">trending_up</span>
-    </div>
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">ผลการศึกษา</h1>
+    <p class="text-sm text-gray-500 mt-1">สรุปผลการเรียนและตรวจสอบโครงสร้างหน่วยกิตของนักศึกษา</p>
   </div>
 
-  <!-- CREDIT -->
-  <div class="stat-card flex justify-between items-center">
-    <div>
-      <p class="label">หน่วยกิตสะสม</p>
-      <p class="value">97/127</p>
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-green-100 transition-all duration-300 group">
+      <div>
+        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">เกรดเฉลี่ยล่าสุด (GPA)</p>
+        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-green-600 transition-colors">{{ latestGpa() }}</p>
+      </div>
+      <div class="w-14 h-14 bg-green-50/80 rounded-2xl flex items-center justify-center text-green-500 group-hover:bg-green-100 transition-colors">
+        <span class="material-symbols-outlined text-[28px]">trending_up</span>
+      </div>
     </div>
-    <div class="icon-box bg-blue-50 text-blue-500">
-      <span class="material-symbols-outlined">star</span>
+
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-blue-100 transition-all duration-300 group">
+      <div>
+        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">หน่วยกิตสะสม</p>
+        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors">
+          {{ creditsDone() }}<span class="text-lg text-gray-300 font-bold">/{{ creditsNeed() }}</span>
+        </p>
+      </div>
+      <div class="w-14 h-14 bg-blue-50/80 rounded-2xl flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+        <span class="material-symbols-outlined text-[28px]">star</span>
+      </div>
     </div>
+
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300 group">
+      <div>
+        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">เกรดเฉลี่ยสะสม (GPAX)</p>
+        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-primary transition-colors">{{ gpax() }}</p>
+      </div>
+      <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+        <span class="material-symbols-outlined text-[28px]">analytics</span>
+      </div>
+    </div>
+
   </div>
 
-  <!-- GPAX -->
-  <div class="stat-card flex justify-between items-center">
-    <div>
-      <p class="label">เกรดเฉลี่ยสะสม (GPAX)</p>
-      <p class="value">3.45</p>
+  <!-- Tab Bar -->
+  <div class="bg-white rounded-2xl border border-gray-100 p-2 md:p-3 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4">
+
+    <div class="flex bg-gray-50/80 rounded-xl p-1 w-full md:w-auto border border-gray-100">
+      <button
+        (click)="activeTab='result'"
+        class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
+        [ngClass]="activeTab === 'result' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+        <span class="material-symbols-outlined text-[18px]">history_edu</span> ผลการเรียน
+      </button>
+      <button
+        (click)="activeTab='credit'"
+        class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
+        [ngClass]="activeTab === 'credit' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+        <span class="material-symbols-outlined text-[18px]">rule</span> เช็คหน่วยกิต
+      </button>
     </div>
-    <div class="icon-box bg-gray-100 text-gray-500">
-      <span class="material-symbols-outlined">analytics</span>
+
+    <!-- Custom Dropdown -->
+    <div class="w-full md:w-auto flex justify-end">
+      @if (activeTab === 'result' && terms().length > 0) {
+        <div class="relative w-full md:w-auto" #dropdownRef>
+
+          <!-- Trigger -->
+          <button
+            type="button"
+            (click)="isDropdownOpen = !isDropdownOpen"
+            class="w-full md:w-auto flex items-center gap-2.5 pl-10 pr-4 py-2.5 bg-white border-[1.5px] rounded-[14px] text-sm font-bold text-gray-700 shadow-sm transition-all duration-200 relative"
+            [ngClass]="isDropdownOpen
+              ? 'border-primary shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-primary,#f97316)_15%,transparent)]'
+              : 'border-gray-200 hover:border-primary/50'">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] pointer-events-none transition-colors duration-200"
+                  [ngClass]="isDropdownOpen ? 'text-primary' : 'text-gray-400'">
+              calendar_month
+            </span>
+            <span class="flex-1 text-left whitespace-nowrap">ภาคเรียนที่ {{ selectedTerm() }}</span>
+            <span class="material-symbols-outlined text-[20px] text-gray-400 transition-transform duration-300 ml-1"
+                  [style.transform]="isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'">
+              expand_more
+            </span>
+          </button>
+
+          <!-- Menu -->
+          <div
+            class="absolute right-0 top-[calc(100%+6px)] z-50 w-full min-w-[220px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-xl transition-all duration-200 origin-top"
+            [ngClass]="isDropdownOpen
+              ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+              : 'opacity-0 scale-[0.97] -translate-y-1 pointer-events-none'">
+
+            @for (term of terms(); track term) {
+              <button
+                type="button"
+                (click)="selectTerm(term)"
+                class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-left transition-colors duration-150"
+                [ngClass]="selectedTerm() === term
+                  ? 'bg-orange-50 text-primary'
+                  : 'text-gray-600 hover:bg-orange-50/60 hover:text-primary'">
+                <span class="material-symbols-outlined text-[17px] transition-colors duration-150"
+                      [ngClass]="selectedTerm() === term ? 'text-primary' : 'text-gray-300'">
+                  event_note
+                </span>
+                <span class="flex-1">ภาคเรียนที่ {{ term }}</span>
+                @if (selectedTerm() === term) {
+                  <span class="material-symbols-outlined text-[17px] text-primary">check</span>
+                }
+              </button>
+            }
+
+          </div>
+        </div>
+      }
     </div>
+
   </div>
 
-</div>
-
-  <!-- ===== HEADER ===== -->
-  <div class="bg-white mt-6 rounded-2xl border border-gray-200 px-6 py-4 
-              flex justify-between items-center shadow-sm">
-
-    <div class="flex items-center gap-6">
-
-      <h2 class="font-semibold text-gray-700">ผลการศึกษา</h2>
-
-      <!-- TAB -->
-      <div class="flex bg-gray-100 rounded-full p-1">
-        <button
-          (click)="activeTab='result'"
-          [ngClass]="activeTab==='result' ? 'tab-active' : 'tab-inactive'">
-          ผลการเรียน
-        </button>
-
-        <button
-          (click)="activeTab='credit'"
-          [ngClass]="activeTab==='credit' ? 'tab-active' : 'tab-inactive'">
-          เช็คหน่วยกิต
-        </button>
+  <!-- Result Table -->
+  @if (activeTab === 'result') {
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm mt-6 animate-fadeIn slide-in-from-bottom-2 duration-300 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50/80 border-b border-gray-100 text-gray-500 text-[11px] uppercase tracking-wider">
+          <tr>
+            <th class="py-4 px-8 font-extrabold w-[20%]">รหัสวิชา</th>
+            <th class="py-4 px-6 font-extrabold w-[50%]">ชื่อวิชา</th>
+            <th class="py-4 px-6 font-extrabold text-center w-[15%]">หน่วยกิต</th>
+            <th class="py-4 px-8 font-extrabold text-center w-[15%]">เกรด</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (s of displayedSubjects(); track s.code) {
+              <tr class="hover:bg-orange-50/30 transition-colors group">
+                <td class="py-4 px-8 font-bold text-gray-500 group-hover:text-primary transition-colors">{{ s.code }}</td>
+                <td class="py-4 px-6 font-bold text-gray-900 group-hover:text-primary transition-colors">{{ s.name }}</td>
+                <td class="py-4 px-6 font-medium text-gray-600 text-center">{{ s.credit }}</td>
+                <td class="py-4 px-8 text-center">
+                  <div class="inline-flex items-center justify-center w-9 h-9 rounded-full font-extrabold text-sm shadow-sm"
+                       [ngClass]="getGradeColor(s.grade)">
+                    {{ s.grade }}
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (displayedSubjects().length === 0) {
+              <tr>
+                <td colspan="4" class="text-center py-16 text-gray-400">
+                  <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span class="material-symbols-outlined text-3xl">history_edu</span>
+                  </div>
+                  <p class="font-bold text-gray-500">ไม่พบข้อมูลรายวิชา</p>
+                  <p class="text-xs mt-1">ยังไม่มีการลงทะเบียนเรียนในภาคเรียนนี้</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
 
+      @if (displayedSubjects().length > 0) {
+        <div class="bg-gray-50/50 p-5 border-t border-gray-100 flex flex-col md:flex-row justify-end items-center gap-6">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-extrabold text-gray-400 uppercase tracking-widest">หน่วยกิตประจำเทอม</span>
+            <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg font-extrabold text-gray-800 shadow-sm">{{ termStats().credits }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-extrabold text-gray-400 uppercase tracking-widest">เกรดเฉลี่ย (GPA)</span>
+            <span class="px-5 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-xl font-black text-lg shadow-sm">{{ termStats().gpa }}</span>
+          </div>
+        </div>
+      }
     </div>
+  }
 
-    <div class="flex items-center gap-3">
-      <button class="btn-green">
-        <span class="material-symbols-outlined text-sm">description</span>
-        แปลงเป็น Google Sheet
-      </button>
-
-      <select class="dropdown">
-        <option>1/2567</option>
-      </select>
+  <!-- Credit Table -->
+  @if (activeTab === 'credit') {
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm mt-6 animate-fadeIn slide-in-from-bottom-2 duration-300 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50/80 border-b border-gray-100 text-gray-500 text-[11px] uppercase tracking-wider">
+          <tr>
+            <th class="py-4 px-8 font-extrabold w-[40%]">โครงสร้างหลักสูตร / หมวดวิชา</th>
+            <th class="py-4 px-6 font-extrabold text-center">ต้องการ (นก.)</th>
+            <th class="py-4 px-6 font-extrabold text-center">ได้แล้ว (นก.)</th>
+            <th class="py-4 px-8 font-extrabold text-center">คงเหลือ (นก.)</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (c of creditSummary(); track c.name) {
+              <tr class="hover:bg-gray-50/50 transition-colors group">
+                <td class="py-4 px-8 font-bold text-gray-800 flex items-center gap-3">
+                  <div class="w-2 h-2 rounded-full bg-primary/40 group-hover:bg-primary transition-colors"></div>
+                  {{ c.name }}
+                </td>
+                <td class="py-4 px-6 font-bold text-gray-500 text-center">{{ c.need }}</td>
+                <td class="py-4 px-6 font-extrabold text-green-600 text-center">{{ c.done }}</td>
+                <td class="py-4 px-8 font-extrabold text-center"
+                    [class.text-red-500]="c.remain > 0"
+                    [class.text-gray-300]="c.remain === 0">
+                  {{ c.remain }}
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot class="bg-primary/5 border-t-2 border-primary/10">
+          <tr>
+            <td class="py-5 px-8 font-black text-gray-900 text-right uppercase tracking-wider">รวมทั้งหมด</td>
+            <td class="py-5 px-6 font-black text-gray-900 text-center text-base">{{ creditsNeed() }}</td>
+            <td class="py-5 px-6 font-black text-green-600 text-center text-base">{{ creditsDone() }}</td>
+            <td class="py-5 px-8 font-black text-red-500 text-center text-base">
+              {{ (creditsNeed() - creditsDone()) > 0 ? (creditsNeed() - creditsDone()) : 0 }}
+            </td>
+          </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
-
-  </div>
-
-  <!-- ===== RESULT TABLE ===== -->
-  <div *ngIf="activeTab === 'result'" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6 fade-in">
-
-    <table class="w-full text-sm">
-
-      <colgroup>
-        <col class="w-[15%]" />
-        <col class="w-[55%]" />
-        <col class="w-[15%]" />
-        <col class="w-[15%]" />
-      </colgroup>
-
-      <thead class="table-head">
-        <tr>
-          <th>รหัสวิชา</th>
-          <th>ชื่อวิชา</th>
-          <th class="text-center">หน่วยกิต</th>
-          <th class="text-center">เกรด</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let s of subjects" class="table-row">
-          <td class="code">{{s.code}}</td>
-          <td class="subject">{{s.name}}</td>
-          <td class="text-center">{{s.credit}}</td>
-          <td class="text-center">
-            <span class="grade" [ngClass]="getGradeColor(s.grade)">
-              {{s.grade}}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-
-    </table>
-
-    <div class="text-right mt-6">
-      <p class="text-gray-500">หน่วยกิตรวม 15</p>
-      <p class="text-green-600 font-semibold">GPA 3.80</p>
-    </div>
-
-  </div>
-
-  <!-- ===== CREDIT TABLE ===== -->
-  <div *ngIf="activeTab === 'credit'" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6 fade-in">
-
-    <table class="w-full text-sm">
-
-      <thead class="bg-[#8B5E3C] text-white">
-        <tr>
-          <th class="text-left py-3 px-3">หมวด</th>
-          <th class="text-center">ต้องการ</th>
-          <th class="text-center">ได้แล้ว</th>
-          <th class="text-center">คงเหลือ</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let c of creditSummary" class="table-row">
-          <td class="px-3 py-3">{{c.name}}</td>
-          <td class="text-center">{{c.need}}</td>
-          <td class="text-center">{{c.done}}</td>
-          <td class="text-center">{{c.remain}}</td>
-        </tr>
-
-        <tr class="font-semibold border-t">
-          <td class="px-3 py-3">รวม</td>
-          <td class="text-center">132</td>
-          <td class="text-center">97</td>
-          <td class="text-center">35</td>
-        </tr>
-      </tbody>
-
-    </table>
-
-  </div>
+  }
 
 </div>
