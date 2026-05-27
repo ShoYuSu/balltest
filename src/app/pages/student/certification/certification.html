@@ -1,42 +1,38 @@
-<div class="page-container">
+<div class="activity-page">
 
-  <!-- ===== TOP BAR ===== -->
-  <div class="top-row">
+  <!-- HEADER -->
+  <div class="activity-header">
 
-    <!-- SUMMARY CARD -->
-    <div class="summary-card">
+    <h2 class="page-title">
+      Certification
+    </h2>
 
-      <div class="summary-icon">
-        <span class="material-symbols-outlined">verified</span>
-      </div>
+    <button
+      class="btn-primary"
+      (click)="openModal()">
 
-      <div>
-        <p class="summary-value">{{ totalCertificates }}</p>
-        <p class="summary-label">จำนวนใบรับรอง</p>
-      </div>
+      <span class="material-symbols-outlined">
+        add
+      </span>
 
-    </div>
-
-    <!-- ADD BUTTON -->
-    <button class="btn-primary">
-      <span class="material-symbols-outlined text-sm">add</span>
       เพิ่มใบรับรอง
+
     </button>
 
   </div>
 
-  <!-- ===== TITLE ===== -->
-  <h2 class="section-title">
-    Certification
-  </h2>
+  <!-- CARD -->
 
-  <!-- ===== EMPTY STATE ===== -->
-  <div class="empty-wrapper">
+  <div class="activity-card">
 
     <div class="empty-content">
 
       <div class="empty-icon">
-        <span class="material-symbols-outlined">workspace_premium</span>
+
+        <span class="material-symbols-outlined">
+          workspace_premium
+        </span>
+
       </div>
 
       <h3 class="empty-title">
@@ -47,11 +43,164 @@
         เพิ่มใบรับรองของคุณเพื่อแสดงความสามารถ
       </p>
 
-      <button class="btn-primary mt-4">
-        <span class="material-symbols-outlined text-sm">add</span>
+      <button
+        class="btn-primary"
+        (click)="openModal()">
+
+        <span class="material-symbols-outlined">
+          add
+        </span>
+
         เพิ่มใบรับรอง
+
       </button>
 
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =========================
+          MODAL
+========================= -->
+
+<div
+  class="modal-backdrop"
+  *ngIf="showModal">
+
+  <div class="modal-card">
+
+    <!-- HEADER -->
+
+    <div class="modal-header">
+
+      <div>
+
+        <h2 class="modal-title">
+          เพิ่มใบรับรอง
+        </h2>
+
+        <p class="modal-subtitle">
+          เพิ่ม Certification ของคุณ
+        </p>
+
+      </div>
+
+      <button
+        class="close-btn"
+        (click)="closeModal()">
+
+        <span class="material-symbols-outlined">
+          close
+        </span>
+
+      </button>
+
+    </div>
+
+    <!-- FORM -->
+
+    <div class="form-group">
+
+      <label>
+        ชื่อใบรับรอง
+      </label>
+
+      <input
+        type="text"
+        [(ngModel)]="certificateTitle"
+        placeholder="กรอกชื่อใบรับรอง">
+
+    </div>
+
+    <!-- DATE -->
+
+    <div class="form-group">
+
+      <label>
+        วันที่ได้รับ
+      </label>
+
+      <input
+        type="date"
+        [(ngModel)]="issueDate">
+
+    </div>
+
+    <!-- FILE -->
+
+    <div class="form-group">
+
+  <label>
+    แนบไฟล์ PDF
+  </label>
+
+  <label
+    class="upload-box"
+    for="certificateFile">
+
+    <input
+  #fileInput
+  id="certificateFile"
+  type="file"
+  hidden
+  accept=".pdf"
+  (change)="onFileSelected($event)">
+
+    <span class="material-symbols-outlined upload-icon">
+      cloud_upload
+    </span>
+
+    <p class="upload-title">
+      Upload PDF
+    </p>
+
+    <p class="upload-subtitle">
+      คลิกเพื่อเลือกไฟล์
+    </p>
+
+    <!-- SHOW FILE NAME -->
+
+    <div
+      class="selected-file"
+      *ngIf="selectedFile">
+
+      <span class="material-symbols-outlined">
+        description
+      </span>
+
+      {{ selectedFile.name }}
+
+    </div>
+
+  </label>
+
+</div>
+    <!-- ACTIONS -->
+
+    <div class="modal-actions">
+
+      <button
+        class="btn-cancel"
+        (click)="closeModal()">
+
+        ยกเลิก
+
+      </button>
+
+      <button
+  type="button"
+  class="btn-save"
+  (click)="saveCertificate()">
+
+  <span class="material-symbols-outlined">
+    save
+  </span>
+
+  บันทึก
+
+</button>
     </div>
 
   </div>

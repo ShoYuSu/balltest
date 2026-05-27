@@ -121,7 +121,7 @@ export const routes: Routes = [
       {
         path: 'certification',
         loadComponent: () =>
-          import('./pages/student/certification/certification').then((m) => m.Certification),
+          import('./pages/student/certification/certification').then((m) => m.CertificationComponent),
         canActivate: [authGuard],
         data: { role: 'student' },
       },
