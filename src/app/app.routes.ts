@@ -76,6 +76,13 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { role: 'teacher' },
       },
+      {
+        path: 'student-result/:studentCode',
+        loadComponent: () =>
+          import('./pages/teacher/student-result-modal/student-result-modal.component').then(
+            (m) => m.StudentResultModalComponent,
+          ),
+      },
 
       //student
       {

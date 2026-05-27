@@ -24,7 +24,8 @@
 
         <div class="space-y-3">
           @for (s of paginatedStudents(); track s.id) {
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-orange-50/30 rounded-2xl border border-gray-100 hover:border-orange-100 transition-all duration-300 cursor-pointer group shadow-sm hover:shadow-md">
+            <div (click)="openStudentResult(s)"
+                 class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-orange-50/30 rounded-2xl border border-gray-100 hover:border-orange-100 transition-all duration-300 cursor-pointer group shadow-sm hover:shadow-md">
               <div class="flex items-center gap-4 mb-3 sm:mb-0">
                 <img [src]="s.img" class="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm group-hover:border-orange-200 transition-colors" alt="avatar">
                 <div>
@@ -172,4 +173,5 @@
     </div>
 
   </div>
+
 </div>

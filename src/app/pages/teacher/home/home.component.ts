@@ -3,11 +3,12 @@ import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
+import { StudentResultModalComponent } from '../student-result-modal/student-result-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent],
+  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
@@ -15,6 +16,7 @@ export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
 
+  isModalOpen = false;
   dashboardStats = [
     {
       label: 'นักศึกษาที่ดูแลทั้งหมด',
@@ -62,6 +64,11 @@ export class HomeComponent implements OnInit {
     return this.studentsInCare().slice(start, start + this.itemsPerPage);
   });
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  openStudentResult(student: any) {
+    this.router.navigate(['/student-result', student.id], {
+      state: { student }, // ส่งข้อมูลนักศึกษาไปด้วยผ่าน router state
+    });
+  }
 
   ngOnInit() {
     // 1. ดึงข้อมูลนักศึกษา
