@@ -1,17 +1,19 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { FormsModule } from '@angular/forms'; // 👉 1. นำเข้า FormsModule สำหรับระบบค้นหา
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // 👉 1. นำเข้า Router
 
 @Component({
   selector: 'app-all-students',
   standalone: true,
-  imports: [FormsModule], // 👉 2. ใส่ใน imports
+  imports: [FormsModule],
   templateUrl: './all-students.component.html',
   styleUrl: './all-students.component.css',
 })
 export class AllStudentsComponent implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router); // 👉 2. Inject Router เข้ามาใช้งาน
 
   // --- 1. ตั้งค่าระบบ Pagination ---
   currentPage = signal(1);
@@ -20,15 +22,15 @@ export class AllStudentsComponent implements OnInit {
   // --- 2. รอรับข้อมูลนักศึกษาจากฐานข้อมูล ---
   studentsInCare = signal<any[]>([]);
 
-  // 👉 3. ตัวแปรเก็บคำค้นหา
+  // --- 3. ตัวแปรเก็บคำค้นหา ---
   searchQuery = signal('');
 
-  // 👉 4. ระบบกรองข้อมูล (จะทำงานอัตโนมัติเมื่อ searchQuery เปลี่ยน)
+  // --- 4. ระบบกรองข้อมูล ---
   filteredStudents = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const students = this.studentsInCare();
 
-    if (!query) return students; // ถ้าไม่ได้พิมพ์อะไร ให้แสดงทั้งหมด
+    if (!query) return students;
 
     return students.filter(
       (s) =>
@@ -38,7 +40,7 @@ export class AllStudentsComponent implements OnInit {
     );
   });
 
-  // --- 5. คำนวณข้อมูลสำหรับ Pagination (เปลี่ยนมาอ้างอิงจาก filteredStudents แทน) ---
+  // --- 5. คำนวณข้อมูลสำหรับ Pagination ---
   totalItems = computed(() => this.filteredStudents().length);
   totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
 
@@ -68,7 +70,14 @@ export class AllStudentsComponent implements OnInit {
     }
   }
 
-  // --- 7. ดึงข้อมูลจริงจาก Database ---
+  // 👉 7. ฟังก์ชันคลิกไปหน้าผลการเรียน (พ่วงข้อมูลเด็กไปด้วย)
+  goToStudentResult(student: any) {
+    this.router.navigate(['/student-result', student.id], {
+      state: { student: student },
+    });
+  }
+
+  // --- 8. ดึงข้อมูลจริงจาก Database ---
   ngOnInit() {
     this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
       next: (data) => {
@@ -76,13 +85,13 @@ export class AllStudentsComponent implements OnInit {
           id: student.student_code,
           name: student.full_name,
           email: student.email ? student.email : 'ไม่มีอีเมล',
-          year: `ปี ${student.year}`,
+          year: student.year, // ปรับให้ส่งแค่ตัวเลขปี เพื่อให้หน้า result เอาไปโชว์คำว่า "ปีที่ x" ได้สวยๆ
           gpa: student.gpa,
           credits: `${student.total_credits}/127`,
           ploStatus: student.ploStatus.replace('PLO ', ''),
           img: student.image
             ? `${environment.apiUrl}/${student.image}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=f8fafc&color=ea580c`,
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
         }));
 
         this.studentsInCare.set(formattedStudents);

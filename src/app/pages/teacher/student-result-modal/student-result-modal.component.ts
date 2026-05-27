@@ -8,7 +8,7 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common'; // 👉 1. เพิ่ม Location ตรงนี้
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
@@ -23,10 +23,11 @@ export class StudentResultModalComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private location = inject(Location); // 👉 2. Inject Location เข้ามาใช้งาน
 
   @ViewChild('dropdownRef') dropdownRef?: ElementRef;
 
-  // ดึงข้อมูลนักศึกษาจาก router state ที่ส่งมาจากหน้า home
+  // ดึงข้อมูลนักศึกษาจาก router state ที่ส่งมาจากหน้าก่อนหน้า
   student: any = this.router.getCurrentNavigation()?.extras?.state?.['student'] ?? null;
 
   activeTab: 'result' | 'credit' = 'result';
@@ -85,6 +86,15 @@ export class StudentResultModalComponent implements OnInit {
   }
 
   ngOnInit() {
+    // ใช้ setTimeout เพื่อรอให้ Angular วาดหน้าเว็บให้เสร็จก่อน 50 มิลลิวินาที
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const scrollContainers = document.querySelectorAll('.overflow-y-auto, .overflow-auto');
+      scrollContainers.forEach((container) => {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }, 50);
+
     const studentCode = this.route.snapshot.paramMap.get('studentCode');
     if (studentCode) this.loadResults(studentCode);
   }
@@ -120,8 +130,9 @@ export class StudentResultModalComponent implements OnInit {
     this.isDropdownOpen = false;
   }
 
+  // 👉 3. เปลี่ยนจาก router.navigate เป็น location.back()
   goBack() {
-    this.router.navigate(['/home']);
+    this.location.back();
   }
 
   getGradeColor(grade: string) {

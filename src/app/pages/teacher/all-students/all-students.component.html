@@ -36,7 +36,7 @@
       </thead>
       <tbody class="divide-y divide-gray-50 bg-white">
         @for (s of paginatedStudents(); track s.id) {
-          <tr class="hover:bg-orange-50/30 transition-colors duration-200 cursor-pointer group">
+          <tr (click)="goToStudentResult(s)" class="hover:bg-orange-50/30 transition-colors duration-200 cursor-pointer group">
             <td class="py-4 px-6 whitespace-nowrap">
               <div class="flex items-center gap-4">
                 <img [src]="s.img" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm group-hover:border-orange-200 transition-colors" alt="avatar">
@@ -47,7 +47,7 @@
             <td class="py-4 px-6 text-gray-600 font-medium text-center whitespace-nowrap">
               <span class="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100">{{ s.id }}</span>
             </td>
-            <td class="py-4 px-6 text-gray-600 text-center whitespace-nowrap">{{ s.year }}</td>
+            <td class="py-4 px-6 text-gray-600 text-center whitespace-nowrap">ปี {{ s.year }}</td>
             <td class="py-4 px-6 text-gray-900 font-bold text-center whitespace-nowrap">{{ s.gpa }}</td>
             <td class="py-4 px-6 text-gray-600 font-medium text-center whitespace-nowrap">{{ s.credits }}</td>
             <td class="py-4 px-6 text-center whitespace-nowrap">
