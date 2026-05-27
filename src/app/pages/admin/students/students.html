@@ -36,7 +36,7 @@
         (click)="toggleMajorDropdown()"
         class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
       >
-        <span>{{ selectedMajor || 'ทุกสาขาวิชา' }}</span>
+        <span>{{ selectedMajor || 'หลักสูตร' }}</span>
         <span
           class="material-symbols-outlined text-gray-400 text-lg transition-transform"
           [class.rotate-180]="isMajorDropdownOpen"
@@ -58,7 +58,7 @@
               [class.bg-blue-50]="selectedMajor === ''"
               [class.text-blue-600]="selectedMajor === ''"
             >
-              ทุกสาขาวิชา
+              หลักสูตร
             </button>
           </li>
           <li *ngFor="let major of uniqueMajors">
@@ -186,7 +186,7 @@
             [disabled]="s.status === 'inactive'"
             class="text-blue-500 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center disabled:text-gray-200 disabled:bg-transparent disabled:cursor-not-allowed"
           >
-            <span class="material-symbols-outlined text-xl">visibility</span>
+            <span class="material-symbols-outlined text-xl">menu_book</span>
           </button>
 
           <button
@@ -201,11 +201,17 @@
 
           <button
             *ngIf="col.tag === 'delete'"
-            (click)="deleteStudent(s)"
-            [disabled]="s.status === 'inactive'"
-            class="text-red-500 hover:text-red-600 ml-2 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
+            (click)="toggleStudentStatus(s)"
+            class="ml-2 transition-colors"
+            [ngClass]="
+              s.status === 'inactive'
+                ? 'text-gray-400 hover:text-gray-500'
+                : 'text-blue-500 hover:text-blue-600'
+            "
           >
-            <span class="material-symbols-outlined">delete</span>
+            <span class="material-symbols-outlined">
+              {{ s.status === 'inactive' ? 'visibility_off' : 'visibility' }}
+            </span>
           </button>
         </td>
       </tr>
@@ -421,7 +427,7 @@
             [ngClass]="
               studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
                 ? 'text-emerald-600'
-                : studentForm.get('major')?.value === 'วิทยาการคอมพิวเตอร์' ||
+                : studentForm.get('major')?.value === 'วิทยาการข้อมูลและคอมพิวเตอร์' ||
                     studentForm.get('major')?.value === 'วิทยาการคอม'
                   ? 'text-blue-600'
                   : 'text-gray-400'
@@ -430,7 +436,7 @@
             {{
               studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
                 ? 'มคอ.2 - 67'
-                : studentForm.get('major')?.value === 'วิทยาการคอมพิวเตอร์' ||
+                : studentForm.get('major')?.value === 'วิทยาการข้อมูลและคอมพิวเตอร์' ||
                     studentForm.get('major')?.value === 'วิทยาการคอม'
                   ? 'มคอ.2 - 66'
                   : 'โปรดเลือกสาขา'
@@ -495,7 +501,7 @@
     </form>
   </div>
 </div>
-<app-confirm-modal
+<!-- <app-confirm-modal
   [isOpen]="isDeleteModalOpen"
   title="ยืนยันการลบข้อมูล"
   message="คุณแน่ใจใช่ไหมที่จะลบข้อมูลนักศึกษาคนนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
@@ -505,7 +511,7 @@
   (confirm)="confirmDelete()"
   (cancel)="cancelDelete()"
 >
-</app-confirm-modal>
+</app-confirm-modal> -->
 <div
   *ngIf="isStudentCurriculumOpen"
   class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"

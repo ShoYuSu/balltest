@@ -30,8 +30,8 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
   @Output() close = new EventEmitter<void>();
 
   curriculumData: any[] = [];
-  major: string[] = ['วิทยาการคอมพิวเตอร์', 'เทคโนโลยีการอาหาร']; // มีค่าเริ่มต้นรอไว้
-  selectedMajor: string = 'วิทยาการคอมพิวเตอร์'; // ล็อกสาขาเริ่มต้นที่จะใช้ค้นหา
+  major: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร']; // มีค่าเริ่มต้นรอไว้
+  selectedMajor: string = 'วิทยาการข้อมูลและคอมพิวเตอร์'; // ล็อกสาขาเริ่มต้นที่จะใช้ค้นหา
   selectedYear: string = '2566';
 
   isMajorDropdownOpen = false;
@@ -109,7 +109,7 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
 
     if (this.selectedMajor === 'เทคโนโลยีการอาหาร') {
       this.selectedYear = '2567'; // ล็อกปีการศึกษาสำหรับสาขาเทคโนโลยีการอาหารเป็น 2567 เสมอ
-    } else if (this.selectedMajor === 'วิทยาการคอมพิวเตอร์') {
+    } else if (this.selectedMajor === 'วิทยาการข้อมูลและคอมพิวเตอร์') {
       this.selectedYear = '2566'; // ล็อกปีการศึกษาสำหรับสาขาวิทยาการคอมพิวเตอร์เป็น 2566
     }
     this.loadCurriculumData();
@@ -128,7 +128,7 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
       next: (res) => {
         if (Array.isArray(res)) {
           const dbMajors = res.map((m: any) => m.major_name);
-          this.major = [...new Set([...['วิทยาการคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors])];
+          this.major = [...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors])];
 
           // ตรวจสอบว่ามีสาขาที่เลือกอยู่ในอาเรย์ไหม ถ้าไม่มีให้ล็อกตัวแรก
           if (this.major.length > 0 && !this.major.includes(this.selectedMajor)) {

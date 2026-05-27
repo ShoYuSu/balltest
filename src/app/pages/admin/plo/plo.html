@@ -94,16 +94,16 @@
 
       <form [formGroup]="courseForm" class="space-y-6">
         <div>
-          <label class="block text-sm font-semibold mb-2">ชื่อหลักสูตร</label>
+          <label class="block text-sm font-semibold mb-2 text-slate-700">ชื่อหลักสูตร</label>
           <input
             type="text"
             formControlName="curriculum_name"
             placeholder="เช่น หลักสูตรวิทยาศาสตรบัณฑิต สาขา..."
-            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
             [ngClass]="
               isInvalid(courseForm, 'curriculum_name')
                 ? 'border-red-500 ring-red-50'
-                : 'border-slate-200 focus:ring-indigo-500'
+                : 'border-slate-200 focus:ring-indigo-500 focus:border-indigo-500'
             "
           />
           <p *ngIf="isInvalid(courseForm, 'curriculum_name')" class="text-red-500 text-xs mt-1">
@@ -111,55 +111,75 @@
           </p>
         </div>
 
-        <div>
-          <label class="block text-sm font-semibold mb-2">สาขา / ภาควิชา</label>
-          <select
-            formControlName="dept_id"
-            class="w-full border rounded-xl p-3 bg-white outline-none focus:ring-2 transition-all"
-            [ngClass]="
-              isInvalid(courseForm, 'dept_id')
-                ? 'border-red-500'
-                : 'border-slate-200 focus:ring-indigo-500'
-            "
+        <div class="relative w-full">
+          <label class="block text-sm font-semibold mb-2 text-slate-700">ภาควิชา</label>
+
+          <button
+            type="button"
+            (click)="isDepartmentDropdownOpen = !isDepartmentDropdownOpen"
+            class="flex items-center justify-between w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm"
           >
-            <option value="">เลือกสาขา</option>
-            <option value="1">วิทยาการคอมพิวเตอร์</option>
-            <option value="2">เทคโนโลยีการอาหาร</option>
-          </select>
+            <span>{{ getSelectedDepartmentName() }}</span>
+            <span class="material-symbols-outlined text-gray-400">expand_more</span>
+          </button>
+
+          @if (isDepartmentDropdownOpen) {
+            <div class="absolute z-30 w-full mt-2 bg-white border rounded-xl shadow-xl">
+              <ul class="p-2 text-sm">
+                @for (dept of departmentsList; track dept.dept_id) {
+                  <li>
+                    <button
+                      type="button"
+                      (click)="
+                        courseForm.patchValue({ dept_id: dept.dept_id });
+                        courseForm.get('dept_id')?.setErrors(null);
+                        isDepartmentDropdownOpen = false
+                      "
+                      class="w-full p-2.5 hover:bg-blue-50 rounded-lg text-left"
+                    >
+                      {{ dept.dept_name_th }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
           <p *ngIf="isInvalid(courseForm, 'dept_id')" class="text-red-500 text-xs mt-1">
-            กรุณาเลือกสาขาหรือภาควิชา
+            กรุณาเลือกภาควิชา
           </p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-semibold block mb-2">รหัสหลักสูตร</label>
+            <label class="text-sm font-semibold block mb-2 text-slate-700">รหัสหลักสูตร</label>
             <input
               type="text"
               formControlName="curriculum_id"
               placeholder="เช่น CS-2567"
-              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
               [ngClass]="
                 isInvalid(courseForm, 'curriculum_id')
-                  ? 'border-red-500'
-                  : 'border-slate-200 focus:ring-indigo-500'
+                  ? 'border-red-500 ring-red-50'
+                  : 'border-slate-200 focus:ring-indigo-500 focus:border-indigo-500'
               "
             />
             <p *ngIf="isInvalid(courseForm, 'curriculum_id')" class="text-red-500 text-xs mt-1">
               กรุณากรอกรหัสหลักสูตร
             </p>
           </div>
+
           <div>
-            <label class="text-sm font-semibold block mb-2">ปีหลักสูตร</label>
+            <label class="text-sm font-semibold block mb-2 text-slate-700">ปีหลักสูตร</label>
             <input
               type="number"
               formControlName="year"
               placeholder="เช่น 2567"
-              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all"
+              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
               [ngClass]="
                 isInvalid(courseForm, 'year')
-                  ? 'border-red-500'
-                  : 'border-slate-200 focus:ring-indigo-500'
+                  ? 'border-red-500 ring-red-50'
+                  : 'border-slate-200 focus:ring-indigo-500 focus:border-indigo-500'
               "
             />
             <p *ngIf="isInvalid(courseForm, 'year')" class="text-red-500 text-xs mt-1">
@@ -172,14 +192,14 @@
           <button
             type="button"
             (click)="closeModals()"
-            class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-500 hover:bg-slate-50"
+            class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-colors"
           >
             ยกเลิก
           </button>
           <button
             type="button"
             (click)="saveCourse()"
-            class="flex-1 py-3 bg-[#6366f1] text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all"
+            class="flex-1 py-3 bg-[#6366f1] text-white rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-700 transition-all"
           >
             {{ isEditMode ? 'บันทึกการแก้ไข' : 'สร้างหลักสูตร' }}
           </button>

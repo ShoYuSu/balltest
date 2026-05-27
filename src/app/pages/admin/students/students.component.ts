@@ -11,7 +11,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { TableColumnModel } from '../../../shared/components/stat-cards/models/table-option';
-import { ConfirmModalComponent } from '../../../shared/components/stat-cards/models/comfirm-modal/confirm-modal.component';
+// import { ConfirmModalComponent } from '../../../shared/components/stat-cards/models/comfirm-modal/confirm-modal.component';
 import { environment } from '../../../../environments/environment';
 import { CurriculumManagementComponent } from '../../curriculum-management/curriculum-management.component';
 
@@ -25,7 +25,7 @@ import { CurriculumManagementComponent } from '../../curriculum-management/curri
     HttpClientModule,
     StatCardsComponent,
     ButtonComponent,
-    ConfirmModalComponent,
+    // ConfirmModalComponent,
     CurriculumManagementComponent,
   ],
   templateUrl: './students.html',
@@ -68,7 +68,7 @@ export class StudentsComponent implements OnInit {
     },
     {
       columnDef: 'faculty_major',
-      header: 'สาขา',
+      header: 'หลักสูตร',
       tag: 'text',
       display: true,
       width: 'large',
@@ -104,14 +104,16 @@ export class StudentsComponent implements OnInit {
       tag: 'edit',
       display: true,
       width: 'small',
+      align: 'center',
       cell: (el) => el,
     },
     {
       columnDef: 'delete',
-      header: 'ลบ',
+      header: 'สถานะ',
       tag: 'delete',
       display: true,
       width: 'small',
+      align: 'center',
       cell: (el) => el,
     },
   ];
@@ -144,8 +146,8 @@ export class StudentsComponent implements OnInit {
   ];
 
   isModalOpen = false;
-  isDeleteModalOpen = false;
-  studentToDelete: any = null;
+  // isDeleteModalOpen = false;
+  // studentToDelete: any = null;
   submitted = false;
   searchText = '';
   imagePreview: string | ArrayBuffer | null = null;
@@ -153,6 +155,7 @@ export class StudentsComponent implements OnInit {
   students: any[] = [];
   isSaving = false;
   isEditMode = false;
+  editingStudentId: number | null = null;
   selectedMajor = '';
   selectedYear: any = '';
   curriculumData: any[] = [];
@@ -163,7 +166,7 @@ export class StudentsComponent implements OnInit {
     [courseId: number]: { isChecked: boolean; grade: string; semester: number | null; year: number | null };
   } = {};
 
-  majors: string[] = ['วิทยาการคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'];
+  majors: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'];
   users: any[] = [];
   isMajorDropdownOpen = false;
   isYearDropdownOpen = false;
@@ -238,7 +241,7 @@ export class StudentsComponent implements OnInit {
         if (Array.isArray(res)) {
           const dbMajors = res.map((m: any) => m.major_name);
           this.majors = [
-            ...new Set([...['วิทยาการคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors]),
+            ...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors]),
           ];
         }
       },
@@ -253,7 +256,7 @@ export class StudentsComponent implements OnInit {
     const studentData = {
       ...this.studentForm.value,
       image: this.imagePreview,
-      student_id: this.isEditMode ? this.studentToDelete?.student_id : null, // ส่งรูป Base64 ไปยัง PHP
+      student_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
     };
 
     this.http.post(`${environment.apiUrl}/add_student.php`, studentData).subscribe({
@@ -351,14 +354,12 @@ export class StudentsComponent implements OnInit {
     }
   }
 
-  editStudent(student: any) {
-  this.studentToDelete = student;
+ editStudent(student: any) {
   this.isEditMode = true;
+   this.editingStudentId = student.student_id;
 
-  // reset ก่อน patch ค่า
   this.studentForm.reset();
 
-  // เปิด modal ทีหลัง
   this.isModalOpen = true;
 
   this.imagePreview = student.image
@@ -378,46 +379,71 @@ export class StudentsComponent implements OnInit {
         : '2566',
   });
 
-  // บังคับ refresh
   this.cdr.detectChanges();
 }
+  toggleStudentStatus(student: any) {
+  const newStatus =
+    student.status === 'inactive'
+      ? 'active'
+      : 'inactive';
 
-  deleteStudent(student: any) {
-    this.studentToDelete = student;
-    this.isDeleteModalOpen = true;
-  }
+  this.http
+    .post(`${environment.apiUrl}/toggle_student_status.php`, {
+      student_id: student.student_id,
+      status: newStatus,
+    })
+    .subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          student.status = newStatus;
 
-  confirmDelete() {
-    if (this.studentToDelete) {
-      this.http
-        .post(`${environment.apiUrl}/delete_student.php`, {
-          student_id: this.studentToDelete.student_id,
-        })
-        .subscribe({
-          next: (res: any) => {
-            if (res.success) {
-              // แจ้งเตือนย้ายสถานะเรียบร้อย
-              alert('ย้ายสถานะนักศึกษาเป็นนักศึกษาเก่าเรียบร้อยแล้ว');
+          this.updateStats();
+          this.cdr.detectChanges();
 
-              // ⭐️ สั่งให้แถวของนักศึกษาคนนี้กลายเป็นสีเทาทันทีบนหน้าจอ
-              const target = this.students.find(
-                (s) => s.student_id === this.studentToDelete.student_id,
-              );
-              if (target) {
-                target.status = 'inactive';
-              }
+          alert(
+            newStatus === 'inactive'
+              ? 'ซ่อนนักศึกษาเรียบร้อย'
+              : 'เปิดการมองเห็นนักศึกษาเรียบร้อย'
+          );
+        }
+      },
+      error: () => {
+        alert('เกิดข้อผิดพลาด');
+      },
+    });
+}
 
-              this.updateStats(); // คำนวณยอดสถิติใหม่
-              this.isDeleteModalOpen = false;
-              this.cdr.detectChanges(); // บังคับ Refresh หน้าจอ
-            } else {
-              alert(res.message);
-            }
-          },
-          error: () => alert('เกิดข้อผิดพลาดทางเซิร์ฟเวอร์'),
-        });
-    }
-  }
+  // confirmDelete() {
+  //   if (this.studentToDelete) {
+  //     this.http
+  //       .post(`${environment.apiUrl}/delete_student.php`, {
+  //         student_id: this.studentToDelete.student_id,
+  //       })
+  //       .subscribe({
+  //         next: (res: any) => {
+  //           if (res.success) {
+  //             // แจ้งเตือนย้ายสถานะเรียบร้อย
+  //             alert('ย้ายสถานะนักศึกษาเป็นนักศึกษาเก่าเรียบร้อยแล้ว');
+
+  //             // ⭐️ สั่งให้แถวของนักศึกษาคนนี้กลายเป็นสีเทาทันทีบนหน้าจอ
+  //             const target = this.students.find(
+  //               (s) => s.student_id === this.studentToDelete.student_id,
+  //             );
+  //             if (target) {
+  //               target.status = 'inactive';
+  //             }
+
+  //             this.updateStats(); // คำนวณยอดสถิติใหม่
+  //             this.isDeleteModalOpen = false;
+  //             this.cdr.detectChanges(); // บังคับ Refresh หน้าจอ
+  //           } else {
+  //             alert(res.message);
+  //           }
+  //         },
+  //         error: () => alert('เกิดข้อผิดพลาดทางเซิร์ฟเวอร์'),
+  //       });
+  //   }
+  // }
  openStudentCurriculum(student: any) {
   this.selectedStudentForCurriculum = student;
 
@@ -525,9 +551,9 @@ export class StudentsComponent implements OnInit {
     return Object.values(this.studentCoursesState).filter((v) => v.isChecked).length;
   }
 
-  cancelDelete() {
-    this.isDeleteModalOpen = false;
-  }
+  // cancelDelete() {
+  //   this.isDeleteModalOpen = false;
+  // }
 
   toggleYearDropdown() {
     this.isYearDropdownOpen = !this.isYearDropdownOpen;
@@ -567,7 +593,7 @@ selectFormMajor(major: string) {
   let curriculumYear = '';
   if (major === 'เทคโนโลยีการอาหาร') {
     curriculumYear = '2567';
-  } else if (major === 'วิทยาการคอมพิวเตอร์' || major === 'วิทยาการคอม') {
+  } else if (major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || major === 'วิทยาการคอม') {
     curriculumYear = '2566';
   }
 
@@ -585,7 +611,7 @@ prepareStudentData() {
 
   if (formValue.major === 'เทคโนโลยีการอาหาร') {
     detectedYear = '2567';
-  } else if (formValue.major === 'วิทยาการคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
+  } else if (formValue.major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
     detectedYear = '2566';
   }
 

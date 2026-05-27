@@ -23,6 +23,10 @@ export class PloComponent implements OnInit {
   public dataSource: any[] = [];
   public rawPlos: any[] = [];
   public rawYlos: any[] = [];
+  public departmentsList = [
+  { dept_id: 1, dept_name_th: 'วิทยาการคอมพิวเตอร์' },
+  { dept_id: 2, dept_name_th: 'เทคโนโลยีการอาหาร' }
+];
 
   public courseForm!: FormGroup;
   public ploForm!: FormGroup;
@@ -33,6 +37,7 @@ export class PloComponent implements OnInit {
   showPloModal = false;
   showYloModal = false;
   showDeleteModal = false;
+  isDepartmentDropdownOpen = false;
 
   selectedCourse: any;
   selectedPlo: any;
@@ -43,7 +48,7 @@ export class PloComponent implements OnInit {
   // คอลัมน์แสดงตารางหน้าแรกสุด
   public columns: TableColumnModel[] = [
     {
-      columnDef: 'id',
+      columnDef: 'curriculum_id',
       header: 'ID หลักสูตร',
       tag: 'text',
       display: true,
@@ -58,15 +63,22 @@ export class PloComponent implements OnInit {
       width: 'medium',
       cell: (el) => el.curriculum_name,
     },
-    {
-      columnDef: 'dept',
-      header: 'รหัสภาควิชา',
-      tag: 'text',
-      display: true,
-      width: 'small',
-      align: 'center',
-      cell: (el) => el.dept_name_th || el.dept_id,
-    },
+{
+    columnDef: 'dept',
+    header: 'ภาควิชา',
+    tag: 'text',
+    display: true,
+    width: 'medium',
+    align: 'left',
+    cell: (el) => {
+      // 1. ถ้ามีข้อมูล dept_name_th มาจากการ JOIN ให้แสดงได้เลย
+      if (el.dept_name_th) return el.dept_name_th;
+      
+      // 2. ถ้าไม่มี (เผื่อข้อมูลเก่าที่อาจจะตกหล่น) ให้ไปหาจาก departmentsList ที่เราประกาศไว้
+      const dept = this.departmentsList.find(d => Number(d.dept_id) === Number(el.dept_id));
+      return dept ? dept.dept_name_th : '-';
+    } 
+  },
     {
       columnDef: 'year',
       header: 'ปี พ.ศ.',
@@ -115,13 +127,25 @@ export class PloComponent implements OnInit {
     this.initForms();
     this.loadPloYloData();
   }
-
+  loadDepartments() {
+    this.http.get<any>(`${environment.apiUrl}/get_departments.php`).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.departmentsList = res.departments || [];
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error loading departments:', err);
+      },
+    });
+  }
   initForms() {
     // 🛠️ ปรับปรุง: เพิ่ม curriculum_id เข้าฟอร์ม เพื่อไม่ให้ส่งค่าเป็น null ไปหลังบ้านตอนสร้างใหม่
     this.courseForm = this.fb.group({
       curriculum_id: ['', Validators.required],
       curriculum_name: ['', Validators.required],
-      dept_id: ['', Validators.required],
+      dept_id: [1, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
     });
 
@@ -165,7 +189,10 @@ export class PloComponent implements OnInit {
         // การ Map ข้อมูลคงเดิม (ถูกต้องแล้ว)
         this.dataSource = curriculums.map((course: any) => {
           const coursePlos = plos
-            .filter((p: any) => Number(p.curriculum_id) === Number(course.curriculum_id))
+            .filter(
+              (p: any) =>
+                p.curriculum_id?.toString().trim() === course.curriculum_id?.toString().trim(),
+            ) //  เปลี่ยนเป็นตัวหนังสือ
             .map((plo: any) => ({
               ...plo,
               ylos: ylos.filter((y: any) => Number(y.plo_id) === Number(plo.plo_id)),
@@ -182,7 +209,9 @@ export class PloComponent implements OnInit {
         // ตรวจสอบ selectedCourse
         if (this.selectedCourse) {
           const updated = this.dataSource.find(
-            (c) => Number(c.curriculum_id) === Number(this.selectedCourse.curriculum_id),
+            (c) =>
+              c.curriculum_id?.toString().trim() ===
+              this.selectedCourse.curriculum_id?.toString().trim(), //  เทียบด้วยสตริง
           );
           if (updated) this.selectedCourse = updated;
         }
@@ -195,28 +224,50 @@ export class PloComponent implements OnInit {
     });
   }
 
+  toggleDepartmentDropdown() {
+    this.isDepartmentDropdownOpen = !this.isDepartmentDropdownOpen;
+  }
+  selectDepartment(dept: any) {
+    // บันทึกค่า dept_id และ dept_name_th ลงฟอร์ม (ถ้าในอนาคตอยากเก็บชื่อภาควิชาในฟอร์มด้วย)
+    this.courseForm.patchValue({
+      dept_id: Number(dept.dept_id), // แปลงเป็นตัวเลขเพื่อความปลอดภัย
+      // ถ้าในอนาคตไม่ต้องใช้ major แล้ว ก็ไม่ต้อง patch major ลงไปครับ
+    });
+
+    // มาร์กสถานะฟอร์มว่ามีการแก้ไข
+    this.courseForm.get('dept_id')?.markAsDirty();
+
+    // สั่งปิด Dropdown และอัปเดตหน้าจอ
+    this.isDepartmentDropdownOpen = false;
+    this.cdr.detectChanges();
+  }
   openAddCourse() {
     this.isEditMode = false;
-    this.courseForm.reset({ year: new Date().getFullYear() + 543, dept_id: '', curriculum_id: '' });
+    this.courseForm.reset({
+      year: new Date().getFullYear() + 543,
+      dept_id: 1,
+      curriculum_id: '',
+      curriculum_name: '',
+    });
     // ปลดล็อกฟิลด์ไอดีเพื่อให้ระบุรหัสได้ตอนสร้างใหม่
     this.courseForm.get('curriculum_id')?.enable();
     this.showCourseModal = true;
   }
 
-  openEditCourse(course: any) {
-    this.isEditMode = true;
-    this.selectedCourse = course;
+ openEditCourse(course: any) {
+  this.isEditMode = true;
+  this.selectedCourse = course;
 
-    this.courseForm.patchValue({
-      curriculum_id: course.curriculum_id,
-      curriculum_name: course.curriculum_name,
-      dept_id: course.dept_id,
-      year: course.year,
-    });
-    // ล็อกฟิลด์ไอดีไว้ ห้ามแก้ไขรหัสหลักสูตรหลักขณะอยู่ในโหมดแก้ไข
-    this.courseForm.get('curriculum_id')?.disable();
-    this.showCourseModal = true;
-  }
+  this.courseForm.patchValue({
+    curriculum_id: course.curriculum_id,
+    curriculum_name: course.curriculum_name,
+    dept_id: Number(course.dept_id), // ใช้ dept_id ตัวเดียว
+    year: course.year,
+  });
+  
+  this.courseForm.get('curriculum_id')?.disable();
+  this.showCourseModal = true;
+}
 
   openAddPlo() {
     this.isEditMode = false;
@@ -271,47 +322,51 @@ export class PloComponent implements OnInit {
     this.showYloModal = true;
   }
 
-  saveCourse() {
-    if (
-      this.courseForm.invalid &&
-      !(this.isEditMode && this.courseForm.get('curriculum_name')?.valid)
-    ) {
-      this.courseForm.markAllAsTouched();
-      return;
-    }
-
-    // ดึงข้อมูลฟอร์มแบบรวมกรณีฟิลด์โดน disabled ด้วย
-    const formValue = this.courseForm.getRawValue();
-
-    // 🛠️ ส่งคีย์ครอบคลุมความต้องการของ PHP หลังบ้าน
-    const body = {
-      type: 'curriculum',
-      is_edit: this.isEditMode,
-      curriculum_id: formValue.curriculum_id,
-      curriculum_name: formValue.curriculum_name,
-      course_name: formValue.curriculum_name, // พ่วงตัวแปรเผื่อหลังบ้านเช็กคีย์เดิม
-      dept_id: formValue.dept_id,
-      department: formValue.dept_id, // พ่วงตัวแปรเผื่อหลังบ้านเช็กคีย์เดิม
-      year: formValue.year,
-    };
-
-    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          alert(res.message || 'บันทึกหลักสูตรสำเร็จ');
-          this.loadPloYloData();
-          this.showCourseModal = false;
-          this.courseForm.reset();
-        } else {
-          alert(res.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        }
-      },
-      error: (err) => {
-        console.error(err);
-        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์หลังบ้านได้');
-      },
-    });
+  // ใน saveCourse() ให้เพิ่มการเช็กค่าก่อนส่ง
+saveCourse() {
+  // 1. ตรวจสอบสถานะฟอร์ม
+  if (this.courseForm.invalid) {
+    this.courseForm.markAllAsTouched();
+    // ถ้าอยากรู้ว่าช่องไหนติด error ให้ log ออกมาดู
+    console.log('Form errors:', this.courseForm.errors); 
+    alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    return;
   }
+
+  // 2. ใช้ getRawValue() เพื่อดึงค่าที่ถูก disable ไว้ด้วย (เช่น curriculum_id ตอนแก้ไข)
+  const formValue = this.courseForm.getRawValue();
+
+  const body = {
+    type: 'curriculum',
+    is_edit: this.isEditMode,
+    curriculum_id: formValue.curriculum_id,
+    curriculum_name: formValue.curriculum_name,
+    dept_id: Number(formValue.dept_id), // ส่งเป็นตัวเลข
+    year: formValue.year,
+  };
+
+  // 3. ส่งข้อมูล
+  this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe({
+    next: (res: any) => {
+      if (res.success) {
+        alert('บันทึกข้อมูลเรียบร้อย');
+        this.loadPloYloData();
+        this.closeModals();
+      } else {
+        alert(res.message || 'เกิดข้อผิดพลาดในการบันทึก');
+      }
+    },
+    error: (err) => {
+      console.error('API Error:', err);
+      alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    }
+  });
+}
+getSelectedDepartmentName(): string {
+  const selectedId = this.courseForm.get('dept_id')?.value;
+  const dept = this.departmentsList.find(d => d.dept_id == selectedId);
+  return dept ? dept.dept_name_th : 'เลือกภาควิชา';
+}
 
   savePlo() {
     if (this.ploForm.invalid) {
@@ -372,7 +427,9 @@ export class PloComponent implements OnInit {
 
         setTimeout(() => {
           const updated = this.dataSource.find(
-            (c) => Number(c.curriculum_id) === Number(this.selectedCourse.curriculum_id),
+            (c) =>
+              c.curriculum_id?.toString().trim() ===
+              this.selectedCourse.curriculum_id?.toString().trim(),
           );
 
           if (updated) {
