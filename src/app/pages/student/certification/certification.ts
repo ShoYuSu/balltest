@@ -1,8 +1,15 @@
-import { Component, inject,ViewChild,ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  ViewChild,
+  ElementRef,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-
 
 @Component({
   selector: 'app-certification',
@@ -11,116 +18,195 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './certification.html',
   styleUrl: './certification.css'
 })
-export class CertificationComponent {
+
+export class CertificationComponent implements OnInit {
+
   @ViewChild('fileInput')
   fileInput!: ElementRef;
-  private http = inject(HttpClient);
+
+ private cdr = inject(ChangeDetectorRef);
+ private http = inject(HttpClient);
+
+  certificates: any[] = [];
 
   totalCertificates = 0;
 
   showModal = false;
 
+  showSuccessPopup = false;
+
   certificateTitle = '';
+
   issueDate = '';
 
   selectedFile: File | null = null;
 
+  // =========================
+  // INIT
+  // =========================
+
+  ngOnInit(): void {
+
+    this.loadCertificates();
+
+  }
+
+  // =========================
+  // LOAD DATA
+  // =========================
+
+  loadCertificates() {
+
+    const userId =
+      localStorage.getItem('user_id');
+
+    this.http.get<any[]>(
+      `http://localhost:8080/api/get_certificates.php?user_id=${userId}`
+    ).subscribe({
+
+     next: (res:any) => {
+
+  console.log(res);
+
+  this.certificates = res || [];
+
+  this.totalCertificates =
+    this.certificates.length;
+
+  this.cdr.detectChanges();
+
+},
+
+      error: (err) => {
+
+        console.log(err);
+
+      }
+
+    });
+
+  }
+
+  // =========================
+  // MODAL
+  // =========================
+
   openModal() {
+
     this.showModal = true;
-  }
-
- closeModal() {
-
-  this.showModal = false;
-
-  // reset form
-  this.certificateTitle = '';
-
-  this.issueDate = '';
-
-  // reset file
-  this.selectedFile = null;
-
-  // clear input file
-  if (this.fileInput) {
-
-    this.fileInput.nativeElement.value = '';
 
   }
 
-}
+  closeModal() {
 
- onFileSelected(event: any) {
+    this.showModal = false;
 
-  const file = event.target.files[0];
+    this.certificateTitle = '';
 
-  if (file) {
+    this.issueDate = '';
 
-    this.selectedFile = file;
+    this.selectedFile = null;
 
-    console.log(this.selectedFile);
+    if (this.fileInput) {
 
-  }
-
-}
-
- saveCertificate() {
-
-  console.log('SAVE CLICKED');
-
-  if (!this.selectedFile) {
-
-    alert('กรุณาเลือกไฟล์');
-
-    return;
-  }
-
-  const formData = new FormData();
-
-  formData.append(
-    'title',
-    this.certificateTitle
-  );
-
-  formData.append(
-    'issue_date',
-    this.issueDate
-  );
-
-  formData.append(
-    'user_id',
-    localStorage.getItem('user_id') || ''
-  );
-
-  formData.append(
-    'file',
-    this.selectedFile
-  );
-
-  this.http.post(
-    'http://localhost:8080/api/add_certificate.php',
-    formData
-  ).subscribe({
-
-    next: (res:any) => {
-
-      console.log(res);
-
-      alert('บันทึกสำเร็จ');
-
-      this.closeModal();
-
-    },
-
-    error: (err) => {
-
-      console.log(err);
-
-      alert('เกิดข้อผิดพลาด');
+      this.fileInput.nativeElement.value = '';
 
     }
 
-  });
+  }
 
-}
+  closeSuccessPopup() {
+
+    this.showSuccessPopup = false;
+
+  }
+
+  // =========================
+  // FILE
+  // =========================
+
+  onFileSelected(event: any) {
+
+    const file = event.target.files[0];
+
+    if (file) {
+
+      this.selectedFile = file;
+
+      console.log(file);
+
+    }
+
+  }
+
+  // =========================
+  // SAVE
+  // =========================
+
+  saveCertificate() {
+
+    if (!this.certificateTitle ||
+        !this.issueDate ||
+        !this.selectedFile) {
+
+      alert('กรุณากรอกข้อมูลให้ครบ');
+
+      return;
+
+    }
+
+    const formData = new FormData();
+
+    formData.append(
+      'title',
+      this.certificateTitle
+    );
+
+    formData.append(
+      'issue_date',
+      this.issueDate
+    );
+
+    formData.append(
+      'user_id',
+      localStorage.getItem('user_id') || ''
+    );
+
+    formData.append(
+      'file',
+      this.selectedFile
+    );
+
+    this.http.post(
+      'http://localhost:8080/api/add_certificate.php',
+      formData
+    ).subscribe({
+
+      next: (res:any) => {
+
+        console.log(res);
+
+        // reload cards
+        this.loadCertificates();
+
+        // close upload modal
+        this.closeModal();
+
+        // show success popup
+        this.showSuccessPopup = true;
+
+      },
+
+      error: (err) => {
+
+        console.log(err);
+
+        alert('เกิดข้อผิดพลาด');
+
+      }
+
+    });
+
+  }
+
 }

@@ -25,42 +25,116 @@
 
   <div class="activity-card">
 
-    <div class="empty-content">
+  <div
+    class="certificate-grid"
+    *ngIf="certificates && certificates.length > 0">
 
-      <div class="empty-icon">
+    <div
+      class="certificate-card"
+      *ngFor="let item of certificates">
 
-        <span class="material-symbols-outlined">
-          workspace_premium
-        </span>
+      <!-- LEFT -->
+      <div class="certificate-left">
+
+        <div class="certificate-badge">
+
+          <span class="material-symbols-outlined">
+            verified
+          </span>
+
+          Certification
+
+        </div>
+
+        <h3 class="certificate-title">
+          {{ item.title }}
+        </h3>
+
+        <p class="certificate-org">
+          Certification
+        </p>
+
+        <div class="certificate-date">
+
+          <span class="material-symbols-outlined">
+            calendar_month
+          </span>
+
+          วันที่ได้รับ {{ item.issue_date }}
+
+        </div>
+
+        <a
+          class="download-btn"
+          [href]="item.file_url"
+          target="_blank">
+
+          <span class="material-symbols-outlined">
+            download
+          </span>
+
+          ดาวน์โหลด
+
+        </a>
 
       </div>
 
-      <h3 class="empty-title">
-        ยังไม่มีใบรับรอง
-      </h3>
+      <!-- RIGHT -->
+      <div class="certificate-right">
 
-      <p class="empty-desc">
-        เพิ่มใบรับรองของคุณเพื่อแสดงความสามารถ
-      </p>
+        <div class="certificate-file-box">
 
-      <button
-        class="btn-primary"
-        (click)="openModal()">
+          <span class="material-symbols-outlined">
+            description
+          </span>
 
-        <span class="material-symbols-outlined">
-          add
-        </span>
+        </div>
 
-        เพิ่มใบรับรอง
-
-      </button>
+      </div>
 
     </div>
 
   </div>
 
-</div>
+  <!-- =========================
+          EMPTY STATE
+  ========================= -->
 
+  <div
+    class="empty-content"
+    *ngIf="certificates && certificates.length === 0">
+
+    <div class="empty-icon">
+
+      <span class="material-symbols-outlined">
+        workspace_premium
+      </span>
+
+    </div>
+
+    <h3 class="empty-title">
+      ยังไม่มีใบรับรอง
+    </h3>
+
+    <p class="empty-desc">
+      เพิ่มใบรับรองของคุณเพื่อแสดงความสามารถ
+    </p>
+
+    <button
+      class="btn-primary"
+      (click)="openModal()">
+
+      <span class="material-symbols-outlined">
+        add
+      </span>
+
+      เพิ่มใบรับรอง
+
+    </button>
+
+  </div>
+
+</div>
 <!-- =========================
           MODAL
 ========================= -->
@@ -202,6 +276,35 @@
 
 </button>
     </div>
+
+  </div>
+
+</div>
+<!-- SUCCESS POPUP -->
+
+<div
+  class="success-overlay"
+  *ngIf="showSuccessPopup">
+
+  <div class="success-modal">
+
+    <span class="material-symbols-outlined success-icon">
+      check_circle
+    </span>
+
+    <h2>บันทึกสำเร็จ</h2>
+
+    <p>
+      เพิ่มใบรับรองเรียบร้อยแล้ว
+    </p>
+
+    <button
+      class="success-btn"
+      (click)="closeSuccessPopup()">
+
+      ตกลง
+
+    </button>
 
   </div>
 
