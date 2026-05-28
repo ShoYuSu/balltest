@@ -4,11 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
 import { StudentResultModalComponent } from '../student-result-modal/student-result-modal.component';
+import { CommonModule } from '@angular/common'; // สำคัญสำหรับ DatePipe ถ้าใช้
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent],
+  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent, CommonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
@@ -64,39 +65,43 @@ export class HomeComponent implements OnInit {
     return this.studentsInCare().slice(start, start + this.itemsPerPage);
   });
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
   openStudentResult(student: any) {
     this.router.navigate(['/student-result', student.id], {
-      state: { student }, // ส่งข้อมูลนักศึกษาไปด้วยผ่าน router state
+      state: { student },
     });
   }
 
   ngOnInit() {
-    // 1. ดึงข้อมูลนักศึกษา
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const formattedStudents = data.map((student: any) => ({
-          id: student.student_code,
-          name: student.full_name,
-          year: student.year,
-          gpa: student.gpa,
-          ploStatus: student.ploStatus,
-          img: student.image
-            ? `${environment.apiUrl}/${student.image}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
-        }));
-        this.studentsInCare.set(formattedStudents);
-        this.dashboardStats[0].value = formattedStudents.length;
-        this.dashboardStats[1].value = formattedStudents.filter(
-          (s) => s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน',
-        ).length;
-      },
-    });
+    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ของจริงจาก DB
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14&t=${Date.now()}`)
+      .subscribe({
+        next: (data) => {
+          const formattedStudents = data.map((student: any) => ({
+            id: student.student_code,
+            name: student.full_name,
+            year: student.year,
+            gpa: student.gpa || '-', // แสดง - หากไม่มีเกรด
+            ploStatus: student.ploStatus, // รับค่า ผ่าน/ไม่ผ่าน/รอประเมิน ตรงๆ จาก PHP
+            img: student.image
+              ? `${environment.apiUrl}/${student.image}`
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
+          }));
+
+          this.studentsInCare.set(formattedStudents);
+
+          // อัปเดตสถิติใน Dashboard Cards
+          this.dashboardStats[0].value = formattedStudents.length;
+          this.dashboardStats[1].value = formattedStudents.filter(
+            (s) => s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน',
+          ).length;
+        },
+      });
 
     // 2. ดึงข้อมูลนัดหมายล่าสุด
     this.http
-      .get<
-        any[]
-      >(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`)
+      .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           const formatted = (data || [])
@@ -104,8 +109,8 @@ export class HomeComponent implements OnInit {
             .map((app: any) => {
               const first = app.students?.[0];
               return {
-                id: app.appointment_id, // 👉 ตัวนี้คือรหัสคิว (13, 14) เก็บไว้ใช้สำหรับกดเปลี่ยนหน้า
-                studentCode: first?.id || '-', // 👉 ตัวนี้คือรหัสนักศึกษาของจริง!
+                id: app.appointment_id,
+                studentCode: first?.id || '-',
                 name: first
                   ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
                   : 'ไม่ระบุ',
@@ -158,7 +163,6 @@ export class HomeComponent implements OnInit {
 
   goToAppointment(app: any) {
     const targetPath = app.isGroup ? '/group' : '/individual';
-    // ส่ง id ที่เป็นรหัสคิวนัดหมาย (appointment_id) ไปหน้าอื่น
     this.router.navigate([targetPath], { queryParams: { id: app.id } });
   }
 }
