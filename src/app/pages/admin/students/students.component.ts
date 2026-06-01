@@ -281,9 +281,20 @@ export class StudentsComponent implements OnInit {
 
   // --- UI Helpers ---
   updateStats() {
-    this.studentStats[0].value = this.students.length;
-    // ตัวอย่างการนับคนที่ไม่มีที่ปรึกษา (ถ้ามีฟิลด์ advisor_id ใน DB)
-    this.studentStats[2].value = this.students.filter((s) => !s.advisor_name).length;
+    const totalStudents = this.students.length;
+    
+    // 1. นับจำนวนคนที่มีที่ปรึกษา (ต้องมีค่า, ไม่ใช่ค่าว่าง และไม่ใช่ขีด '-')
+    const studentsWithAdvisor = this.students.filter(
+      (s) => s.advisor_name && s.advisor_name.trim() !== '' && s.advisor_name !== '-'
+    ).length;
+
+    // 2. คนที่ยังไม่มีที่ปรึกษา (เอาจำนวนทั้งหมด ลบด้วยคนที่มีที่ปรึกษาแล้ว)
+    const studentsWithoutAdvisor = totalStudents - studentsWithAdvisor;
+
+    // 3. อัปเดตค่าเข้ากล่องสถิติทั้ง 3 กล่องให้ครบ
+    this.studentStats[0].value = totalStudents;          // กล่องสีเขียว: นักศึกษาทั้งหมด
+    this.studentStats[1].value = studentsWithAdvisor;    // กล่องสีเหลือง: มีที่ปรึกษาแล้ว
+    this.studentStats[2].value = studentsWithoutAdvisor; // กล่องสีแดง: ยังไม่มีที่ปรึกษา
   }
 
   get filteredStudents() {
