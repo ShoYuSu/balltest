@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef } from '@angular/core'; // 👉 นำเข้า ViewChild, ElementRef
+import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -48,7 +48,6 @@ export class PloAssessmentComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // 👉 อ้างอิงถึงคอนเทนเนอร์เพื่อทำลากซ้ายขวา
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   isDragging = false;
   startX = 0;
@@ -138,6 +137,7 @@ export class PloAssessmentComponent implements OnInit {
     return Math.round((passed / plo.sub_plos.length) * 100);
   }
 
+  // 🎯 อัปเดต: ส่งข้อมูล SubPLO ไปบันทึกลงฐานข้อมูลด้วย!
   saveEvaluation() {
     const student = this.selectedStudent();
     if (!student) return;
@@ -147,6 +147,21 @@ export class PloAssessmentComponent implements OnInit {
       code: p.plo_name,
       score: this.calculatePLOProgress(p),
     }));
+
+    // ดึงสถานะ SubPLO ที่กดไป
+    const evaluatedSubPLOs: any[] = [];
+    this.evalPLOs().forEach((p) => {
+      if (p.sub_plos) {
+        p.sub_plos.forEach((s) => {
+          if (s.status !== null) {
+            evaluatedSubPLOs.push({
+              id: s.sub_plo_id,
+              is_passed: s.status === 'passed' ? 1 : 0,
+            });
+          }
+        });
+      }
+    });
 
     const evaluatedYLOs = this.evalYLOs()
       .filter((y) => y.status !== null)
@@ -159,6 +174,7 @@ export class PloAssessmentComponent implements OnInit {
       student_id: student.id,
       advisor_id: 14,
       plos: evaluatedPLOs,
+      sub_plos: evaluatedSubPLOs, // 🚀 ยัด SubPLO ใส่ไปด้วย
       ylos: evaluatedYLOs,
     };
 
@@ -245,7 +261,7 @@ export class PloAssessmentComponent implements OnInit {
     });
   }
 
-  // 🌟 ฟังก์ชันใหม่: สำหรับคลิกแล้วลากเลื่อนจอซ้ายขวา (Drag to scroll) 🌟
+  // 🌟 สำหรับคลิกแล้วลากเลื่อนจอซ้ายขวา (Drag to scroll)
   startDragging(e: MouseEvent) {
     this.isDragging = true;
     this.startX = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
@@ -258,7 +274,7 @@ export class PloAssessmentComponent implements OnInit {
     if (!this.isDragging) return;
     e.preventDefault();
     const x = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
-    const walk = (x - this.startX) * 1.5; // คูณ 1.5 คือความเร็วในการลาก
+    const walk = (x - this.startX) * 1.5;
     this.scrollContainer.nativeElement.scrollLeft = this.scrollLeft - walk;
   }
 }
