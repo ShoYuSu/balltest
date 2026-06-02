@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef } from '@angular/core'; // 👉 นำเข้า ViewChild, ElementRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -48,13 +48,18 @@ export class PloAssessmentComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
 
+  // 👉 อ้างอิงถึงคอนเทนเนอร์เพื่อทำลากซ้ายขวา
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+  isDragging = false;
+  startX = 0;
+  scrollLeft = 0;
+
   activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
   currentPage = signal(1);
   itemsPerPage = 5;
   searchQuery = signal('');
   students = signal<StudentAssessment[]>([]);
 
-  // 👉 เปลี่ยนตัวแปรจากคุม Modal เป็นคุมการแสดงผลหน้าเพจแทน
   showEvalPage = signal(false);
   isSaving = signal(false);
   isLoadingEval = signal(false);
@@ -84,14 +89,12 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  // 👉 เปลี่ยนเป็นฟังก์ชันเปิดหน้าประเมิน
   openEvalPage(student: StudentAssessment, event: Event) {
     event.stopPropagation();
     this.selectedStudent.set(student);
-    this.showEvalPage.set(true); // สลับหน้าจอ
+    this.showEvalPage.set(true);
     this.isLoadingEval.set(true);
 
-    // เลื่อนจอขึ้นบนสุดแบบสมูทๆ
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     this.evalPLOs.set([]);
@@ -111,7 +114,6 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  // 👉 ฟังก์ชันปิดหน้าประเมิน กลับสู่หน้ารายชื่อ
   closeEvalPage() {
     this.showEvalPage.set(false);
     this.selectedStudent.set(null);
@@ -163,7 +165,7 @@ export class PloAssessmentComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/save_plo_assessment.php`, payload).subscribe({
       next: (res) => {
         if (res.status === 'success') {
-          this.closeEvalPage(); // บันทึกเสร็จให้ปิดหน้าจอ
+          this.closeEvalPage();
           this.loadData();
         }
         this.isSaving.set(false);
@@ -241,5 +243,22 @@ export class PloAssessmentComponent implements OnInit {
     this.router.navigate(['/student-result', student.studentId], {
       state: { student: studentData },
     });
+  }
+
+  // 🌟 ฟังก์ชันใหม่: สำหรับคลิกแล้วลากเลื่อนจอซ้ายขวา (Drag to scroll) 🌟
+  startDragging(e: MouseEvent) {
+    this.isDragging = true;
+    this.startX = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    this.scrollLeft = this.scrollContainer.nativeElement.scrollLeft;
+  }
+  stopDragging() {
+    this.isDragging = false;
+  }
+  moveEvent(e: MouseEvent) {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    const walk = (x - this.startX) * 1.5; // คูณ 1.5 คือความเร็วในการลาก
+    this.scrollContainer.nativeElement.scrollLeft = this.scrollLeft - walk;
   }
 }
