@@ -89,12 +89,24 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   openEvalPage(student: StudentAssessment, event: Event) {
+    setTimeout(() => {
+      // 1. สั่งเลื่อนหน้าต่างหลักขึ้นบนสุด
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 2. สั่งเลื่อนกล่อง div ย่อยๆ กลับไปซ้ายสุด/บนสุด
+      const scrollContainers = document.querySelectorAll(
+        '.overflow-y-auto, .overflow-x-auto, .custom-scrollbar',
+      );
+      scrollContainers.forEach((container) => {
+        container.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      });
+    }, 50);
     event.stopPropagation();
     this.selectedStudent.set(student);
     this.showEvalPage.set(true);
     this.isLoadingEval.set(true);
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
 
     this.evalPLOs.set([]);
     this.evalYLOs.set([]);
