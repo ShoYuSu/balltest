@@ -1,9 +1,29 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { Router } from '@angular/router';
 
-interface PloScore {
-  label: string;
-  score: number;
+interface EvalSubPLO {
+  sub_plo_id: number;
+  sub_plo_name: string;
+  description: string;
+  status: 'passed' | 'failed' | null;
+}
+
+interface EvalPLO {
+  plo_id: number;
+  plo_name: string;
+  description: string;
+  sub_plos: EvalSubPLO[];
+}
+
+interface EvalYLO {
+  ylo_id: number;
+  ylo_name: string;
+  description: string;
+  status: 'passed' | 'failed' | null;
 }
 
 interface StudentAssessment {
@@ -13,249 +33,260 @@ interface StudentAssessment {
   status: 'pending' | 'passed' | 'failed';
   statusText: string;
   img: string;
-  plos?: PloScore[];
+  plos?: { label: string; score: number }[];
   average?: number | null;
 }
 
 @Component({
   selector: 'app-plo-assessment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './plo-assessment.component.html',
   styleUrl: './plo-assessment.component.css',
 })
-export class PloAssessmentComponent {
-  // สถานะแท็บปัจจุบัน (ทั้งหมด, รอประเมิน, ผ่าน, ไม่ผ่าน)
-  activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
+export class PloAssessmentComponent implements OnInit {
+  private http = inject(HttpClient);
+  private router = inject(Router);
 
-  // ตัวแปรสำหรับการแบ่งหน้า (Pagination)
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+  isDragging = false;
+  startX = 0;
+  scrollLeft = 0;
+
+  activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
   currentPage = signal(1);
   itemsPerPage = 5;
+  searchQuery = signal('');
+  students = signal<StudentAssessment[]>([]);
 
-  // Mock Data: สร้างข้อมูลนักศึกษา 15 คน
-  students = signal<StudentAssessment[]>([
-    {
-      id: '1',
-      name: 'นายสมศักดิ์ ทดสอบ',
-      studentId: '6801234501',
-      status: 'pending',
-      statusText: 'รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=1',
-      average: null,
-    },
-    {
-      id: '2',
-      name: 'นางสาวสมหญิง ทดลอง',
-      studentId: '6801234502',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=2',
-      plos: this.generatePlos(80, 100),
-      average: 88,
-    },
-    {
-      id: '3',
-      name: 'นายวิชัย สมบูรณ์',
-      studentId: '6801234503',
-      status: 'failed',
-      statusText: 'ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=3',
-      plos: this.generatePlos(10, 49),
-      average: 33,
-    },
-    {
-      id: '4',
-      name: 'นางสาวพิมพ์ชนก ดีงาม',
-      studentId: '6801234504',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=4',
-      plos: this.generatePlos(70, 90),
-      average: 75,
-    },
-    {
-      id: '5',
-      name: 'นายธนากร รุ่งเรือง',
-      studentId: '6801234505',
-      status: 'pending',
-      statusText: 'รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=5',
-      average: null,
-    },
-    {
-      id: '6',
-      name: 'นางสาวแพรว รัตนโชติ',
-      studentId: '6801234506',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=6',
-      plos: this.generatePlos(60, 85),
-      average: 72,
-    },
-    {
-      id: '7',
-      name: 'นายอัครพล สุวรรณ',
-      studentId: '6801234507',
-      status: 'failed',
-      statusText: 'ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=7',
-      plos: this.generatePlos(20, 50),
-      average: 45,
-    },
-    {
-      id: '8',
-      name: 'นางสาวชลดา พิพัฒน์',
-      studentId: '6801234508',
-      status: 'pending',
-      statusText: 'รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=8',
-      average: null,
-    },
-    {
-      id: '9',
-      name: 'นายปิยบุตร เลิศ',
-      studentId: '6801234509',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=9',
-      plos: this.generatePlos(90, 100),
-      average: 95,
-    },
-    {
-      id: '10',
-      name: 'นายจิรภัทร วาวิวัา',
-      studentId: '6801234510',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=10',
-      plos: this.generatePlos(50, 70),
-      average: 60,
-    },
-    {
-      id: '11',
-      name: 'นางสาววรินดา เตชะ',
-      studentId: '6801234511',
-      status: 'failed',
-      statusText: 'ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=11',
-      plos: this.generatePlos(30, 45),
-      average: 38,
-    },
-    {
-      id: '12',
-      name: 'นายธนกฤต ศิริ',
-      studentId: '6801234512',
-      status: 'pending',
-      statusText: 'รอประเมิน',
-      img: 'https://i.pravatar.cc/150?u=12',
-      average: null,
-    },
-    {
-      id: '13',
-      name: 'นางสาวกมลวรรณ ใจดี',
-      studentId: '6801234513',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=13',
-      plos: this.generatePlos(75, 95),
-      average: 82,
-    },
-    {
-      id: '14',
-      name: 'นายสมปอง น้องสมชาย',
-      studentId: '6801234514',
-      status: 'failed',
-      statusText: 'ไม่ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=14',
-      plos: this.generatePlos(10, 30),
-      average: 22,
-    },
-    {
-      id: '15',
-      name: 'นางสาวสุดสวย รักเรียน',
-      studentId: '6801234515',
-      status: 'passed',
-      statusText: 'ผ่าน',
-      img: 'https://i.pravatar.cc/150?u=15',
-      plos: this.generatePlos(60, 80),
-      average: 70,
-    },
-  ]);
+  showEvalPage = signal(false);
+  isSaving = signal(false);
+  isLoadingEval = signal(false);
+  selectedStudent = signal<StudentAssessment | null>(null);
 
-  // --- นับจำนวนแต่ละสถานะแบบอัตโนมัติ เพื่อไปแสดงที่แท็บ ---
-  countAll = computed(() => this.students().length);
-  countPending = computed(() => this.students().filter((s) => s.status === 'pending').length);
-  countPassed = computed(() => this.students().filter((s) => s.status === 'passed').length);
-  countFailed = computed(() => this.students().filter((s) => s.status === 'failed').length);
+  evalPLOs = signal<EvalPLO[]>([]);
+  evalYLOs = signal<EvalYLO[]>([]);
 
-  // --- ระบบ Filter: กรองข้อมูลตามแท็บที่เลือก ---
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    this.http
+      .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
+      .subscribe({
+        next: (data) => {
+          if (!Array.isArray(data)) return;
+          const formattedData = data.map((s) => ({
+            ...s,
+            img: s.img
+              ? `${environment.apiUrl}/${s.img}`
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=fff7ed&color=ea580c`,
+          }));
+          this.students.set(formattedData);
+        },
+      });
+  }
+
+  openEvalPage(student: StudentAssessment, event: Event) {
+    setTimeout(() => {
+      // 1. สั่งเลื่อนหน้าต่างหลักขึ้นบนสุด
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 2. สั่งเลื่อนกล่อง div ย่อยๆ กลับไปซ้ายสุด/บนสุด
+      const scrollContainers = document.querySelectorAll(
+        '.overflow-y-auto, .overflow-x-auto, .custom-scrollbar',
+      );
+      scrollContainers.forEach((container) => {
+        container.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      });
+    }, 50);
+    event.stopPropagation();
+    this.selectedStudent.set(student);
+    this.showEvalPage.set(true);
+    this.isLoadingEval.set(true);
+
+
+
+    this.evalPLOs.set([]);
+    this.evalYLOs.set([]);
+
+    this.http
+      .get<any>(
+        `${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}&t=${Date.now()}`,
+      )
+      .subscribe({
+        next: (data) => {
+          if (data.plos) this.evalPLOs.set(data.plos);
+          if (data.ylos) this.evalYLOs.set(data.ylos);
+          this.isLoadingEval.set(false);
+        },
+        error: () => this.isLoadingEval.set(false),
+      });
+  }
+
+  closeEvalPage() {
+    this.showEvalPage.set(false);
+    this.selectedStudent.set(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  setSubPLOStatus(ploIndex: number, subIndex: number, status: 'passed' | 'failed') {
+    const plos = [...this.evalPLOs()];
+    plos[ploIndex].sub_plos[subIndex].status = status;
+    this.evalPLOs.set(plos);
+  }
+
+  setYLOStatus(yloIndex: number, status: 'passed' | 'failed') {
+    const ylos = [...this.evalYLOs()];
+    ylos[yloIndex].status = status;
+    this.evalYLOs.set(ylos);
+  }
+
+  calculatePLOProgress(plo: EvalPLO): number {
+    if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
+    const passed = plo.sub_plos.filter((s) => s.status === 'passed').length;
+    return Math.round((passed / plo.sub_plos.length) * 100);
+  }
+
+  // 🎯 อัปเดต: ส่งข้อมูล SubPLO ไปบันทึกลงฐานข้อมูลด้วย!
+  saveEvaluation() {
+    const student = this.selectedStudent();
+    if (!student) return;
+    this.isSaving.set(true);
+
+    const evaluatedPLOs = this.evalPLOs().map((p) => ({
+      code: p.plo_name,
+      score: this.calculatePLOProgress(p),
+    }));
+
+    // ดึงสถานะ SubPLO ที่กดไป
+    const evaluatedSubPLOs: any[] = [];
+    this.evalPLOs().forEach((p) => {
+      if (p.sub_plos) {
+        p.sub_plos.forEach((s) => {
+          if (s.status !== null) {
+            evaluatedSubPLOs.push({
+              id: s.sub_plo_id,
+              is_passed: s.status === 'passed' ? 1 : 0,
+            });
+          }
+        });
+      }
+    });
+
+    const evaluatedYLOs = this.evalYLOs()
+      .filter((y) => y.status !== null)
+      .map((y) => ({
+        id: y.ylo_id,
+        is_passed: y.status === 'passed' ? 1 : 0,
+      }));
+
+    const payload = {
+      student_id: student.id,
+      advisor_id: 14,
+      plos: evaluatedPLOs,
+      sub_plos: evaluatedSubPLOs, // 🚀 ยัด SubPLO ใส่ไปด้วย
+      ylos: evaluatedYLOs,
+    };
+
+    this.http.post<any>(`${environment.apiUrl}/save_plo_assessment.php`, payload).subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          this.closeEvalPage();
+          this.loadData();
+        }
+        this.isSaving.set(false);
+      },
+      error: () => this.isSaving.set(false),
+    });
+  }
+
   filteredStudents = computed(() => {
     const tab = this.activeTab();
-    const all = this.students();
-    if (tab === 'รอประเมิน') return all.filter((s) => s.status === 'pending');
-    if (tab === 'ผ่าน') return all.filter((s) => s.status === 'passed');
-    if (tab === 'ไม่ผ่าน') return all.filter((s) => s.status === 'failed');
-    return all;
+    const query = this.searchQuery().toLowerCase().trim();
+    let result = this.students();
+    if (tab === 'รอประเมิน') result = result.filter((s) => s.status === 'pending');
+    if (tab === 'ผ่าน') result = result.filter((s) => s.status === 'passed');
+    if (tab === 'ไม่ผ่าน') result = result.filter((s) => s.status === 'failed');
+    if (query)
+      result = result.filter(
+        (s) => s.name.toLowerCase().includes(query) || s.studentId.toLowerCase().includes(query),
+      );
+    return result;
   });
 
-  // --- ระบบ Pagination: ตัดเอาเฉพาะข้อมูลหน้าปัจจุบัน ---
   paginatedStudents = computed(() => {
-    const filtered = this.filteredStudents();
     const start = (this.currentPage() - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
+    return this.filteredStudents().slice(start, start + this.itemsPerPage);
   });
 
-  // คำนวณจำนวนหน้าทั้งหมด
-  totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.itemsPerPage));
+  totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.itemsPerPage) || 1);
+  pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  countAll = computed(() => this.students().filter((s) => this.matchesSearch(s)).length);
+  countPending = computed(
+    () => this.students().filter((s) => s.status === 'pending' && this.matchesSearch(s)).length,
+  );
+  countPassed = computed(
+    () => this.students().filter((s) => s.status === 'passed' && this.matchesSearch(s)).length,
+  );
+  countFailed = computed(
+    () => this.students().filter((s) => s.status === 'failed' && this.matchesSearch(s)).length,
+  );
 
-  // สร้าง Array ของเลขหน้า [1, 2, 3, ...]
-  pageNumbers = computed(() => {
-    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
-  });
+  private matchesSearch(s: StudentAssessment): boolean {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return true;
+    return s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q);
+  }
 
-  // --- ฟังก์ชันการทำงาน ---
-
-  // เปลี่ยนแท็บ (เมื่อเปลี่ยนแท็บให้รีเซ็ตกลับไปหน้า 1)
   setTab(tab: 'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน') {
     this.activeTab.set(tab);
     this.currentPage.set(1);
   }
-
-  // เปลี่ยนหน้า
   goToPage(page: number) {
     this.currentPage.set(page);
   }
-
   nextPage() {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update((p) => p + 1);
-    }
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
   }
-
   prevPage() {
-    if (this.currentPage() > 1) {
-      this.currentPage.update((p) => p - 1);
-    }
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
-
-  // --- ฟังก์ชันช่วยเหลือ (Helper Functions) ---
-
-  // สุ่มคะแนน PLO แบบง่ายๆ เอาไว้ทำ Mock Data
-  private generatePlos(min: number, max: number): PloScore[] {
-    return [
-      { label: 'PLO1: ความรู้', score: Math.floor(Math.random() * (max - min + 1)) + min },
-      { label: 'PLO2: ทักษะ', score: Math.floor(Math.random() * (max - min + 1)) + min },
-      { label: 'PLO3: จริยธรรม', score: Math.floor(Math.random() * (max - min + 1)) + min },
-      { label: 'PLO4: สื่อสาร', score: Math.floor(Math.random() * (max - min + 1)) + min },
-      { label: 'PLO5: วิเคราะห์', score: Math.floor(Math.random() * (max - min + 1)) + min },
-    ];
-  }
-
   getProgressBarColor(score: number): string {
     return score >= 50 ? 'bg-[#10B981]' : 'bg-[#EF4444]';
   }
-
   getProgressTextColor(score: number): string {
     return score >= 50 ? 'text-[#10B981]' : 'text-[#EF4444]';
+  }
+
+  goToStudentResult(student: StudentAssessment) {
+    const studentData = {
+      id: student.studentId,
+      name: student.name,
+      img: student.img,
+      ploStatus: student.statusText,
+      year: '-',
+    };
+    this.router.navigate(['/student-result', student.studentId], {
+      state: { student: studentData },
+    });
+  }
+
+  // 🌟 สำหรับคลิกแล้วลากเลื่อนจอซ้ายขวา (Drag to scroll)
+  startDragging(e: MouseEvent) {
+    this.isDragging = true;
+    this.startX = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    this.scrollLeft = this.scrollContainer.nativeElement.scrollLeft;
+  }
+  stopDragging() {
+    this.isDragging = false;
+  }
+  moveEvent(e: MouseEvent) {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
+    const walk = (x - this.startX) * 1.5;
+    this.scrollContainer.nativeElement.scrollLeft = this.scrollLeft - walk;
   }
 }
