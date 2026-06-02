@@ -54,7 +54,8 @@ export class PloAssessmentComponent implements OnInit {
   searchQuery = signal('');
   students = signal<StudentAssessment[]>([]);
 
-  isEvalModalOpen = signal(false);
+  // 👉 เปลี่ยนตัวแปรจากคุม Modal เป็นคุมการแสดงผลหน้าเพจแทน
+  showEvalPage = signal(false);
   isSaving = signal(false);
   isLoadingEval = signal(false);
   selectedStudent = signal<StudentAssessment | null>(null);
@@ -83,11 +84,15 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  openEvalModal(student: StudentAssessment, event: Event) {
+  // 👉 เปลี่ยนเป็นฟังก์ชันเปิดหน้าประเมิน
+  openEvalPage(student: StudentAssessment, event: Event) {
     event.stopPropagation();
     this.selectedStudent.set(student);
-    this.isEvalModalOpen.set(true);
+    this.showEvalPage.set(true); // สลับหน้าจอ
     this.isLoadingEval.set(true);
+
+    // เลื่อนจอขึ้นบนสุดแบบสมูทๆ
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     this.evalPLOs.set([]);
     this.evalYLOs.set([]);
@@ -106,26 +111,25 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  closeEvalModal() {
-    this.isEvalModalOpen.set(false);
+  // 👉 ฟังก์ชันปิดหน้าประเมิน กลับสู่หน้ารายชื่อ
+  closeEvalPage() {
+    this.showEvalPage.set(false);
     this.selectedStudent.set(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 🎯 ให้กดผ่านเฉพาะระดับ SubPLO
   setSubPLOStatus(ploIndex: number, subIndex: number, status: 'passed' | 'failed') {
     const plos = [...this.evalPLOs()];
     plos[ploIndex].sub_plos[subIndex].status = status;
     this.evalPLOs.set(plos);
   }
 
-  // 🎯 YLO แยกกดอิสระ
   setYLOStatus(yloIndex: number, status: 'passed' | 'failed') {
     const ylos = [...this.evalYLOs()];
     ylos[yloIndex].status = status;
     this.evalYLOs.set(ylos);
   }
 
-  // 🎯 คำนวณ % ให้ PLO จากจำนวน SubPLO ที่ผ่าน
   calculatePLOProgress(plo: EvalPLO): number {
     if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
     const passed = plo.sub_plos.filter((s) => s.status === 'passed').length;
@@ -137,13 +141,11 @@ export class PloAssessmentComponent implements OnInit {
     if (!student) return;
     this.isSaving.set(true);
 
-    // ดึงเปอร์เซ็นต์ของ PLO ส่งไปเก็บในตาราง scores
     const evaluatedPLOs = this.evalPLOs().map((p) => ({
       code: p.plo_name,
       score: this.calculatePLOProgress(p),
     }));
 
-    // ดึงผล YLO ที่ประเมิน ส่งไปเก็บในตาราง assessment_details
     const evaluatedYLOs = this.evalYLOs()
       .filter((y) => y.status !== null)
       .map((y) => ({
@@ -161,7 +163,7 @@ export class PloAssessmentComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/save_plo_assessment.php`, payload).subscribe({
       next: (res) => {
         if (res.status === 'success') {
-          this.closeEvalModal();
+          this.closeEvalPage(); // บันทึกเสร็จให้ปิดหน้าจอ
           this.loadData();
         }
         this.isSaving.set(false);
@@ -170,7 +172,6 @@ export class PloAssessmentComponent implements OnInit {
     });
   }
 
-  // --- ส่วนอื่นๆ เหมือนเดิมครับ ---
   filteredStudents = computed(() => {
     const tab = this.activeTab();
     const query = this.searchQuery().toLowerCase().trim();
