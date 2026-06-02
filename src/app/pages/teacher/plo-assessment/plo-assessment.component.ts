@@ -5,19 +5,25 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 
-interface EvalSubItem {
-  id: string;
-  code: string;
-  name: string;
+interface EvalSubPLO {
+  sub_plo_id: number;
+  sub_plo_name: string;
+  description: string;
   status: 'passed' | 'failed' | null;
 }
 
-interface EvalCard {
-  id: string;
-  type: 'PLO' | 'YLO';
-  code: string;
-  name: string;
-  subItems: EvalSubItem[];
+interface EvalPLO {
+  plo_id: number;
+  plo_name: string;
+  description: string;
+  sub_plos: EvalSubPLO[];
+}
+
+interface EvalYLO {
+  ylo_id: number;
+  ylo_name: string;
+  description: string;
+  status: 'passed' | 'failed' | null;
 }
 
 interface StudentAssessment {
@@ -53,27 +59,19 @@ export class PloAssessmentComponent implements OnInit {
   isLoadingEval = signal(false);
   selectedStudent = signal<StudentAssessment | null>(null);
 
-  evalCards = signal<EvalCard[]>([]);
+  evalPLOs = signal<EvalPLO[]>([]);
+  evalYLOs = signal<EvalYLO[]>([]);
 
   ngOnInit() {
     this.loadData();
   }
 
-  // 1. ดึงรายชื่อนักศึกษาจากฐานข้อมูล
-  // 1. ดึงรายชื่อนักศึกษาจากฐานข้อมูล
   loadData() {
     this.http
-      // 👉 แก้ตรงนี้: เปลี่ยนจาก <any[]> เป็น <any> เฉยๆ ครับ
       .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          // คราวนี้มันจะไม่ด่าบรรทัดนี้แล้วครับ
-          if (data.error) {
-            console.error('Database Error:', data.error);
-            return;
-          }
           if (!Array.isArray(data)) return;
-
           const formattedData = data.map((s) => ({
             ...s,
             img: s.img
@@ -82,32 +80,29 @@ export class PloAssessmentComponent implements OnInit {
           }));
           this.students.set(formattedData);
         },
-        error: (err) => console.error('Failed to load PLO assessments', err),
       });
   }
-  // 2. เปิด Modal และยิง API ดึงโครงสร้าง PLO/YLO (ของจริง ไม่มี Mock)
+
   openEvalModal(student: StudentAssessment, event: Event) {
     event.stopPropagation();
     this.selectedStudent.set(student);
     this.isEvalModalOpen.set(true);
     this.isLoadingEval.set(true);
-    this.evalCards.set([]); // เคลียร์ของเก่า
+
+    this.evalPLOs.set([]);
+    this.evalYLOs.set([]);
 
     this.http
-      .get<
-        EvalCard[]
-      >(`${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}&t=${Date.now()}`)
+      .get<any>(
+        `${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}&t=${Date.now()}`,
+      )
       .subscribe({
         next: (data) => {
-          if (Array.isArray(data)) {
-            this.evalCards.set(data); // เอาข้อมูลจาก DB มาใส่เลย
-          }
+          if (data.plos) this.evalPLOs.set(data.plos);
+          if (data.ylos) this.evalYLOs.set(data.ylos);
           this.isLoadingEval.set(false);
         },
-        error: (err) => {
-          console.error('Failed to load structure', err);
-          this.isLoadingEval.set(false);
-        },
+        error: () => this.isLoadingEval.set(false),
       });
   }
 
@@ -116,48 +111,66 @@ export class PloAssessmentComponent implements OnInit {
     this.selectedStudent.set(null);
   }
 
-  // 3. จัดการสถานะ ผ่าน/ไม่ผ่าน บนหน้าจอ
-  setSubItemStatus(cardIndex: number, subIndex: number, status: 'passed' | 'failed') {
-    const cards = [...this.evalCards()];
-    cards[cardIndex].subItems[subIndex].status = status;
-    this.evalCards.set(cards);
+  // 🎯 ให้กดผ่านเฉพาะระดับ SubPLO
+  setSubPLOStatus(ploIndex: number, subIndex: number, status: 'passed' | 'failed') {
+    const plos = [...this.evalPLOs()];
+    plos[ploIndex].sub_plos[subIndex].status = status;
+    this.evalPLOs.set(plos);
   }
 
-  // 4. คำนวณหลอดสีเขียว
-  calculateProgress(card: EvalCard): number {
-    if (!card.subItems || card.subItems.length === 0) return 0;
-    const passedCount = card.subItems.filter((s) => s.status === 'passed').length;
-    return Math.round((passedCount / card.subItems.length) * 100);
+  // 🎯 YLO แยกกดอิสระ
+  setYLOStatus(yloIndex: number, status: 'passed' | 'failed') {
+    const ylos = [...this.evalYLOs()];
+    ylos[yloIndex].status = status;
+    this.evalYLOs.set(ylos);
   }
 
-  // 5. บันทึกข้อมูลลงฐานข้อมูล (ของจริง ไม่มี Timeout หลอก)
+  // 🎯 คำนวณ % ให้ PLO จากจำนวน SubPLO ที่ผ่าน
+  calculatePLOProgress(plo: EvalPLO): number {
+    if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
+    const passed = plo.sub_plos.filter((s) => s.status === 'passed').length;
+    return Math.round((passed / plo.sub_plos.length) * 100);
+  }
+
   saveEvaluation() {
     const student = this.selectedStudent();
     if (!student) return;
-
     this.isSaving.set(true);
+
+    // ดึงเปอร์เซ็นต์ของ PLO ส่งไปเก็บในตาราง scores
+    const evaluatedPLOs = this.evalPLOs().map((p) => ({
+      code: p.plo_name,
+      score: this.calculatePLOProgress(p),
+    }));
+
+    // ดึงผล YLO ที่ประเมิน ส่งไปเก็บในตาราง assessment_details
+    const evaluatedYLOs = this.evalYLOs()
+      .filter((y) => y.status !== null)
+      .map((y) => ({
+        id: y.ylo_id,
+        is_passed: y.status === 'passed' ? 1 : 0,
+      }));
 
     const payload = {
       student_id: student.id,
-      evaluations: this.evalCards(),
+      advisor_id: 14,
+      plos: evaluatedPLOs,
+      ylos: evaluatedYLOs,
     };
 
     this.http.post<any>(`${environment.apiUrl}/save_plo_assessment.php`, payload).subscribe({
       next: (res) => {
         if (res.status === 'success') {
           this.closeEvalModal();
-          this.loadData(); // รีเฟรชข้อมูลหน้าตารางให้เป็นอัปเดตล่าสุด
+          this.loadData();
         }
         this.isSaving.set(false);
       },
-      error: (err) => {
-        console.error('Error saving evaluation', err);
-        this.isSaving.set(false);
-      },
+      error: () => this.isSaving.set(false),
     });
   }
 
-  // --- ส่วนของ Filter & Pagination ด้านล่าง ---
+  // --- ส่วนอื่นๆ เหมือนเดิมครับ ---
   filteredStudents = computed(() => {
     const tab = this.activeTab();
     const query = this.searchQuery().toLowerCase().trim();
@@ -179,7 +192,6 @@ export class PloAssessmentComponent implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.itemsPerPage) || 1);
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
-
   countAll = computed(() => this.students().filter((s) => this.matchesSearch(s)).length);
   countPending = computed(
     () => this.students().filter((s) => s.status === 'pending' && this.matchesSearch(s)).length,
