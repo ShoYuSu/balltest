@@ -1,8 +1,5 @@
 <div class="page-wrapper">
-
   <div class="content">
-
-    <!-- 🔥 พื้นหลังโค้ง -->
     <div class="section-bg">
 
       <!-- TITLE -->
@@ -14,47 +11,250 @@
       <!-- CARD -->
       <div class="card">
 
-        <!-- YEAR -->
+        <!-- YEAR BAR -->
         <div class="year-bar">
-          <span class="arrow">‹</span>
+          <span class="arrow" (click)="prevYear()">‹</span>
           <h1>{{ currentYear }}</h1>
-          <span class="arrow">›</span>
+          <span class="arrow" (click)="nextYear()">›</span>
         </div>
 
-        <!-- MONTH -->
+        <!-- MONTH BAR -->
         <div class="month-bar">
           <div class="month-inner">
             <button
-              *ngFor="let m of months"
-              (click)="selectMonth(m)"
-              [class.month-active]="activeMonth === m"
+              *ngFor="let m of months; let i = index"
+              (click)="selectMonth(i)"
+              [class.month-active]="activeMonth === i"
+              [class.month-has-data]="hasDataInMonth(currentYear, i)"
               class="month">
               {{ m }}
             </button>
           </div>
         </div>
 
-        <!-- EMPTY -->
-        <div class="empty">
+        <!-- CONTENT -->
+        <div class="list-area">
 
-          <div class="empty-icon">
-            <span class="material-symbols-outlined">event_busy</span>
+          <!-- EMPTY -->
+          <div class="empty" *ngIf="filteredAppointments.length === 0">
+            <div class="empty-icon">
+              <span class="material-symbols-outlined">event_busy</span>
+            </div>
+            <p class="empty-title">ไม่มีบันทึกการปรึกษา</p>
+            <p class="empty-sub">ไม่มีการนัดหมายในเดือนนี้</p>
           </div>
 
-          <p class="empty-title">
-            ไม่มีบันทึกการปรึกษา
-          </p>
+          <!-- APPOINTMENT LIST -->
+          <div class="record-list" *ngIf="filteredAppointments.length > 0">
+            <div
+              class="record-card"
+              [ngClass]="getCardAccent(a.type)"
+              *ngFor="let a of filteredAppointments"
+              (click)="openDetail(a)">
 
-          <p class="empty-sub">
-            เลือกเดือนอื่น หรือเพิ่มข้อมูลในภายหลัง
-          </p>
+              <!-- LEFT: date block -->
+              <div class="date-block">
+                <span class="date-day">{{ a.appointment_date | date:'d' }}</span>
+                <span class="date-month">{{ a.appointment_date | date:'MMM' }}</span>
+              </div>
 
+              <!-- RIGHT: detail -->
+              <div class="record-body">
+
+                <div class="record-top">
+                  <h3 class="record-title">{{ a.title }}</h3>
+                  <div class="badge-group">
+                    <span class="type-badge" [ngClass]="getTypeColor(a.type)">{{ a.type }}</span>
+                    <span class="status-badge" [ngClass]="getStatusColor(a.status)">
+                      {{ a.status || 'ไม่ระบุ' }}
+                    </span>
+                  </div>
+                </div>
+
+                <p class="record-desc">{{ a.description }}</p>
+
+                <div class="record-meta">
+                  <span class="meta-item">
+                    <span class="material-symbols-outlined">schedule</span>
+                    {{ formatTime(a.start_time) }}
+                    <ng-container *ngIf="a.end_time"> – {{ formatTime(a.end_time) }}</ng-container>
+                  </span>
+                  <span class="meta-item">
+                    <span class="material-symbols-outlined">person</span>
+                    {{ a.advisor_name }}
+                  </span>
+                  <span class="meta-item">
+                    <span class="material-symbols-outlined">call</span>
+                    {{ (a.advisor_phone && a.advisor_phone !== '-') ? a.advisor_phone : '-' }}
+                  </span>
+                  <span class="meta-item" *ngIf="a.is_consulted">
+                    <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    ปรึกษาแล้ว
+                  </span>
+                </div>
+
+              </div>
+
+              <!-- ADVISOR AVATAR -->
+              <div class="advisor-mini">
+                <img [src]="advisorImgUrl(a.advisor_img)" class="advisor-mini-avatar"
+                     [title]="a.advisor_name" />
+              </div>
+
+              <!-- ARROW -->
+              <span class="material-symbols-outlined record-arrow">chevron_right</span>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP DETAIL ===== -->
+<div class="modal-backdrop" *ngIf="selectedAppointment" [class.closing]="isClosing" (click)="closeDetail()">
+  <div class="modal-card" [class.closing]="isClosing" (click)="$event.stopPropagation()">
+
+    <!-- TOP HEADER: Title + Close -->
+    <div class="modal-top-header">
+      <div>
+        <h2 class="modal-title">{{ selectedAppointment.title }}</h2>
+        <p class="modal-date">
+          <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">calendar_month</span>
+          {{ formatDate(selectedAppointment.appointment_date) }}
+          &nbsp;·&nbsp;
+          ปีการศึกษา {{ selectedAppointment.academic_year }} เทอม {{ selectedAppointment.semester }}
+        </p>
+      </div>
+      <button class="close-btn" (click)="closeDetail()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- STATUS ROW: ประเภท + สถานะนัดหมาย + การปรึกษา -->
+    <div class="modal-status-row">
+      <div class="status-section">
+        <p class="status-section-label">ประเภท</p>
+        <span class="type-badge type-badge-lg" [ngClass]="getTypeColor(selectedAppointment.type)">
+          {{ selectedAppointment.type || 'ไม่ระบุ' }}
+        </span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-section">
+        <p class="status-section-label">สถานะนัดหมาย</p>
+        <span class="status-badge status-badge-lg" [ngClass]="getStatusColor(selectedAppointment.status)">
+          {{ selectedAppointment.status || 'ไม่ระบุ' }}
+        </span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-section">
+        <p class="status-section-label">การปรึกษา</p>
+        <span class="status-badge status-badge-lg"
+              [ngClass]="selectedAppointment.is_consulted ? 'status-consulted' : 'status-not-consulted'">
+          {{ selectedAppointment.is_consulted ? '✓ ปรึกษาแล้ว' : '⏳ ยังไม่ได้ปรึกษา' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 2-COLUMN BODY -->
+    <div class="modal-two-col">
+
+      <!-- LEFT: appointment details -->
+      <div class="modal-left">
+        <p class="col-heading">รายละเอียดการนัดหมาย</p>
+
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">schedule</span>
+          <div>
+            <p class="detail-label">เวลา</p>
+            <p class="detail-value">
+              {{ formatTime(selectedAppointment.start_time) }} น.
+              <ng-container *ngIf="selectedAppointment.end_time">
+                – {{ formatTime(selectedAppointment.end_time) }} น.
+              </ng-container>
+            </p>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">description</span>
+          <div>
+            <p class="detail-label">รายละเอียด</p>
+            <p class="detail-value">{{ selectedAppointment.description || '-' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">sticky_note_2</span>
+          <div>
+            <p class="detail-label">หมายเหตุ (Note)</p>
+            <p class="detail-value note-value">
+              {{ selectedAppointment.note || 'ยังไม่มีหมายเหตุ' }}
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="col-divider"></div>
+
+      <!-- RIGHT: advisor info -->
+      <div class="modal-right">
+        <p class="col-heading">อาจารย์ที่ปรึกษา</p>
+
+        <!-- Avatar + name -->
+        <div class="advisor-profile">
+          <img [src]="advisorImgUrl(selectedAppointment.advisor_img)"
+               class="advisor-avatar" />
+          <div>
+            <p class="advisor-name">{{ selectedAppointment.advisor_name }}</p>
+            <p class="advisor-position" *ngIf="selectedAppointment.advisor_position">
+              {{ selectedAppointment.advisor_position }}
+            </p>
+          </div>
+        </div>
+
+        <!-- dept -->
+        <div class="detail-row" *ngIf="selectedAppointment.advisor_dept">
+          <span class="material-symbols-outlined detail-icon">domain</span>
+          <div>
+            <p class="detail-label">ภาควิชา</p>
+            <p class="detail-value">{{ selectedAppointment.advisor_dept }}</p>
+          </div>
+        </div>
+
+        <!-- email -->
+        <div class="detail-row" *ngIf="selectedAppointment.advisor_email">
+          <span class="material-symbols-outlined detail-icon">mail</span>
+          <div>
+            <p class="detail-label">อีเมล</p>
+            <p class="detail-value">{{ selectedAppointment.advisor_email }}</p>
+          </div>
+        </div>
+
+        <!-- phone -->
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">call</span>
+          <div>
+            <p class="detail-label">เบอร์โทร</p>
+            <p class="detail-value">
+              {{ (selectedAppointment.advisor_phone && selectedAppointment.advisor_phone !== '-') ? selectedAppointment.advisor_phone : '-' }}
+            </p>
+          </div>
         </div>
 
       </div>
 
     </div>
 
-  </div>
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="btn-close-modal" (click)="closeDetail()">ปิด</button>
+    </div>
 
+  </div>
 </div>

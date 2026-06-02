@@ -1,4 +1,4 @@
-<div class="p-6 bg-[#EEF2F6] min-h-screen">
+<div class="bg-[#EEF2F6] rounded-[28px] p-5">
 
   <!-- ===== OVERALL ===== -->
   <div class="card mb-5">
@@ -8,58 +8,103 @@
         <h3 class="title">ผลลัพธ์การเรียนรู้ของหลักสูตร (PLO)</h3>
         <p class="text-sm text-gray-500">ติดตามความก้าวหน้าผลลัพธ์การเรียนรู้ของหลักสูตร</p>
       </div>
-
       <div class="bookmark">
         <span class="material-symbols-outlined">bookmark</span>
       </div>
     </div>
 
-    <!-- progress -->
+    <!-- overall progress -->
     <div class="mt-4">
-      <p class="text-sm text-gray-500 mb-1">{{overall.text}}</p>
-
-      <div class="progress-bg">
-        <div class="progress-bar bg-blue-500" [style.width.%]="overall.progress"></div>
+      <div class="flex justify-between items-center mb-1">
+        <p class="text-sm text-gray-500">{{ overallText }}</p>
+        <p class="text-sm font-semibold text-gray-700">{{ overallPercent }}%</p>
       </div>
 
-      <p class="text-sm text-gray-400 mt-2">{{overall.status}}</p>
+      <div class="progress-bg">
+        <div class="progress-bar bg-blue-500 transition-all duration-700"
+             [style.width.%]="overallPercent">
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-400 mt-2">{{ overallStatus }}</p>
+    </div>
+
+    <!-- summary badges -->
+    <div class="flex gap-3 mt-4">
+      <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">
+        ✓ ผ่านแล้ว {{ passed }} ข้อ
+      </span>
+      <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-500 font-medium">
+        ยังไม่ผ่าน {{ total - passed }} ข้อ
+      </span>
     </div>
 
   </div>
+
+  <!-- ===== EMPTY STATE ===== -->
+  @if (plos.length === 0) {
+    <div class="card flex flex-col items-center justify-center py-16 text-center">
+      <div class="w-16 h-16 bg-blue-50 text-blue-400 rounded-2xl flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-4xl">donut_large</span>
+      </div>
+      <p class="text-gray-500 font-medium">ยังไม่มีข้อมูล PLO</p>
+      <p class="text-sm text-gray-400 mt-1">ติดต่ออาจารย์ที่ปรึกษาเพื่อรับการประเมิน</p>
+    </div>
+  }
 
   <!-- ===== GRID ===== -->
-  <div class="grid grid-cols-2 gap-5">
+  @if (plos.length > 0) {
+    <div class="grid grid-cols-2 gap-5">
 
-    <div *ngFor="let p of plos" class="card">
+      @for (p of plos; track p.plo_id) {
+        <div class="card group hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
 
-      <p class="font-medium text-sm mb-3">
-        {{p.title}}
-      </p>
+          <!-- PLO name + description -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1 pr-3">
+              <p class="font-semibold text-gray-800 text-sm">{{ p.plo_name }}</p>
+              <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">{{ p.description }}</p>
+            </div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
+                  [ngClass]="getStatusColor(p.status)">
+              {{ getStatusLabel(p.status) }}
+            </span>
+          </div>
 
-      <!-- progress -->
-      <div class="progress-bg">
-        <div class="progress-bar"
-             [ngClass]="getBarColor(p.color)"
-             [style.width.%]="p.percent">
+          <!-- progress -->
+          <div class="progress-bg mb-1">
+            <div class="progress-bar transition-all duration-700"
+                 [ngClass]="getBarColor(p.status)"
+                 [style.width.%]="p.score">
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 text-right mb-3">{{ p.score | number:'1.0-1' }}%</p>
+
+          <!-- footer: advisor + date -->
+          <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+            <div class="text-xs text-gray-400 space-y-0.5">
+              @if (p.advisor_name) {
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">person</span>
+                  {{ p.advisor_name }}
+                </div>
+              }
+              @if (p.assessment_date) {
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                  {{ formatDate(p.assessment_date) }}
+                </div>
+              }
+              @if (!p.advisor_name && !p.assessment_date) {
+                <span class="text-gray-300">ยังไม่มีการประเมิน</span>
+              }
+            </div>
+          </div>
+
         </div>
-      </div>
-
-      <!-- footer -->
-      <div class="flex justify-between items-center mt-3">
-
-        <div class="text-sm">
-          <span class="text-gray-400">สถานะ :</span>
-          <span class="status" [ngClass]="getStatusColor(p.color)">
-            {{p.status}}
-          </span>
-        </div>
-
-        <button class="detail-btn">ดูรายละเอียด</button>
-
-      </div>
+      }
 
     </div>
-
-  </div>
+  }
 
 </div>

@@ -20,7 +20,10 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class CertificationComponent implements OnInit {
+  editingCertificate: any = null;
+  showDeletePopup = false;
 
+  selectedCertificate: any = null;
   @ViewChild('fileInput')
   fileInput!: ElementRef;
 
@@ -50,7 +53,49 @@ export class CertificationComponent implements OnInit {
     this.loadCertificates();
 
   }
+  openEditModal(item: any) {
 
+  this.editingCertificate = item;
+
+  this.certificateTitle = item.title;
+
+  this.issueDate = item.issue_date;
+
+  this.showModal = true;
+
+}
+openDeleteConfirm(item:any){
+
+  this.selectedCertificate = item;
+
+  this.showDeletePopup = true;
+
+}
+deleteCertificate() {
+
+  const formData = new FormData();
+
+  formData.append(
+    'id',
+    this.selectedCertificate.certificate_id
+  );
+
+  this.http.post(
+    'http://localhost:8080/api/delete_certificate.php',
+    formData
+  ).subscribe({
+
+    next: () => {
+
+      this.loadCertificates();
+
+      this.showDeletePopup = false;
+
+    }
+
+  });
+
+}
   // =========================
   // LOAD DATA
   // =========================
@@ -100,7 +145,7 @@ export class CertificationComponent implements OnInit {
   closeModal() {
 
     this.showModal = false;
-
+    this.editingCertificate = null;
     this.certificateTitle = '';
 
     this.issueDate = '';
@@ -143,8 +188,73 @@ export class CertificationComponent implements OnInit {
   // SAVE
   // =========================
 
-  saveCertificate() {
+  
+    saveCertificate() {
+  console.log(
+  'EDIT?',
+  !!this.editingCertificate,
+  'FILE:',
+  this.selectedFile
+);
+  // EDIT MODE
+  if (this.editingCertificate) {
 
+    const formData = new FormData();
+
+    formData.append(
+      'id',
+      this.editingCertificate.certificate_id
+    );
+
+    formData.append(
+      'title',
+      this.certificateTitle
+    );
+
+    formData.append(
+      'issue_date',
+      this.issueDate
+    );
+    if (this.selectedFile) {
+
+  formData.append(
+    'file',
+    this.selectedFile
+  );
+
+}
+
+    this.http.post(
+      'http://localhost:8080/api/update_certificate.php',
+      formData
+    ).subscribe({
+
+      next: (res:any) => {
+
+        console.log(res);
+
+        this.loadCertificates();
+
+        this.closeModal();
+
+        this.editingCertificate = null;
+
+      },
+
+      error: (err) => {
+
+        console.log(err);
+
+        alert('แก้ไขไม่สำเร็จ');
+
+      }
+
+    });
+
+    return;
+  }
+
+  // ===== CREATE MODE เดิม =====
     if (!this.certificateTitle ||
         !this.issueDate ||
         !this.selectedFile) {

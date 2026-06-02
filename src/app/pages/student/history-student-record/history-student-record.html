@@ -1,99 +1,185 @@
 <div class="page-wrapper">
   <div class="content">
+    <div class="section-bg">
 
-    <div class="card">
-
-      <!-- HEADER -->
-      <div class="header">
-        <img [src]="student.avatar" class="avatar" />
-
-        <div>
-          <h2 class="name">{{ student.name }}</h2>
-          <p class="sub">{{ student.en }}</p>
-
-          <div class="tags">
-            <span>วิทยาการคอมพิวเตอร์</span>
-            <span>ภาควิชาวิทยาศาสตร์</span>
-          </div>
-        </div>
+      <!-- TITLE ROW -->
+      <div class="title-row">
+        <span class="material-symbols-outlined">person_pin</span>
+        <h2>ระเบียนประวัตินักศึกษา</h2>
       </div>
 
-      <!-- BODY -->
-      <div class="body">
+      @if (student) {
 
-        <!-- CONTACT -->
-        <div class="row">
-          <div class="info-item">
-            <div class="icon">
-              <span class="material-symbols-outlined">call</span>
-            </div>
-            <div>
-              <p class="label">เบอร์ที่สามารถติดต่อได้</p>
-              <p class="value">001-9239-2324</p>
-            </div>
-          </div>
+        <!-- HERO CARD -->
+        <div class="hero-card">
 
-          <div class="info-item">
-            <div class="icon red">
-              <span class="material-symbols-outlined">call</span>
-            </div>
-            <div>
-              <p class="label">เบอร์ฉุกเฉิน</p>
-              <p class="value">001-4523-2341 (พ่อ)</p>
+          <!-- LEFT 1/4: Photo -->
+          <div class="hero-photo-side">
+            <div class="hero-photo-bg"></div>
+            <img [src]="avatarUrl" class="hero-photo" />
+            <div class="hero-photo-badge">
+              <span class="material-symbols-outlined">verified_user</span>
+              นักศึกษา
             </div>
           </div>
-        </div>
 
-        <div class="divider"></div>
+          <!-- RIGHT 3/4: Info bar -->
+          <div class="hero-info-side">
 
-        <!-- SCHOOL -->
-        <div class="info-item">
-          <div class="icon blue">
-            <span class="material-symbols-outlined">school</span>
-          </div>
-          <div>
-            <p class="label">โรงเรียนระดับมัธยม</p>
-            <p class="value">โรงเรียนสาธิตมหาวิทยาลัย</p>
-          </div>
-        </div>
+            <!-- TOP BAR: gradient -->
+            <div class="hero-bar">
+              <h2 class="hero-name">{{ student.full_name }}</h2>
+              <p class="hero-code">
+                <span class="material-symbols-outlined">badge</span>
+                {{ student.student_code }}
+              </p>
+            </div>
 
-        <div class="divider"></div>
+            <!-- BOTTOM: details grid -->
+            <div class="hero-details">
 
-        <!-- ADVISOR HISTORY -->
-        <div class="info-item">
-          <div class="icon blue">
-            <span class="material-symbols-outlined">school</span>
-          </div>
-          <div>
-            <p class="label">ประวัติอาจารย์ที่ปรึกษา</p>
-            <p class="value">ปีการศึกษา 1 - ดร.สมใจ ใจดี</p>
-
-            <!-- CONTACT MINI -->
-            <div class="mini-contact">
-
-              <div>
-                <span class="material-symbols-outlined">mail</span>
-                Somjai.Jaidee@siam.edu
+              <div class="hd-item">
+                <p class="hd-label">คณะ</p>
+                <p class="hd-value">{{ student.faculty || '-' }}</p>
               </div>
 
-              <div>
-                <span class="material-symbols-outlined">chat</span>
-                ID : Somjai.J
+              <div class="hd-item">
+                <p class="hd-label">สาขาวิชา</p>
+                <p class="hd-value">{{ student.major || '-' }}</p>
               </div>
 
-              <div>
-                <span class="material-symbols-outlined">call</span>
-                065-000-2211
+              <div class="hd-item">
+                <p class="hd-label">ชั้นปี</p>
+                <p class="hd-value">{{ student.year || '-' }}</p>
+              </div>
+
+              <div class="hd-item hd-last">
+                <p class="hd-label">หลักสูตรปี</p>
+                <p class="hd-value">{{ student.curriculum_year || '-' }}</p>
               </div>
 
             </div>
 
           </div>
+
         </div>
 
-      </div>
+        <!-- 2-COLUMN INFO -->
+        <div class="info-cols">
+
+          <!-- LEFT: ข้อมูลติดต่อ -->
+          <div class="info-section">
+            <div class="section-head">
+              <span class="material-symbols-outlined">contact_phone</span>
+              <h3>ข้อมูลติดต่อ</h3>
+            </div>
+
+            <div class="info-list">
+              <div class="info-row">
+                <div class="info-icon ii-blue"><span class="material-symbols-outlined">mail</span></div>
+                <div><p class="il-label">อีเมล</p><p class="il-value">{{ student.email || '-' }}</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-green"><span class="material-symbols-outlined">call</span></div>
+                <div><p class="il-label">เบอร์โทรศัพท์</p><p class="il-value">{{ student.phone || '-' }}</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-red"><span class="material-symbols-outlined">emergency</span></div>
+                <div><p class="il-label">เบอร์ฉุกเฉิน</p><p class="il-value">-</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-teal"><span class="material-symbols-outlined">chat</span></div>
+                <div><p class="il-label">ไลน์</p><p class="il-value">-</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: ข้อมูลการศึกษา -->
+          <div class="info-section">
+            <div class="section-head">
+              <span class="material-symbols-outlined">school</span>
+              <h3>ข้อมูลการศึกษา</h3>
+            </div>
+
+            <div class="info-list">
+              <div class="info-row">
+                <div class="info-icon ii-purple"><span class="material-symbols-outlined">domain</span></div>
+                <div><p class="il-label">คณะ</p><p class="il-value">{{ student.faculty || '-' }}</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-orange"><span class="material-symbols-outlined">book</span></div>
+                <div><p class="il-label">สาขาวิชา</p><p class="il-value">{{ student.major || '-' }}</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-brown"><span class="material-symbols-outlined">grade</span></div>
+                <div><p class="il-label">ชั้นปี</p><p class="il-value">{{ student.year || '-' }}</p></div>
+              </div>
+              <div class="info-row">
+                <div class="info-icon ii-gray"><span class="material-symbols-outlined">history_edu</span></div>
+                <div><p class="il-label">โรงเรียนมัธยม</p><p class="il-value">-</p></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ADVISOR HISTORY TIMELINE -->
+        <div class="timeline-section">
+          <div class="section-head">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <h3>ประวัติอาจารย์ที่ปรึกษา</h3>
+          </div>
+
+          @if (advisors.length === 0) {
+            <div class="empty-adv">
+              <span class="material-symbols-outlined">person_off</span>
+              <p>ยังไม่มีข้อมูลอาจารย์ที่ปรึกษา</p>
+            </div>
+          }
+
+          <div class="timeline">
+            @for (adv of advisors; track adv.year; let i = $index; let last = $last) {
+              <div class="timeline-item">
+
+                <!-- LINE -->
+                <div class="tl-line-wrap">
+                  <div class="tl-dot" [class.tl-dot-current]="adv.is_current"></div>
+                  @if (!last) { <div class="tl-line"></div> }
+                </div>
+
+                <!-- CARD -->
+                <div class="tl-card" [class.tl-card-current]="adv.is_current">
+                  @if (adv.is_current) {
+                    <span class="current-badge">ปัจจุบัน</span>
+                  }
+
+                  <div class="tl-header">
+                    <img [src]="advisorAvatar(adv.advisor_img, adv.advisor_name)" class="tl-avatar" />
+                    <div>
+                      <p class="tl-name">{{ adv.advisor_name }}</p>
+                      <p class="tl-dept">{{ adv.dept_name }}</p>
+                      <p class="tl-year">ปีการศึกษา {{ adv.year }}</p>
+                    </div>
+                  </div>
+
+                  <div class="tl-contacts">
+                    <span class="tl-contact">
+                      <span class="material-symbols-outlined">mail</span>{{ adv.advisor_email || '-' }}
+                    </span>
+                    <span class="tl-contact">
+                      <span class="material-symbols-outlined">call</span>{{ adv.advisor_phone || '-' }}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            }
+          </div>
+
+        </div>
+
+      }
 
     </div>
-
   </div>
 </div>

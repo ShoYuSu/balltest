@@ -1,77 +1,123 @@
 <div class="page-wrapper">
-
   <div class="content">
+    <div class="section-bg">
 
-    <div class="card">
-
-      <!-- HEADER -->
-      <div class="header">
-
-        <img [src]="advisor.avatar" class="avatar" />
-
-        <div>
-          <h2 class="name">{{ advisor.nameTH }}</h2>
-          <p class="sub">{{ advisor.nameEN }}</p>
-
-          <div class="tags">
-            <span>อาจารย์ที่ปรึกษา</span>
-            <span>ภาควิชาวิทยาการคอมพิวเตอร์</span>
-          </div>
-        </div>
-
+      <!-- TITLE ROW -->
+      <div class="title-row">
+        <span class="material-symbols-outlined">account_circle</span>
+        <h2>ข้อมูลอาจารย์ที่ปรึกษา</h2>
+        @if (advisors.length > 1) {
+          <span class="advisor-count">{{ advisors.length }} คน</span>
+        }
       </div>
 
-      <!-- BODY -->
-      <div class="info-grid">
-
-        <!-- EMAIL -->
-        <div class="info-item">
-          <div class="icon icon-mail">
-            <span class="material-symbols-outlined">mail</span>
-          </div>
-          <div>
-            <p class="label">อีเมล</p>
-            <p class="value">{{ advisor.email }}</p>
-          </div>
+      <!-- EMPTY -->
+      @if (advisors.length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined">person_off</span>
+          <p>ยังไม่มีอาจารย์ที่ปรึกษา</p>
         </div>
+      }
 
-        <!-- PHONE -->
-        <div class="info-item">
-          <div class="icon icon-phone">
-            <span class="material-symbols-outlined">call</span>
+      @for (advisor of advisors; track advisor.staff_code; let i = $index) {
+        <div class="advisor-block">
+
+          <!-- HERO: 1/4 รูป + 3/4 ชื่อ -->
+          <div class="advisor-card">
+
+            <div class="adv-photo-side">
+              <div class="adv-photo-bg"></div>
+              <img [src]="avatarUrl(advisor.img_profile, advisor.full_name)" class="adv-photo" />
+              <div class="adv-photo-badge">
+                <span class="material-symbols-outlined">school</span>
+                อาจารย์ที่ปรึกษา
+              </div>
+            </div>
+
+            <div class="adv-info-side">
+              <div class="adv-bar"></div>
+              <div class="adv-text">
+                <div class="adv-name-row">
+                  <h2 class="adv-name">{{ advisor.full_name }}</h2>
+                  @if (advisors.length > 1) {
+                    <span class="advisor-num">คนที่ {{ i + 1 }}</span>
+                  }
+                </div>
+                <p class="adv-position">{{ advisor.position }}</p>
+                <span class="tag-dept">{{ advisor.dept_name }}</span>
+              </div>
+            </div>
+
           </div>
-          <div>
-            <p class="label">เบอร์</p>
-            <p class="value">{{ advisor.phone }}</p>
+
+          <!-- CONTACT GRID -->
+          <div class="contact-grid">
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-blue">
+                <span class="material-symbols-outlined">mail</span>
+              </div>
+              <div>
+                <p class="ci-label">อีเมล</p>
+                <p class="ci-value">{{ advisor.email }}</p>
+              </div>
+            </div>
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-green">
+                <span class="material-symbols-outlined">call</span>
+              </div>
+              <div>
+                <p class="ci-label">เบอร์โทรศัพท์</p>
+                <p class="ci-value">{{ advisor.phone }}</p>
+              </div>
+            </div>
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-orange">
+                <span class="material-symbols-outlined">location_on</span>
+              </div>
+              <div>
+                <p class="ci-label">ห้องทำงาน</p>
+                <p class="ci-value">{{ advisor.office }}</p>
+              </div>
+            </div>
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-teal">
+                <span class="material-symbols-outlined">chat</span>
+              </div>
+              <div>
+                <p class="ci-label">ไลน์</p>
+                <p class="ci-value">{{ advisor.line }}</p>
+              </div>
+            </div>
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-purple">
+                <span class="material-symbols-outlined">domain</span>
+              </div>
+              <div>
+                <p class="ci-label">ภาควิชา</p>
+                <p class="ci-value">{{ advisor.dept_name }}</p>
+              </div>
+            </div>
+
+            <div class="contact-card group">
+              <div class="contact-icon ci-brown">
+                <span class="material-symbols-outlined">badge</span>
+              </div>
+              <div>
+                <p class="ci-label">รหัสอาจารย์</p>
+                <p class="ci-value">{{ advisor.staff_code }}</p>
+              </div>
+            </div>
+
           </div>
+
         </div>
-
-        <!-- OFFICE -->
-        <div class="info-item">
-          <div class="icon icon-location">
-            <span class="material-symbols-outlined">location_on</span>
-          </div>
-          <div>
-            <p class="label">ห้องทำงาน</p>
-            <p class="value">{{ advisor.office }}</p>
-          </div>
-        </div>
-
-        <!-- LINE -->
-        <div class="info-item">
-          <div class="icon icon-line">
-            <span class="material-symbols-outlined">chat</span>
-          </div>
-          <div>
-            <p class="label">ไลน์</p>
-            <p class="value">ID: {{ advisor.line }}</p>
-          </div>
-        </div>
-
-      </div>
+      }
 
     </div>
-
   </div>
-
 </div>

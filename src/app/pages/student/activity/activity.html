@@ -1,43 +1,455 @@
-<div class="p-6 bg-[#EEF2F6] min-h-screen rounded-3xl">
+<div class="activity-page">
 
   <!-- HEADER -->
-  <div class="flex justify-between items-center mb-5">
-
-    <h2 class="text-lg font-semibold text-gray-700">
-      กิจกรรมที่บันทึก
-    </h2>
-
-    <button class="btn-primary">
-      <span class="material-symbols-outlined text-sm">add</span>
-      เพิ่มกิจกรรม
-    </button>
-
-  </div>
-
-  <!-- EMPTY STATE CARD -->
-  <div class="empty-card">
-
-  <div class="empty-content">
-
-    <div class="empty-icon">
-      <span class="material-symbols-outlined text-4xl">event_note</span>
+  <div class="activity-header">
+    <div>
+      <h2 class="page-title">กิจกรรมที่บันทึก</h2>
+      <p class="page-subtitle">บันทึกและติดตามกิจกรรมที่เข้าร่วม</p>
     </div>
-
-    <h3 class="mt-4 text-gray-700 font-medium">
-      ยังไม่มีกิจกรรมที่บันทึก
-    </h3>
-
-    <p class="text-sm text-gray-400 mt-1">
-      เริ่มต้นบันทึกกิจกรรมของคุณได้เลย
-    </p>
-
-    <button class="btn-primary mt-4">
-      <span class="material-symbols-outlined text-sm">add</span>
+    <button class="btn-primary" (click)="openAdd()">
+      <span class="material-symbols-outlined">add</span>
       เพิ่มกิจกรรม
     </button>
-
   </div>
 
+  <!-- CARD -->
+  <div class="activity-card">
+
+    @if (activities.length === 0) {
+      <div class="empty-content">
+        <div class="empty-icon-wrap">
+          <div class="empty-icon"><span class="material-symbols-outlined">event_note</span></div>
+          <div class="empty-glow"></div>
+        </div>
+        <h3 class="empty-title">ยังไม่มีกิจกรรมที่บันทึก</h3>
+        <p class="empty-desc">เริ่มต้นบันทึกกิจกรรมของคุณได้เลย</p>
+        <button class="btn-primary" (click)="openAdd()">
+          <span class="material-symbols-outlined">add</span>เพิ่มกิจกรรม
+        </button>
+      </div>
+    }
+
+    @if (activities.length > 0) {
+      <div class="act-grid">
+        @for (a of activities; track a.activity_id) {
+          <div class="act-card" (click)="openDetail(a)">
+
+            <!-- COVER -->
+            <div class="act-cover">
+              @if (coverOf(a)) {
+                <img [src]="coverOf(a)" class="act-cover-img" />
+              } @else {
+                <div class="act-cover-placeholder">
+                  <span class="material-symbols-outlined">event_note</span>
+                </div>
+              }
+              <div class="act-cover-overlay"></div>
+              <span class="act-date-badge">{{ formatDate(a.activity_date) }}</span>
+              @if (a.files.length > 0) {
+                <span class="act-file-count">
+                  <span class="material-symbols-outlined">attach_file</span>{{ a.files.length }}
+                </span>
+              }
+            </div>
+
+            <!-- INFO -->
+            <div class="act-info">
+              <h3 class="act-title">{{ a.title }}</h3>
+              <p class="act-desc">{{ a.description || 'ไม่มีรายละเอียด' }}</p>
+
+              <!-- FOOTER -->
+              <div class="act-footer">
+                <span class="act-footer-date">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                  {{ a.activity_date | date:'d MMM y' }}
+                </span>
+                <div class="act-footer-actions">
+                  <button class="act-btn-edit" title="แก้ไข"
+                    (click)="$event.stopPropagation(); openEdit(a)">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button class="act-btn-del" title="ลบ"
+                    (click)="$event.stopPropagation(); editingId = a.activity_id; showDeleteConfirm = true">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+
+  </div>
 </div>
 
-</div>
+<!-- ===== ADD MODAL ===== -->
+@if (showAddModal) {
+  <div class="modal-backdrop" [class.closing]="isAddClosing" (click)="closeAdd()">
+    <div class="modal-card" [class.closing]="isAddClosing" (click)="$event.stopPropagation()">
+
+      <!-- HEADER -->
+      <div class="modal-head">
+        <div class="flex items-center gap-3">
+          <div class="modal-icon"><span class="material-symbols-outlined">event_note</span></div>
+          <div>
+            <h2 class="modal-title">เพิ่มกิจกรรม</h2>
+            <p class="modal-sub">บันทึกกิจกรรมที่คุณเข้าร่วม</p>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeAdd()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- FORM -->
+      <div class="modal-body">
+
+        <!-- Title -->
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">title</span>ชื่อกิจกรรม <span class="text-red-400">*</span>
+          </label>
+          <input [(ngModel)]="form.title" type="text" placeholder="กรอกชื่อกิจกรรม" class="field-input" />
+        </div>
+
+        <!-- Description -->
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">description</span>รายละเอียด
+          </label>
+          <textarea [(ngModel)]="form.description" rows="3"
+            placeholder="อธิบายกิจกรรม..." class="field-input resize-none"></textarea>
+        </div>
+
+        <!-- Date picker -->
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">calendar_month</span>วันที่เข้าร่วม <span class="text-red-400">*</span>
+          </label>
+
+          <div class="date-wrapper">
+            <button type="button" class="date-btn" (click)="showCalendar = !showCalendar; $event.stopPropagation()">
+              <span class="material-symbols-outlined">event</span>
+              <span [class.text-gray-400]="!selectedDate">
+                {{ selectedDate ? displayDate : 'เลือกวันที่' }}
+              </span>
+              <span class="material-symbols-outlined ml-auto text-gray-400">
+                {{ showCalendar ? 'expand_less' : 'expand_more' }}
+              </span>
+            </button>
+
+            @if (showCalendar) {
+              <div class="calendar-panel" (click)="$event.stopPropagation()">
+
+                <!-- Cal header -->
+                <div class="cal-head">
+                  <button class="cal-nav" (click)="prevCal()">‹</button>
+                  <span class="cal-title">{{ monthNames[calMonth] }} {{ calYear + 543 }}</span>
+                  <button class="cal-nav" (click)="nextCal()">›</button>
+                </div>
+
+                <!-- Day names -->
+                <div class="cal-days-head">
+                  <span *ngFor="let d of dayNames">{{ d }}</span>
+                </div>
+
+                <!-- Days grid -->
+                <div class="cal-grid">
+                  <button *ngFor="let d of calendarDays"
+                    class="cal-day"
+                    [class.empty]="!d"
+                    [class.today]="isToday(d)"
+                    [class.selected]="isSelectedDay(d)"
+                    [disabled]="!d"
+                    (click)="pickDay(d)">
+                    {{ d || '' }}
+                  </button>
+                </div>
+
+              </div>
+              <div class="fixed inset-0 z-[49]" (click)="showCalendar = false"></div>
+            }
+          </div>
+        </div>
+
+        <!-- File upload -->
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">attach_file</span>แนบไฟล์ (รูปภาพ / เอกสาร)
+          </label>
+
+          <label class="upload-zone">
+            <input type="file" multiple hidden (change)="onFiles($event)" accept="image/*,.pdf,.doc,.docx">
+            <span class="material-symbols-outlined upload-icon">cloud_upload</span>
+            <p class="upload-title">คลิกเพื่อเลือกไฟล์</p>
+            <p class="upload-sub">รองรับหลายไฟล์ · รูปไฟล์แรกจะเป็นปก</p>
+          </label>
+
+          <!-- File previews -->
+          @if (filePreviews.length > 0) {
+            <div class="file-preview-list">
+              @for (fp of filePreviews; track fp.name; let i = $index) {
+                <div class="file-chip" [class.file-chip-cover]="i === 0">
+                  @if (fp.previewUrl) {
+                    <img [src]="fp.previewUrl" class="chip-img" />
+                  } @else {
+                    <span class="material-symbols-outlined chip-icon">description</span>
+                  }
+                  <div class="chip-info">
+                    <p class="chip-name">{{ fp.name }}</p>
+                    @if (i === 0) { <p class="chip-cover-label">ปก</p> }
+                  </div>
+                  <button class="chip-remove" (click)="removeFile(i)">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-foot">
+        <button class="btn-save" (click)="save()" [disabled]="saving || !form.title || !selectedDate">
+          <span class="material-symbols-outlined">{{ saving ? 'hourglass_top' : 'save' }}</span>
+          {{ saving ? 'กำลังบันทึก...' : 'บันทึก' }}
+        </button>
+        <button class="btn-cancel" (click)="closeAdd()" [disabled]="saving">ยกเลิก</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ===== EDIT MODAL ===== -->
+@if (showEditModal) {
+  <div class="modal-backdrop" [class.closing]="isEditClosing" (click)="closeEdit()">
+    <div class="modal-card" [class.closing]="isEditClosing" (click)="$event.stopPropagation()">
+
+      <div class="modal-head">
+        <div class="flex items-center gap-3">
+          <div class="modal-icon" style="background:#EFF6FF;color:#3B82F6">
+            <span class="material-symbols-outlined">edit</span>
+          </div>
+          <div>
+            <h2 class="modal-title">แก้ไขกิจกรรม</h2>
+            <p class="modal-sub">แก้ไขข้อมูลกิจกรรม</p>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeEdit()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">title</span>ชื่อกิจกรรม <span class="text-red-400">*</span>
+          </label>
+          <input [(ngModel)]="editForm.title" type="text" class="field-input" />
+        </div>
+
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">description</span>รายละเอียด
+          </label>
+          <textarea [(ngModel)]="editForm.description" rows="3" class="field-input resize-none"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">calendar_month</span>วันที่เข้าร่วม <span class="text-red-400">*</span>
+          </label>
+          <div class="date-wrapper">
+            <button type="button" class="date-btn" (click)="showEditCal = !showEditCal; $event.stopPropagation()">
+              <span class="material-symbols-outlined">event</span>
+              <span [class.text-gray-400]="!editDate">{{ editDate ? editDisplayDate : 'เลือกวันที่' }}</span>
+              <span class="material-symbols-outlined ml-auto text-gray-400">{{ showEditCal ? 'expand_less' : 'expand_more' }}</span>
+            </button>
+            @if (showEditCal) {
+              <div class="calendar-panel" (click)="$event.stopPropagation()">
+                <div class="cal-head">
+                  <button class="cal-nav" (click)="prevEditCal()">‹</button>
+                  <span class="cal-title">{{ monthNames[editCalMonth] }} {{ editCalYear + 543 }}</span>
+                  <button class="cal-nav" (click)="nextEditCal()">›</button>
+                </div>
+                <div class="cal-days-head">
+                  <span *ngFor="let d of dayNames">{{ d }}</span>
+                </div>
+                <div class="cal-grid">
+                  <button *ngFor="let d of editCalDays" class="cal-day"
+                    [class.empty]="!d" [class.today]="isToday(d)" [class.selected]="isEditSelected(d)"
+                    [disabled]="!d" (click)="pickEditDay(d)">{{ d || '' }}</button>
+                </div>
+              </div>
+              <div class="fixed inset-0 z-[49]" (click)="showEditCal = false"></div>
+            }
+          </div>
+        </div>
+
+        <!-- ไฟล์เดิม -->
+        <div class="field" *ngIf="editExistingFiles.length > 0">
+          <label class="field-label">
+            <span class="material-symbols-outlined">attach_file</span>ไฟล์ที่มีอยู่
+          </label>
+          <div class="file-preview-list">
+            @for (f of editExistingFiles; track f.file_id; let i = $index) {
+              <div class="file-chip" [class.file-chip-cover]="i === 0">
+                @if (isImage(f)) {
+                  <img [src]="fileUrl(f.file_url)" class="chip-img" />
+                } @else {
+                  <span class="material-symbols-outlined chip-icon">description</span>
+                }
+                <div class="chip-info">
+                  <p class="chip-name">{{ f.file_url.split('/').pop() }}</p>
+                  @if (i === 0) { <p class="chip-cover-label">ปก</p> }
+                </div>
+                <button class="chip-remove" (click)="removeExistingFile(f.file_id)">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- อัปโหลดไฟล์ใหม่ -->
+        <div class="field">
+          <label class="field-label">
+            <span class="material-symbols-outlined">cloud_upload</span>เพิ่มไฟล์ใหม่
+          </label>
+          <label class="upload-zone upload-zone-sm">
+            <input type="file" multiple hidden (change)="onEditFiles($event)" accept="image/*,.pdf,.doc,.docx">
+            <span class="material-symbols-outlined" style="font-size:24px;color:#f59e0b">add_photo_alternate</span>
+            <p class="upload-title" style="font-size:13px">คลิกเพื่อเพิ่มไฟล์</p>
+          </label>
+          @if (editNewFiles.length > 0) {
+            <div class="file-preview-list" style="margin-top:8px">
+              @for (fp of editNewFiles; track fp.name; let i = $index) {
+                <div class="file-chip">
+                  @if (fp.previewUrl) {
+                    <img [src]="fp.previewUrl" class="chip-img" />
+                  } @else {
+                    <span class="material-symbols-outlined chip-icon">description</span>
+                  }
+                  <div class="chip-info"><p class="chip-name">{{ fp.name }}</p></div>
+                  <button class="chip-remove" (click)="removeEditNewFile(i)">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-save" (click)="saveEdit()" [disabled]="saving2 || !editForm.title || !editDate">
+          <span class="material-symbols-outlined">{{ saving2 ? 'hourglass_top' : 'save' }}</span>
+          {{ saving2 ? 'กำลังบันทึก...' : 'บันทึก' }}
+        </button>
+        <button class="btn-cancel" (click)="closeEdit()">ยกเลิก</button>
+        <button class="btn-delete" (click)="showDeleteConfirm = true">
+          <span class="material-symbols-outlined">delete</span>ลบ
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ===== DELETE CONFIRM ===== -->
+@if (showDeleteConfirm) {
+  <div class="modal-backdrop" (click)="showDeleteConfirm = false">
+    <div class="delete-card" (click)="$event.stopPropagation()">
+      <div class="delete-icon"><span class="material-symbols-outlined">delete_forever</span></div>
+      <h3 class="delete-title">ยืนยันการลบ</h3>
+      <p class="delete-sub">กิจกรรมและไฟล์แนบทั้งหมดจะถูกลบถาวร</p>
+      <div class="delete-actions">
+        <button class="btn-cancel" (click)="showDeleteConfirm = false">ยกเลิก</button>
+        <button class="btn-delete" (click)="deleteActivity()">
+          <span class="material-symbols-outlined">delete</span>ลบ
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== DETAIL MODAL ===== -->
+@if (selected) {
+  <div class="modal-backdrop" [class.closing]="isDetailClosing" (click)="closeDetail()">
+    <div class="modal-card modal-detail" [class.closing]="isDetailClosing" (click)="$event.stopPropagation()">
+
+      <!-- COVER BIG -->
+      <div class="detail-cover">
+        @if (coverOf(selected)) {
+          <img [src]="coverOf(selected)" class="detail-cover-img" />
+        } @else {
+          <div class="detail-cover-placeholder">
+            <span class="material-symbols-outlined">event_note</span>
+          </div>
+        }
+        <div class="detail-cover-overlay"></div>
+        <button class="detail-close" (click)="closeDetail()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- BODY -->
+      <div class="detail-body">
+
+        <h2 class="detail-title">{{ selected.title }}</h2>
+
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">calendar_month</span>
+          <div>
+            <p class="detail-label">วันที่เข้าร่วม</p>
+            <p class="detail-val">{{ formatDate(selected.activity_date) }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="material-symbols-outlined detail-icon">description</span>
+          <div>
+            <p class="detail-label">รายละเอียด</p>
+            <p class="detail-val">{{ selected.description || '-' }}</p>
+          </div>
+        </div>
+
+        <!-- Files -->
+        @if (selected.files.length > 0) {
+          <div class="detail-row">
+            <span class="material-symbols-outlined detail-icon">attach_file</span>
+            <div class="w-full">
+              <p class="detail-label">ไฟล์แนบ ({{ selected.files.length }} ไฟล์)</p>
+              <div class="file-gallery">
+                @for (f of selected.files; track f.file_id) {
+                  <a [href]="fileUrl(f.file_url)" target="_blank" class="gallery-item">
+                    @if (isImage(f)) {
+                      <img [src]="fileUrl(f.file_url)" class="gallery-img" />
+                    } @else {
+                      <div class="gallery-doc">
+                        <span class="material-symbols-outlined">description</span>
+                      </div>
+                    }
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="closeDetail()">ปิด</button>
+      </div>
+
+    </div>
+  </div>
+}

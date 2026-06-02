@@ -2,17 +2,25 @@
    PAGE
 ========================= */
 
-.activity-page{
-  padding:28px;
+.activity-page {
+  background: #eef2f6;
+  border-radius: 28px;
+  padding: 20px;
 }
+
 .activity-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  min-height: 420px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+}
 
-  width: 100%;
-
-  display: flex;
-
-  align-items: flex-start;
-
+.page-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: 2px;
 }
 /* =========================
    HEADER
@@ -74,45 +82,40 @@
         GRID
 ========================= */
 
-.certificate-grid{
-
-  display:flex;
-
-  flex-wrap:wrap;
-
-  gap:28px;
-
-  justify-content:flex-start;
-
-  align-items:flex-start;
-
+.certificate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+    padding: 16px;
 }
 
 /* =========================
         CARD
 ========================= */
 
-.certificate-card{
+.certificate-card {
+  position: relative;
+  padding: 20px;
+  min-height: 140px;
+  border-radius: 24px;
 
-  width:440px;
+ 
+  border: 1px solirgb(0, 195, 255)30;
+  background: white;
 
-  min-height:255px;
-
-  background:#fff;
-
-  border-radius:28px;
-
-  border:1px solid #edf2f7;
-
-  overflow:hidden;
-
-  display:flex;
-
-  box-shadow:
-    0 6px 18px rgba(15,23,42,.05);
+  transition: .25s;
 
 }
-
+.certificate-card:hover {
+   background: #f8fbff;
+  transform:
+    translateY(-6px)
+    scale(1.02);
+   border: 1px solid #0080ff;
+  box-shadow:
+    0 16px 40px rgba(15,23,42,.12);
+  cursor: pointer;
+}
 /* =========================
         LEFT
 ========================= */
@@ -127,6 +130,7 @@
 
   flex-direction:column;
 
+  min-width:0;
 }
 
 /* =========================
@@ -135,8 +139,8 @@
 
 .certificate-right{
 
-  width:120px;
-
+  width: 90px;
+   flex-shrink: 0;
   background:
     linear-gradient(
       180deg,
@@ -155,9 +159,17 @@
   justify-content:center;
 
   position:relative;
-
+  transition: background 0.25s ease;
 }
+.certificate-card:hover .certificate-right {
 
+  background:
+    linear-gradient(
+      180deg,
+      #e4efff,
+      #dce9ff
+    );
+}
 .certificate-right::before{
 
   content:"✦";
@@ -190,27 +202,36 @@
         FILE ICON
 ========================= */
 
-.certificate-file-box{
+.certificate-file-box {
 
-  width:74px;
+  position: absolute;
 
-  height:74px;
+  top: 20px;
 
-  border-radius:22px;
+  right: 20px;
 
-  background:white;
+  width: 52px;
 
-  display:flex;
+  height: 52px;
 
-  align-items:center;
+  border-radius: 14px;
 
-  justify-content:center;
+  background: #eef4ff;
 
-  box-shadow:
-    0 10px 24px rgba(59,130,246,.12);
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
 
 }
+.certificate-card:hover .certificate-file-box {
 
+  transform: scale(1.08);
+
+  box-shadow:
+    0 14px 30px rgba(59,130,246,.18);
+}
 .certificate-file-box .material-symbols-outlined{
 
   font-size:42px;
@@ -245,7 +266,7 @@
 
   font-weight:700;
 
-  margin-bottom:24px;
+  margin-bottom:16px;
 
 }
 
@@ -255,9 +276,8 @@
 
 .certificate-title{
 
-  font-size:28px;
-
-  font-weight:800;
+ font-size: 20px;
+  font-weight: 700;
 
   color:#172554;
 
@@ -311,61 +331,283 @@
         DOWNLOAD
 ========================= */
 
-.download-btn{
+.action-btn {
+  height: 38px;
 
-  width:190px;
+  border-radius: 12px;
 
-  height:44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  border-radius:14px;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+.certificate-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  animation:
+    fadeUp .4s ease;
+}
+@keyframes fadeUp {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      translateY(10px);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      translateY(0);
+
+  }
+
+}
+.download-btn {
+
+  flex: 1;
+
+  height: 44px;
+
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    #dff6df,
+    #c8f0c8
+  );
+
+  color: #15803d;
+
+  font-weight: 700;
+
+  letter-spacing: .3px;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 6px 18px rgba(34,197,94,.15);
+
+  transition: all .25s ease;
+
+}
+.download-btn:hover {
+
+   transform:
+    translateY(-3px)
+    scale(1.02);
+
+  border: 1px solid #3cff00;
+
+ 
 
   background:
     linear-gradient(
       135deg,
-      #e8f9e8,
-      #dff5df
+      #d2f1d2,
+      #bdecbc
     );
+}
+.edit-btn {
+
+  width: 44px;
+  height: 44px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: #eef4ff;
+
+  color: #2563eb;
+
+  font-size: 18px;
+
+  box-shadow:
+    0 4px 14px rgba(37,99,235,.12);
+
+  transition: all .25s ease;
+
+}
+.edit-btn:hover {
+
+  transform:
+    translateY(-3px)
+    scale(1.08);
+
+  background: #dbeafe;
+  border: 1px solid #ff8800;
+  box-shadow:
+    0 10px 20px rgba(37,99,235,.20);
+
+}
+.delete-btn {
+
+  width: 44px;
+  height: 44px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: #fff1f2;
+
+  color: #ef4444;
+
+  font-size: 18px;
+
+  box-shadow:
+    0 4px 14px rgba(239,68,68,.10);
+
+  transition: all .25s ease;
+
+}
+.delete-btn:hover {
+
+  transform:
+    translateY(-3px)
+    scale(1.08);
+
+  background: #ffe4e6;
+  border: 1px solid #ff2020;
+  box-shadow:
+    0 10px 20px rgba(239,68,68,.18);
+
+}
+.download-btn:active,
+.edit-btn:active,
+.delete-btn:active {
+
+  transform:
+    translateY(1px)
+    scale(.97);
+   overflow: hidden;
+}
+.action-btn:hover {
+
+  transform: translateY(-2px);
+
+}
+.edit-btn:hover,
+.delete-btn:hover{
+
+  transform:translateY(-2px);
+
+}
+.delete-modal{
+
+  width:380px;
+
+  background:white;
+
+  border-radius:24px;
+
+  padding:24px;
+
+  text-align:center;
+}
+.delete-actions{
 
   display:flex;
 
-  align-items:center;
-
   justify-content:center;
 
-  gap:8px;
+  gap:12px;
 
-  text-decoration:none;
+  margin-top:20px;
+}
+.btn-delete{
 
-  color:#16a34a;
+  border:none;
 
-  font-weight:700;
+  background:#ef4444;
 
+  color:white;
+
+  padding:10px 18px;
+
+  border-radius:12px;
+
+  cursor:pointer;
 }
 /* =========================
    EMPTY
 ========================= */
 
-.empty-content{
-
-  @apply flex flex-col items-center text-center;
+.empty-content {
+  min-height: 356px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
 }
 
-.empty-icon{
-
-  @apply w-16 h-16 bg-gray-100 text-gray-400
-         rounded-xl flex items-center justify-center;
-
-  margin-bottom:16px;
+.empty-icon-wrap {
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.empty-title{
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #3b82f6;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
 
-  font-size:24px;
-  font-weight:700;
+.empty-icon:hover {
+  transform: translateY(-4px) scale(1.05);
+}
 
-  color:#111827;
+.empty-icon .material-symbols-outlined {
+  font-size: 36px;
+}
 
-  margin-bottom:6px;
+.empty-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: rgba(59, 130, 246, 0.2);
+  filter: blur(12px);
+  z-index: 0;
+  transform: translateY(4px) scale(0.9);
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
 }
 
 .empty-desc{
@@ -381,20 +623,30 @@
    BUTTON
 ========================= */
 
-.btn-primary{
-
-  @apply flex items-center gap-2
-         bg-[#F59E0B] text-white text-sm px-4 py-2
-         rounded-lg transition;
-
-  box-shadow:0 4px 10px rgba(245,158,11,.35);
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F59E0B;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
 }
 
-.btn-primary:hover{
+.btn-primary:hover {
+  background: #ea980c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
 
-  background:#ea980c;
-
-  transform:translateY(-1px);
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 /* =========================
@@ -846,14 +1098,5 @@
     transform: scale(1);
 
   }
-
-}
-.activity-card {
-
-  width: 100%;
-
-  display: block !important;
-
-  padding: 0 !important;
 
 }
