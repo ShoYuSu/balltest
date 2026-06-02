@@ -5,28 +5,30 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 
-interface PloScore {
-  label: string;
-  score: number;
+interface EvalSubItem {
+  id: string;
+  code: string;
+  name: string;
+  status: 'passed' | 'failed' | null;
+}
+
+interface EvalCard {
+  id: string;
+  type: 'PLO' | 'YLO';
+  code: string;
+  name: string;
+  subItems: EvalSubItem[];
 }
 
 interface StudentAssessment {
-  id: string; // Internal DB ID (student_id)
+  id: string;
   name: string;
-  studentId: string; // รหัสนักศึกษา
+  studentId: string;
   status: 'pending' | 'passed' | 'failed';
   statusText: string;
   img: string;
-  plos?: PloScore[];
+  plos?: { label: string; score: number }[];
   average?: number | null;
-}
-
-// 👉 Interface สำหรับรองรับโครงสร้างตัวชี้วัด
-interface EvalScore {
-  code: string;
-  name: string;
-  type: 'PLO' | 'Sub-PLO' | 'YLO';
-  score: number;
 }
 
 @Component({
@@ -40,30 +42,38 @@ export class PloAssessmentComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // --- ตัวแปรจัดการหน้าจอและการค้นหา ---
   activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
   currentPage = signal(1);
   itemsPerPage = 5;
   searchQuery = signal('');
   students = signal<StudentAssessment[]>([]);
 
-  // --- ตัวแปรสำหรับคุม Modal ประเมินผล ---
   isEvalModalOpen = signal(false);
   isSaving = signal(false);
-  isLoadingEval = signal(false); // ควบคุมสถานะโหลดข้อมูลใน Modal
+  isLoadingEval = signal(false);
   selectedStudent = signal<StudentAssessment | null>(null);
-  evalScores = signal<EvalScore[]>([]); // เก็บโครงสร้างและคะแนนที่จะประเมิน
+
+  evalCards = signal<EvalCard[]>([]);
 
   ngOnInit() {
     this.loadData();
   }
 
-  // โหลดรายชื่อนักศึกษาทั้งหมด
+  // 1. ดึงรายชื่อนักศึกษาจากฐานข้อมูล
+  // 1. ดึงรายชื่อนักศึกษาจากฐานข้อมูล
   loadData() {
     this.http
-      .get<any[]>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
+      // 👉 แก้ตรงนี้: เปลี่ยนจาก <any[]> เป็น <any> เฉยๆ ครับ
+      .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
+          // คราวนี้มันจะไม่ด่าบรรทัดนี้แล้วครับ
+          if (data.error) {
+            console.error('Database Error:', data.error);
+            return;
+          }
+          if (!Array.isArray(data)) return;
+
           const formattedData = data.map((s) => ({
             ...s,
             img: s.img
@@ -75,28 +85,27 @@ export class PloAssessmentComponent implements OnInit {
         error: (err) => console.error('Failed to load PLO assessments', err),
       });
   }
-
-  // --- ส่วนของการจัดการ Modal ประเมินผล ---
-
+  // 2. เปิด Modal และยิง API ดึงโครงสร้าง PLO/YLO (ของจริง ไม่มี Mock)
   openEvalModal(student: StudentAssessment, event: Event) {
-    event.stopPropagation(); // ป้องกันการคลิกทะลุไปหน้าอื่น
+    event.stopPropagation();
     this.selectedStudent.set(student);
     this.isEvalModalOpen.set(true);
-    this.isLoadingEval.set(true); // เปิดสถานะกำลังโหลด
-    this.evalScores.set([]); // เคลียร์ข้อมูลเก่าออกก่อน
+    this.isLoadingEval.set(true);
+    this.evalCards.set([]); // เคลียร์ของเก่า
 
-    // 👉 ยิง API ไปดึงโครงสร้างตัวชี้วัด และคะแนนเก่า (ถ้ามี) ของนักศึกษาคนนี้
     this.http
       .get<
-        EvalScore[]
-      >(`${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}`)
+        EvalCard[]
+      >(`${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          this.evalScores.set(data);
-          this.isLoadingEval.set(false); // ปิดสถานะโหลดเมื่อได้ข้อมูลแล้ว
+          if (Array.isArray(data)) {
+            this.evalCards.set(data); // เอาข้อมูลจาก DB มาใส่เลย
+          }
+          this.isLoadingEval.set(false);
         },
         error: (err) => {
-          console.error('Failed to load evaluation structure', err);
+          console.error('Failed to load structure', err);
           this.isLoadingEval.set(false);
         },
       });
@@ -107,56 +116,65 @@ export class PloAssessmentComponent implements OnInit {
     this.selectedStudent.set(null);
   }
 
+  // 3. จัดการสถานะ ผ่าน/ไม่ผ่าน บนหน้าจอ
+  setSubItemStatus(cardIndex: number, subIndex: number, status: 'passed' | 'failed') {
+    const cards = [...this.evalCards()];
+    cards[cardIndex].subItems[subIndex].status = status;
+    this.evalCards.set(cards);
+  }
+
+  // 4. คำนวณหลอดสีเขียว
+  calculateProgress(card: EvalCard): number {
+    if (!card.subItems || card.subItems.length === 0) return 0;
+    const passedCount = card.subItems.filter((s) => s.status === 'passed').length;
+    return Math.round((passedCount / card.subItems.length) * 100);
+  }
+
+  // 5. บันทึกข้อมูลลงฐานข้อมูล (ของจริง ไม่มี Timeout หลอก)
   saveEvaluation() {
     const student = this.selectedStudent();
     if (!student) return;
 
     this.isSaving.set(true);
+
     const payload = {
       student_id: student.id,
-      scores: this.evalScores().map((item) => ({ code: item.code, score: item.score })),
+      evaluations: this.evalCards(),
     };
 
-    // ส่งคะแนนไปบันทึก
     this.http.post<any>(`${environment.apiUrl}/save_plo_assessment.php`, payload).subscribe({
       next: (res) => {
         if (res.status === 'success') {
           this.closeEvalModal();
-          this.loadData(); // โหลดข้อมูลใหม่เพื่ออัปเดตหน้าหลัก
+          this.loadData(); // รีเฟรชข้อมูลหน้าตารางให้เป็นอัปเดตล่าสุด
         }
         this.isSaving.set(false);
       },
       error: (err) => {
-        console.error('Error saving data', err);
+        console.error('Error saving evaluation', err);
         this.isSaving.set(false);
       },
     });
   }
 
-  // --- ส่วนการจัดการข้อมูลตาราง (ตัวกรอง, แบ่งหน้า) ---
-
+  // --- ส่วนของ Filter & Pagination ด้านล่าง ---
   filteredStudents = computed(() => {
     const tab = this.activeTab();
     const query = this.searchQuery().toLowerCase().trim();
     let result = this.students();
-
     if (tab === 'รอประเมิน') result = result.filter((s) => s.status === 'pending');
     if (tab === 'ผ่าน') result = result.filter((s) => s.status === 'passed');
     if (tab === 'ไม่ผ่าน') result = result.filter((s) => s.status === 'failed');
-
-    if (query) {
+    if (query)
       result = result.filter(
         (s) => s.name.toLowerCase().includes(query) || s.studentId.toLowerCase().includes(query),
       );
-    }
-
     return result;
   });
 
   paginatedStudents = computed(() => {
-    const filtered = this.filteredStudents();
     const start = (this.currentPage() - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
+    return this.filteredStudents().slice(start, start + this.itemsPerPage);
   });
 
   totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.itemsPerPage) || 1);
@@ -183,7 +201,6 @@ export class PloAssessmentComponent implements OnInit {
     this.activeTab.set(tab);
     this.currentPage.set(1);
   }
-
   goToPage(page: number) {
     this.currentPage.set(page);
   }
@@ -193,7 +210,6 @@ export class PloAssessmentComponent implements OnInit {
   prevPage() {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
-
   getProgressBarColor(score: number): string {
     return score >= 50 ? 'bg-[#10B981]' : 'bg-[#EF4444]';
   }
