@@ -68,12 +68,12 @@ export class LoginComponent {
 
       // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
       if (role === 'student') {
-        // ✅ ไปที่หน้านักศึกษา (พอร์ต 4200) เพื่อให้โชว์เมนูที่คุณส่งมา
+        // ไปที่หน้านักศึกษา (พอร์ต 4200) เพื่อให้โชว์เมนูที่คุณส่งมา
         this.router.navigate(['/personal-data']);
       } else {
         // ⚠️ หากคุณต้องการให้อาจารย์/แอดมิน ไปหน้า Dashboard ของระบบพอร์ต 4201 เหมือนเดิม
         // แต่ถ้าต้องการให้อยู่ในหน้าเดียวกัน ให้เปลี่ยนเป็น this.router.navigate(['/admin-dashboard']);
-        window.location.href = `http://localhost:4201/admin/dashboard?role=${role}&token=${res.token}&user=${res.full_name}`;
+        window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${res.token}&user=${res.full_name}`;
       }
 
     } else {
