@@ -53,7 +53,7 @@ export class PloComponent implements OnInit {
   public columns: TableColumnModel[] = [
     {
       columnDef: 'curriculum_id',
-      header: 'ID หลักสูตร',
+      header: 'ID',
       tag: 'text',
       display: true,
       width: 'small',
@@ -144,7 +144,7 @@ export class PloComponent implements OnInit {
 
   initForms() {
     this.courseForm = this.fb.group({
-      curriculum_id: ['', Validators.required],
+      // curriculum_id: ['', Validators.required],
       curriculum_name: ['', Validators.required],
       dept_id: [1, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
@@ -184,6 +184,8 @@ export class PloComponent implements OnInit {
         }
 
         const curriculums = res.curriculums || [];
+
+        curriculums.sort((a: any, b: any) => Number(a.curriculum_id) - Number(b.curriculum_id));
         const plos = res.plos || [];
         const ylos = res.ylos || [];
         const subPlos = res.sub_plos || []; // ✨ ดึงข้อมูล sub_plos ย่อยจากหลังบ้าน
@@ -261,7 +263,7 @@ export class PloComponent implements OnInit {
       curriculum_id: '',
       curriculum_name: '',
     });
-    this.courseForm.get('curriculum_id')?.enable();
+    this.courseForm.get('curriculum_id')?.disable();
     this.showCourseModal = true;
   }
 
@@ -382,7 +384,7 @@ export class PloComponent implements OnInit {
     const body = {
       type: 'curriculum',
       is_edit: this.isEditMode,
-      curriculum_id: formValue.curriculum_id,
+      curriculum_id: this.isEditMode ? formValue.curriculum_id : null,      //curriculum_id: formValue.curriculum_id, 
       curriculum_name: formValue.curriculum_name,
       dept_id: Number(formValue.dept_id),
       year: formValue.year,

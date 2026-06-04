@@ -89,7 +89,7 @@
     <div class="bg-white rounded-[2rem] p-10 w-full max-w-lg shadow-2xl">
       <div class="flex justify-between items-center mb-8 font-bold text-2xl text-slate-800">
         <span>{{ isEditMode ? 'แก้ไขหลักสูตร' : 'สร้างหลักสูตรใหม่' }}</span>
-        <button (click)="closeModals()" class="text-slate-400 hover:text-slate-600">✕</button>
+        <button (click)="closeModals()" class="text-slate-400 hover:text-slate-600">close</button>
       </div>
 
       <form [formGroup]="courseForm" class="space-y-6">
@@ -138,7 +138,7 @@
           }
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <!-- <div class="grid grid-cols-2 gap-4"> โค้ดเก่าเอากรอก
           <div>
             <label class="text-sm font-semibold block mb-2 text-slate-700">รหัสหลักสูตร</label>
             <input
@@ -149,6 +149,29 @@
             />
           </div>
           <div>
+            <label class="text-sm font-semibold block mb-2 text-slate-700">ปีหลักสูตร</label>
+            <input
+              type="number"
+              formControlName="year"
+              placeholder="เช่น 2567"
+              class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
+            />
+          </div>
+        </div> -->
+        <div class="grid grid-cols-2 gap-4">
+          <!-- @if (isEditMode) {
+            <div>
+              <label class="text-sm font-semibold block mb-2 text-slate-700">ID หลักสูตร</label>
+              <input
+                type="text"
+                formControlName="curriculum_id"
+                class="w-full border rounded-xl p-3 bg-slate-50 outline-none text-sm text-gray-500 cursor-not-allowed"
+                readonly
+              />
+            </div>
+          } -->
+
+          <div [ngClass]="isEditMode ? '' : 'col-span-2'">
             <label class="text-sm font-semibold block mb-2 text-slate-700">ปีหลักสูตร</label>
             <input
               type="number"
