@@ -1,6 +1,5 @@
-import { Component, signal, } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core'; // 👈 นำเข้า OnInit
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-
 
 @Component({
   selector: 'app-root',
@@ -8,6 +7,13 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit { // 👈 ใส่ implements OnInit
   protected readonly title = signal('advisor-system');
+
+  // ⭐️ เพิ่มฟังก์ชันนี้เพื่อรับสัญญาณเคลียร์ข้อมูลจากระบบ 4201
+  ngOnInit() {
+    if (window.location.href.includes('action=logout')) {
+      localStorage.clear();
+    }
+  }
 }

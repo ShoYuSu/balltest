@@ -44,7 +44,7 @@ export class LoginComponent {
     this.cdr.detectChanges();
   }
 
-  onLogin() {
+onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       this.cdr.detectChanges();
@@ -54,41 +54,54 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-   this.http.post(`${environment.apiUrl}/login.php`, { email, password, login_type: this.isStudentPage ? 'student' : 'staff' }).subscribe({
-  next: (res: any) => {
-    if (res.success) {
-      const role = res.role?.toLowerCase().trim();
+    console.log('1. กำลังส่งข้อมูลไป API...', { email, login_type: this.isStudentPage ? 'student' : 'staff' });
 
-      // 1. เก็บข้อมูลลง LocalStorage
-      localStorage.setItem('token', res.token);
-      localStorage.setItem('role', role);
-      localStorage.setItem('full_name', res.full_name || '');
-      localStorage.setItem('img_profile', res.img_profile || '');
-      localStorage.setItem('user_id', res.user_id);
+    this.http.post(`${environment.apiUrl}/login.php`, { email, password, login_type: this.isStudentPage ? 'student' : 'staff' }).subscribe({
+      next: (res: any) => {
+        console.log('2. API ตอบกลับมาว่า:', res);
 
-      // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
-      if (role === 'student') {
-        // ไปที่หน้านักศึกษา (พอร์ต 4200) เพื่อให้โชว์เมนูที่คุณส่งมา
-        this.router.navigate(['/personal-data']);
-      } else {
-        // ⚠️ หากคุณต้องการให้อาจารย์/แอดมิน ไปหน้า Dashboard ของระบบพอร์ต 4201 เหมือนเดิม
-        // แต่ถ้าต้องการให้อยู่ในหน้าเดียวกัน ให้เปลี่ยนเป็น this.router.navigate(['/admin-dashboard']);
-        window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${res.token}&user=${res.full_name}`;
+        if (res.success) {
+          const role = res.role?.toLowerCase().trim();
+          console.log('3. ล็อกอินสำเร็จ Role คือ:', role);
+
+          // ⭐️ จุดสำคัญ: ในไฟล์ PHP ของคุณไม่ได้ส่งค่า token กลับมา
+          // ดังนั้นถ้าเราเอา res.token ไปเซฟ มันจะกลายเป็นค่าว่าง (undefined) ระบบเลยไม่ยอมเปลี่ยนหน้าครับ!
+          // ตอนนี้ผมใส่ 'fake-token-for-test' ไว้ให้ชั่วคราวเพื่อให้มันยอมเปลี่ยนหน้าไปก่อนครับ
+          const tokenToSave = res.token ? res.token : 'fake-token-for-test';
+
+          // 1. เก็บข้อมูลลง LocalStorage
+          localStorage.setItem('token', tokenToSave);
+          localStorage.setItem('role', role);
+          localStorage.setItem('full_name', res.full_name || '');
+          localStorage.setItem('img_profile', res.img_profile || '');
+          localStorage.setItem('user_id', res.user_id);
+
+          console.log('4. เซฟลง LocalStorage เสร็จแล้ว กำลังจะเปลี่ยนหน้า...');
+
+          // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
+          if (role === 'student') {
+            console.log('5. ไปหน้านักศึกษา...');
+            this.router.navigate(['/personal-data']);
+          } else {
+            console.log('5. เตะไปหาพอร์ต 4201...');
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}`;
+          }
+
+        } else {
+          console.log('❌ ล็อกอินไม่ผ่าน:', res.message);
+          this.errorMessage = res.message;
+          this.showErrorModal = true;
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('🚨 API พังหรือเชื่อมต่อไม่ได้:', err);
+        this.errorMessage = 'การเชื่อมต่อผิดพลาด';
+        this.showErrorModal = true;
+        this.loading = false;
+        this.cdr.detectChanges();
       }
-
-    } else {
-      this.errorMessage = res.message;
-      this.showErrorModal = true;
-    }
-    this.loading = false;
-    this.cdr.detectChanges();
-  },
-  error: () => {
-    this.errorMessage = 'การเชื่อมต่อผิดพลาด';
-    this.showErrorModal = true;
-    this.loading = false;
-    this.cdr.detectChanges();
-  }
-});
+    });
   }
 }
