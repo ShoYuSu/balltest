@@ -44,7 +44,7 @@ export class LoginComponent {
     this.cdr.detectChanges();
   }
 
-onLogin() {
+  onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       this.cdr.detectChanges();
@@ -64,17 +64,18 @@ onLogin() {
           const role = res.role?.toLowerCase().trim();
           console.log('3. ล็อกอินสำเร็จ Role คือ:', role);
 
-          // ⭐️ จุดสำคัญ: ในไฟล์ PHP ของคุณไม่ได้ส่งค่า token กลับมา
-          // ดังนั้นถ้าเราเอา res.token ไปเซฟ มันจะกลายเป็นค่าว่าง (undefined) ระบบเลยไม่ยอมเปลี่ยนหน้าครับ!
-          // ตอนนี้ผมใส่ 'fake-token-for-test' ไว้ให้ชั่วคราวเพื่อให้มันยอมเปลี่ยนหน้าไปก่อนครับ
           const tokenToSave = res.token ? res.token : 'fake-token-for-test';
+          
+          // ⭐️ เก็บข้อมูลสิทธิ์ (Permissions) จาก API (ถ้ามี)
+          const permissions = res.permissions || [];
 
-          // 1. เก็บข้อมูลลง LocalStorage
+          // 1. เก็บข้อมูลลง LocalStorage ของ 4200 ด้วย
           localStorage.setItem('token', tokenToSave);
           localStorage.setItem('role', role);
           localStorage.setItem('full_name', res.full_name || '');
           localStorage.setItem('img_profile', res.img_profile || '');
           localStorage.setItem('user_id', res.user_id);
+          localStorage.setItem('permissions', JSON.stringify(permissions)); // เซฟสิทธิ์ลงเครื่อง
 
           console.log('4. เซฟลง LocalStorage เสร็จแล้ว กำลังจะเปลี่ยนหน้า...');
 
@@ -84,7 +85,12 @@ onLogin() {
             this.router.navigate(['/personal-data']);
           } else {
             console.log('5. เตะไปหาพอร์ต 4201...');
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}`;
+            
+            // ⭐️ แปลง Array ของสิทธิ์ให้เป็นข้อความยาวๆ เพื่อแนบไปกับ URL
+            const permsString = encodeURIComponent(JSON.stringify(permissions));
+            
+            // ส่งไปพอร์ต 4201 พร้อมแนบสิทธิ์ (&perms=...) ไปด้วย
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${permsString}`;
           }
 
         } else {
