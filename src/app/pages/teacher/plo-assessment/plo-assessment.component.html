@@ -123,7 +123,7 @@
       </div>
 
       @if (filteredStudents().length > 0) {
-        <div class=" mb-10 flex flex-col xl:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">
+        <div class="mb-10 flex flex-col xl:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">
           <p class="text-sm font-medium text-gray-500 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 text-center w-full xl:w-auto">
             แสดง <strong class="text-gray-900">{{ (currentPage() - 1) * itemsPerPage + 1 }}-{{ (currentPage() * itemsPerPage) > filteredStudents().length ? filteredStudents().length : (currentPage() * itemsPerPage) }}</strong>
             จาก <strong class="text-gray-900">{{ filteredStudents().length }}</strong> รายการ
@@ -154,7 +154,7 @@
           </div>
         </div>
       }
- <div class="h-2"></div>
+      <div class="h-2"></div>
     </div>
   }
 
@@ -199,8 +199,10 @@
              [ngClass]="isDragging ? 'cursor-grabbing' : 'cursor-grab'">
 
           <div class="flex flex-row gap-6 items-start w-max px-1 pt-1 h-full">
+
             @for (plo of evalPLOs(); track plo.plo_id; let pIndex = $index) {
-              <div class="min-w-[380px] max-w-[380px] shrink-0 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col h-full max-h-full overflow-hidden cursor-auto" (mousedown)="$event.stopPropagation()">
+              <div class="min-w-[400px] max-w-[400px] shrink-0 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col h-full max-h-full overflow-hidden cursor-auto" (mousedown)="$event.stopPropagation()">
+
                 <div class="p-6 pb-4 border-b border-gray-50 bg-gray-50/30 shrink-0">
                   <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shrink-0 shadow-sm border border-orange-100">
@@ -208,61 +210,68 @@
                     </div>
                     <div>
                       <h4 class="font-extrabold text-gray-900 leading-tight">{{ plo.plo_name }}</h4>
-                      <p class="text-[12px] font-bold text-gray-500 mt-0.5 truncate w-[250px]" [title]="plo.description">{{ plo.description }}</p>
+                      <p class="text-[12px] font-bold text-gray-500 mt-0.5 truncate w-[270px]" [title]="plo.description">{{ plo.description }}</p>
                     </div>
                   </div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">คะแนนความคืบหน้า</span>
+                    <span class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest">ความคืบหน้าภาพรวม (PLO)</span>
                     <span class="text-sm font-black text-orange-500">{{ calculatePLOProgress(plo) }}%</span>
                   </div>
                   <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                     <div class="h-full rounded-full transition-all duration-500 bg-orange-500" [style.width]="calculatePLOProgress(plo) + '%'"></div>
                   </div>
                 </div>
-                <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-grow">
+
+                <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-grow bg-gray-50/20">
                   @for (sub of plo.sub_plos; track sub.sub_plo_id; let sIndex = $index) {
-                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:border-orange-200 transition-colors">
-                      <p class="text-[13px] font-extrabold text-gray-800 mb-1">{{ sub.sub_plo_name }}</p>
-                      <p class="text-[12px] text-gray-500 mb-4">{{ sub.description }}</p>
-                      <div class="flex gap-3">
-                        <button (click)="setSubPLOStatus(pIndex, sIndex, 'passed')" class="flex-1 py-2 rounded-xl border text-[12px] font-bold transition-all cursor-pointer"
-                                [ngClass]="sub.status === 'passed' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
-                          <span class="material-symbols-outlined text-[16px] align-middle mr-1" [class.text-green-500]="sub.status === 'passed'">check_circle</span> ผ่าน
-                        </button>
-                        <button (click)="setSubPLOStatus(pIndex, sIndex, 'failed')" class="flex-1 py-2 rounded-xl border text-[12px] font-bold transition-all cursor-pointer"
-                                [ngClass]="sub.status === 'failed' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
-                          <span class="material-symbols-outlined text-[16px] align-middle mr-1" [class.text-red-500]="sub.status === 'failed'">cancel</span> ไม่ผ่าน
-                        </button>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm transition-colors relative">
+
+                      <div class="flex justify-between items-end mb-3">
+                        <div class="pr-3">
+                          <p class="text-[13px] font-extrabold text-gray-800 mb-0.5">{{ sub.sub_plo_name }}</p>
+                          <p class="text-[11px] text-gray-500 leading-tight">{{ sub.description }}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                          <span class="text-[10px] font-extrabold text-gray-400 uppercase block mb-0.5">SubPLO</span>
+                          <span class="text-xs font-black text-blue-500">{{ calculateSubPLOProgress(sub) }}%</span>
+                        </div>
                       </div>
+                      <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-4 shadow-inner">
+                        <div class="h-full rounded-full transition-all duration-500 bg-blue-500" [style.width]="calculateSubPLOProgress(sub) + '%'"></div>
+                      </div>
+
+                      <div class="space-y-3 border-t border-gray-100 pt-4">
+                        @if (sub.ylos && sub.ylos.length === 0) {
+                          <p class="text-xs text-gray-400 text-center font-bold py-2 bg-gray-50 rounded-lg border border-gray-100">ไม่พบรายการ YLO ในชั้นปีนี้</p>
+                        } @else {
+                          @for (ylo of sub.ylos; track ylo.ylo_id; let yIndex = $index) {
+                            <div class="bg-blue-50/30 p-3 rounded-xl border border-blue-50/50 hover:border-blue-100 transition-colors">
+                              <div class="flex items-start gap-2 mb-3">
+                                <span class="material-symbols-outlined text-[16px] text-blue-400 mt-0.5">flag</span>
+                                <div>
+                                  <h5 class="text-[12px] font-extrabold text-gray-700 leading-tight mb-0.5">{{ ylo.ylo_name }}</h5>
+                                  <p class="text-[11px] text-gray-500 leading-tight">{{ ylo.description }}</p>
+                                </div>
+                              </div>
+                              <div class="flex gap-2 ml-6">
+                                <button (click)="setYLOStatus(pIndex, sIndex, yIndex, 'passed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                                        [ngClass]="ylo.status === 'passed' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
+                                  <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-green-500]="ylo.status === 'passed'">check_circle</span> ผ่าน
+                                </button>
+                                <button (click)="setYLOStatus(pIndex, sIndex, yIndex, 'failed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                                        [ngClass]="ylo.status === 'failed' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
+                                  <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-red-500]="ylo.status === 'failed'">cancel</span> ไม่ผ่าน
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        }
+                      </div>
+
                     </div>
                   }
                 </div>
-              </div>
-            }
 
-            @for (ylo of evalYLOs(); track ylo.ylo_id; let yIndex = $index) {
-              <div class="min-w-[320px] max-w-[320px] shrink-0 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col h-full max-h-full overflow-hidden cursor-auto" (mousedown)="$event.stopPropagation()">
-                <div class="p-5 flex flex-col h-full overflow-y-auto custom-scrollbar">
-                  <div class="flex items-center gap-3 mb-4 shrink-0">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0 shadow-sm border border-blue-100">
-                      <span class="material-symbols-outlined text-[20px]">flag</span>
-                    </div>
-                    <div>
-                      <h4 class="font-extrabold text-gray-900 leading-tight">{{ ylo.ylo_name }}</h4>
-                    </div>
-                  </div>
-                  <p class="text-[13px] text-gray-500 leading-relaxed mb-6">{{ ylo.description }}</p>
-                  <div class="flex gap-2 mt-auto pt-4 shrink-0">
-                    <button (click)="setYLOStatus(yIndex, 'passed')" class="flex-1 py-2.5 rounded-xl border text-[12px] font-bold transition-all cursor-pointer"
-                            [ngClass]="ylo.status === 'passed' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
-                      <span class="material-symbols-outlined text-[18px] align-middle mr-1" [class.text-green-500]="ylo.status === 'passed'">check_circle</span> ผ่าน
-                    </button>
-                    <button (click)="setYLOStatus(yIndex, 'failed')" class="flex-1 py-2.5 rounded-xl border text-[12px] font-bold transition-all cursor-pointer"
-                            [ngClass]="ylo.status === 'failed' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'">
-                      <span class="material-symbols-outlined text-[18px] align-middle mr-1" [class.text-red-500]="ylo.status === 'failed'">cancel</span> ไม่ผ่าน
-                    </button>
-                  </div>
-                </div>
               </div>
             }
           </div>

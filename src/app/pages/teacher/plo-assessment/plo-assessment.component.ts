@@ -5,11 +5,19 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 
+interface EvalYLO {
+  ylo_id: number;
+  sub_plo_id: number | null;
+  ylo_name: string;
+  description: string;
+  status: 'passed' | 'failed' | null;
+}
+
 interface EvalSubPLO {
   sub_plo_id: number;
   sub_plo_name: string;
   description: string;
-  status: 'passed' | 'failed' | null;
+  ylos: EvalYLO[];
 }
 
 interface EvalPLO {
@@ -17,13 +25,6 @@ interface EvalPLO {
   plo_name: string;
   description: string;
   sub_plos: EvalSubPLO[];
-}
-
-interface EvalYLO {
-  ylo_id: number;
-  ylo_name: string;
-  description: string;
-  status: 'passed' | 'failed' | null;
 }
 
 interface StudentAssessment {
@@ -65,7 +66,6 @@ export class PloAssessmentComponent implements OnInit {
   selectedStudent = signal<StudentAssessment | null>(null);
 
   evalPLOs = signal<EvalPLO[]>([]);
-  evalYLOs = signal<EvalYLO[]>([]);
 
   ngOnInit() {
     this.loadData();
@@ -76,40 +76,45 @@ export class PloAssessmentComponent implements OnInit {
       .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          if (!Array.isArray(data)) return;
+          // 🛡️ ป้องกันบัคหน้าขาว: ถ้า API ส่งค่าแปลกๆ มาให้หยุดทำงาน
+          if (!data || !Array.isArray(data)) {
+            this.students.set([]);
+            return;
+          }
           const formattedData = data.map((s) => ({
             ...s,
+            // 🛡️ ป้องกันบัคหน้าขาว: ถ้าชื่อหรือรหัสเป็น Null ให้ใส่ค่าว่างไปแทน
+            name: s.name || 'ไม่ระบุชื่อ',
+            studentId: s.studentId || '-',
             img: s.img
               ? `${environment.apiUrl}/${s.img}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=fff7ed&color=ea580c`,
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name || 'User')}&background=fff7ed&color=ea580c`,
           }));
           this.students.set(formattedData);
+        },
+        error: (err) => {
+          console.error('Failed to load data:', err);
+          this.students.set([]);
         },
       });
   }
 
   openEvalPage(student: StudentAssessment, event: Event) {
     setTimeout(() => {
-      // 1. สั่งเลื่อนหน้าต่างหลักขึ้นบนสุด
       window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // 2. สั่งเลื่อนกล่อง div ย่อยๆ กลับไปซ้ายสุด/บนสุด
       const scrollContainers = document.querySelectorAll(
         '.overflow-y-auto, .overflow-x-auto, .custom-scrollbar',
       );
-      scrollContainers.forEach((container) => {
-        container.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-      });
+      scrollContainers.forEach((container) =>
+        container.scrollTo({ top: 0, left: 0, behavior: 'smooth' }),
+      );
     }, 50);
     event.stopPropagation();
     this.selectedStudent.set(student);
     this.showEvalPage.set(true);
     this.isLoadingEval.set(true);
 
-
-
     this.evalPLOs.set([]);
-    this.evalYLOs.set([]);
 
     this.http
       .get<any>(
@@ -117,8 +122,30 @@ export class PloAssessmentComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          if (data.plos) this.evalPLOs.set(data.plos);
-          if (data.ylos) this.evalYLOs.set(data.ylos);
+          const rawPLOs = data.plos || [];
+          const rawYLOs = data.ylos || [];
+
+          const structuredPLOs = rawPLOs.map((plo: any) => {
+            return {
+              ...plo,
+              sub_plos: (plo.sub_plos || []).map((sub: any) => {
+                return {
+                  ...sub,
+                  ylos: rawYLOs
+                    .filter((y: any) => y.sub_plo_id === sub.sub_plo_id)
+                    .map((y: any) => ({
+                      ylo_id: y.ylo_id,
+                      sub_plo_id: y.sub_plo_id,
+                      ylo_name: y.ylo_name,
+                      description: y.description,
+                      status: y.status,
+                    })),
+                };
+              }),
+            };
+          });
+
+          this.evalPLOs.set(structuredPLOs);
           this.isLoadingEval.set(false);
         },
         error: () => this.isLoadingEval.set(false),
@@ -131,25 +158,41 @@ export class PloAssessmentComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  setSubPLOStatus(ploIndex: number, subIndex: number, status: 'passed' | 'failed') {
+  // 🎯 อัปเดต: กดปุ่มเดิมซ้ำ = ยกเลิกการเลือก (Untick)
+  setYLOStatus(pIndex: number, sIndex: number, yIndex: number, status: 'passed' | 'failed') {
     const plos = [...this.evalPLOs()];
-    plos[ploIndex].sub_plos[subIndex].status = status;
+    const targetYLO = plos[pIndex].sub_plos[sIndex].ylos[yIndex];
+
+    // ถ้าสถานะปัจจุบันตรงกับปุ่มที่กด ให้เคลียร์กลับเป็น null (ยกเลิก)
+    if (targetYLO.status === status) {
+      targetYLO.status = null;
+    } else {
+      targetYLO.status = status;
+    }
+
     this.evalPLOs.set(plos);
   }
 
-  setYLOStatus(yloIndex: number, status: 'passed' | 'failed') {
-    const ylos = [...this.evalYLOs()];
-    ylos[yloIndex].status = status;
-    this.evalYLOs.set(ylos);
+  calculateSubPLOProgress(sub: EvalSubPLO): number {
+    if (!sub.ylos || sub.ylos.length === 0) return 0;
+    const passed = sub.ylos.filter((y) => y.status === 'passed').length;
+    return Math.round((passed / sub.ylos.length) * 100);
   }
 
   calculatePLOProgress(plo: EvalPLO): number {
-    if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
-    const passed = plo.sub_plos.filter((s) => s.status === 'passed').length;
-    return Math.round((passed / plo.sub_plos.length) * 100);
+    let totalYLOs = 0;
+    let passedYLOs = 0;
+    if (!plo.sub_plos) return 0;
+
+    plo.sub_plos.forEach((sub) => {
+      if (sub.ylos) {
+        totalYLOs += sub.ylos.length;
+        passedYLOs += sub.ylos.filter((y) => y.status === 'passed').length;
+      }
+    });
+    return totalYLOs === 0 ? 0 : Math.round((passedYLOs / totalYLOs) * 100);
   }
 
-  // 🎯 อัปเดต: ส่งข้อมูล SubPLO ไปบันทึกลงฐานข้อมูลด้วย!
   saveEvaluation() {
     const student = this.selectedStudent();
     if (!student) return;
@@ -160,33 +203,24 @@ export class PloAssessmentComponent implements OnInit {
       score: this.calculatePLOProgress(p),
     }));
 
-    // ดึงสถานะ SubPLO ที่กดไป
-    const evaluatedSubPLOs: any[] = [];
+    const evaluatedYLOs: any[] = [];
     this.evalPLOs().forEach((p) => {
-      if (p.sub_plos) {
-        p.sub_plos.forEach((s) => {
-          if (s.status !== null) {
-            evaluatedSubPLOs.push({
-              id: s.sub_plo_id,
-              is_passed: s.status === 'passed' ? 1 : 0,
+      p.sub_plos?.forEach((s) => {
+        s.ylos?.forEach((y) => {
+          if (y.status !== null) {
+            evaluatedYLOs.push({
+              id: y.ylo_id,
+              is_passed: y.status === 'passed' ? 1 : 0,
             });
           }
         });
-      }
+      });
     });
-
-    const evaluatedYLOs = this.evalYLOs()
-      .filter((y) => y.status !== null)
-      .map((y) => ({
-        id: y.ylo_id,
-        is_passed: y.status === 'passed' ? 1 : 0,
-      }));
 
     const payload = {
       student_id: student.id,
       advisor_id: 14,
       plos: evaluatedPLOs,
-      sub_plos: evaluatedSubPLOs, // 🚀 ยัด SubPLO ใส่ไปด้วย
       ylos: evaluatedYLOs,
     };
 
@@ -204,15 +238,13 @@ export class PloAssessmentComponent implements OnInit {
 
   filteredStudents = computed(() => {
     const tab = this.activeTab();
-    const query = this.searchQuery().toLowerCase().trim();
+    // 🛡️ ป้องกันบัคหน้าขาว: ใส่ || '' ป้องกัน query เป็น null
+    const query = (this.searchQuery() || '').toLowerCase().trim();
     let result = this.students();
     if (tab === 'รอประเมิน') result = result.filter((s) => s.status === 'pending');
     if (tab === 'ผ่าน') result = result.filter((s) => s.status === 'passed');
     if (tab === 'ไม่ผ่าน') result = result.filter((s) => s.status === 'failed');
-    if (query)
-      result = result.filter(
-        (s) => s.name.toLowerCase().includes(query) || s.studentId.toLowerCase().includes(query),
-      );
+    if (query) result = result.filter((s) => this.matchesSearch(s));
     return result;
   });
 
@@ -234,10 +266,13 @@ export class PloAssessmentComponent implements OnInit {
     () => this.students().filter((s) => s.status === 'failed' && this.matchesSearch(s)).length,
   );
 
+  // 🛡️ ป้องกันบัคหน้าขาว: ดักจับ null ก่อนใช้ .toLowerCase()
   private matchesSearch(s: StudentAssessment): boolean {
-    const q = this.searchQuery().toLowerCase().trim();
+    const q = (this.searchQuery() || '').toLowerCase().trim();
     if (!q) return true;
-    return s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q);
+    const name = (s.name || '').toLowerCase();
+    const id = (s.studentId || '').toLowerCase();
+    return name.includes(q) || id.includes(q);
   }
 
   setTab(tab: 'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน') {
@@ -254,10 +289,10 @@ export class PloAssessmentComponent implements OnInit {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
   getProgressBarColor(score: number): string {
-    return score >= 50 ? 'bg-[#10B981]' : 'bg-[#EF4444]';
+    return (score || 0) >= 50 ? 'bg-[#10B981]' : 'bg-[#EF4444]';
   }
   getProgressTextColor(score: number): string {
-    return score >= 50 ? 'text-[#10B981]' : 'text-[#EF4444]';
+    return (score || 0) >= 50 ? 'text-[#10B981]' : 'text-[#EF4444]';
   }
 
   goToStudentResult(student: StudentAssessment) {
@@ -273,7 +308,6 @@ export class PloAssessmentComponent implements OnInit {
     });
   }
 
-  // 🌟 สำหรับคลิกแล้วลากเลื่อนจอซ้ายขวา (Drag to scroll)
   startDragging(e: MouseEvent) {
     this.isDragging = true;
     this.startX = e.pageX - this.scrollContainer.nativeElement.offsetLeft;
