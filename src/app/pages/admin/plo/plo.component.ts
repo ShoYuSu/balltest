@@ -28,27 +28,35 @@ export class PloComponent implements OnInit {
     { dept_id: 2, dept_name_th: 'ภาควิชาเทคโนโลยีการอาหาร' },
   ];
 
+  // 🟢 รายการชั้นปีที่เหลือเฉพาะ ชั้นปี 1 - 4 เท่านั้น (ตัดทั่วไปออกเรียบร้อย)
+  public yearsList = [
+    { year_id: 1, year_name: 'ชั้นปีที่ 1' },
+    { year_id: 2, year_name: 'ชั้นปีที่ 2' },
+    { year_id: 3, year_name: 'ชั้นปีที่ 3' },
+    { year_id: 4, year_name: 'ชั้นปีที่ 4' },
+  ];
+
   public courseForm!: FormGroup;
   public ploForm!: FormGroup;
-  public subPloForm!: FormGroup; //  เพิ่มฟอร์ม SubPLO
+  public subPloForm!: FormGroup;
   public yloForm!: FormGroup;
 
   showCourseModal = false;
   showDetailModal = false;
   showPloModal = false;
-  showSubPloModal = false; //  เพิ่มสเตตัสเปิดปิด Modal SubPLO
+  showSubPloModal = false;
   showYloModal = false;
   showDeleteModal = false;
   isDepartmentDropdownOpen = false;
 
   selectedCourse: any;
   selectedPlo: any;
-  selectedSubPlo: any; //  เก็บ SubPLO ที่เลือก
+  selectedSubPlo: any;
   selectedYlo: any;
   deleteTargetType: string = '';
   isEditMode = false;
   isYloYearDropdownOpen = false;
-  hasYearLevel = false; // เช็คว่า YLO นั้นมีชั้นปีหรือไม่ (สำหรับวิทยุเลือกใน HTML)
+  hasYearLevel = true; // 🟢 ล็อกสิทธิ์เป็น true ตลอดเวลา เพื่อให้ระบุชั้นปีเท่านั้น
 
   public columns: TableColumnModel[] = [
     {
@@ -144,7 +152,6 @@ export class PloComponent implements OnInit {
 
   initForms() {
     this.courseForm = this.fb.group({
-      // curriculum_id: ['', Validators.required],
       curriculum_name: ['', Validators.required],
       dept_id: [1, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
@@ -155,16 +162,15 @@ export class PloComponent implements OnInit {
       description: ['', [Validators.required, Validators.minLength(2)]],
     });
 
-    // ✨ สร้างฟอร์มรองรับ SubPLO
     this.subPloForm = this.fb.group({
-      // sub_plo_name: ['', Validators.required],
       description: ['', Validators.required],
     });
 
+    // 🟢 ปรับฟอร์ม YLO ให้ Default เริ่มต้นที่ ชั้นปีที่ 1 เสมอ และบังคับกรอก (Validators.required)
     this.yloForm = this.fb.group({
       ylo_id: [''],
       ylo_name: [''],
-      year: [null],
+      year: [1, Validators.required],
       description: ['', Validators.required],
       sub_plo_id: [null],
     });
@@ -175,72 +181,74 @@ export class PloComponent implements OnInit {
     return control ? control.invalid && (control.dirty || control.touched) : false;
   }
 
-  loadPloYloData() {
-    this.http.get<any>(`${environment.apiUrl}/get_courses.php`).subscribe({
-      next: (res) => {
-        if (!res || !(res.success !== undefined ? res.success : true)) {
-          this.dataSource = [];
-          return;
-        }
+  async loadPloYloData(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.http.get<any>(`${environment.apiUrl}/get_courses.php`).subscribe({
+        next: (res) => {
+          if (!res || !(res.success !== undefined ? res.success : true)) {
+            this.dataSource = [];
+            resolve();
+            return;
+          }
 
-        const curriculums = res.curriculums || [];
+          const curriculums = res.curriculums || [];
+          curriculums.sort((a: any, b: any) => Number(a.curriculum_id) - Number(b.curriculum_id));
+          const plos = res.plos || [];
+          const ylos = res.ylos || [];
+          const subPlos = res.sub_plos || [];
 
-        curriculums.sort((a: any, b: any) => Number(a.curriculum_id) - Number(b.curriculum_id));
-        const plos = res.plos || [];
-        const ylos = res.ylos || [];
-        const subPlos = res.sub_plos || []; // ✨ ดึงข้อมูล sub_plos ย่อยจากหลังบ้าน
+          this.dataSource = curriculums.map((course: any) => {
+            const coursePlos = plos
+              .filter(
+                (p: any) =>
+                  p.curriculum_id?.toString().trim() === course.curriculum_id?.toString().trim(),
+              )
+              .map((plo: any) => {
+                const ploSubPlosRaw = subPlos.filter(
+                  (s: any) => Number(s.plo_id) === Number(plo.plo_id),
+                );
 
-        this.dataSource = curriculums.map((course: any) => {
-          const coursePlos = plos
-            .filter(
-              (p: any) =>
-                p.curriculum_id?.toString().trim() === course.curriculum_id?.toString().trim(),
-            )
-            .map((plo: any) => {
-              // กรองหา SubPLO ที่อยู่ภายใต้ PLO หลักนี้
-              const ploSubPlos = subPlos.filter(
-                (s: any) => Number(s.plo_id) === Number(plo.plo_id),
-              );
+                const allPloYlos = ylos.filter((y: any) => Number(y.plo_id) === Number(plo.plo_id));
 
-              // กรองหา YLO และแมปชื่อ SubPLO ไปแสดงคู่กันด้วยถ้ามี
-              const ploYlos = ylos
-                .filter((y: any) => Number(y.plo_id) === Number(plo.plo_id))
-                .map((ylo: any) => {
-                  const matchedSub = ploSubPlos.find(
-                    (s: any) => Number(s.sub_plo_id) === Number(ylo.sub_plo_id),
-                  );
+                const ploSubPlos = ploSubPlosRaw.map((subPlo: any) => {
                   return {
-                    ...ylo,
-                    sub_plo_name: matchedSub ? matchedSub.sub_plo_name : null,
+                    ...subPlo,
+                    // ✅ แก้ไข: เปรียบเทียบเป็น string เพื่อป้องกัน "3" !== 3
+                    ylos: allPloYlos.filter(
+                      (y: any) => String(y.sub_plo_id) === String(subPlo.sub_plo_id),
+                    ),
                   };
                 });
 
-              return {
-                ...plo,
-                sub_plos: ploSubPlos,
-                ylos: ploYlos,
-              };
-            });
+                // ✅ แก้ไข: เช็คทั้ง null, undefined, "0", 0, "" ครบทุกกรณีที่ MySQL ส่งมา
+                const ploYlos = allPloYlos.filter((y: any) => {
+                  const sid = y.sub_plo_id;
+                  return sid === null || sid === undefined || sid === '' || sid === '0' || Number(sid) === 0;
+                });
 
-          return { ...course, ploDetails: coursePlos };
-        });
+                return {
+                  ...plo,
+                  sub_plos: ploSubPlos,
+                  ylos: ploYlos,
+                };
+              });
 
-        this.cdr.detectChanges();
+            return { ...course, ploDetails: coursePlos };
+          });
 
-        if (this.selectedCourse) {
-          const updated = this.dataSource.find(
-            (c) =>
-              c.curriculum_id?.toString().trim() ===
-              this.selectedCourse.curriculum_id?.toString().trim(),
-          );
-          if (updated) this.selectedCourse = updated;
-        }
-      },
-      error: (err) => {
-        console.error('API Error:', err);
-        this.dataSource = [];
-        this.cdr.detectChanges();
-      },
+          if (this.selectedCourse) {
+            const updated = this.dataSource.find(
+              (c) =>
+                c.curriculum_id?.toString().trim() ===
+                this.selectedCourse.curriculum_id?.toString().trim(),
+            );
+            if (updated) this.selectedCourse = updated;
+          }
+
+          this.cdr.detectChanges();
+          resolve();
+        },
+      });
     });
   }
 
@@ -305,7 +313,6 @@ export class PloComponent implements OnInit {
     this.showPloModal = true;
   }
 
-  // ✨ ฟังก์ชันเพิ่ม SubPLO ใหม่
   openAddSubPlo(plo: any) {
     this.isEditMode = false;
     this.selectedPlo = plo;
@@ -313,61 +320,81 @@ export class PloComponent implements OnInit {
     this.showSubPloModal = true;
   }
 
-  // ✨ ฟังก์ชันแก้ไข SubPLO
   openEditSubPlo(plo: any, subPlo: any) {
     this.isEditMode = true;
     this.selectedPlo = plo;
     this.selectedSubPlo = subPlo;
     this.subPloForm.patchValue({
-      // sub_plo_name: subPlo.sub_plo_name,
       description: subPlo.description,
     });
     this.showSubPloModal = true;
   }
 
-  // ✨ ฟังก์ชันเปิดกล่อง YLO แบบกำหนดความสัมพันธ์ได้เอง
+  // 🟢 ฟังก์ชันเปิดเพิ่ม YLO: บังคับชั้นปีที่ 1 รอไว้เลย
   openAddYloCustom(plo: any, subPlo?: any) {
     this.isEditMode = false;
     this.selectedPlo = plo;
-    this.hasYearLevel = false; // ค่าเริ่มต้นเป็นเป้าหมายทั่วไปแบบไม่มีชั้นปี
+    this.selectedSubPlo = subPlo;
+    this.hasYearLevel = true;
     this.yloForm.reset({
       ylo_id: '',
-      year: null,
+      year: 1, // เริ่มที่ชั้นปี 1 เสมอ
       description: '',
       sub_plo_id: subPlo ? subPlo.sub_plo_id : null,
     });
     this.showYloModal = true;
   }
-  getDynamicYloLabel(): string {
-    if (!this.selectedPlo) return '';
-    const currentYear = this.yloForm.get('year')?.value || 1;
 
-    // กรองหา YLO ที่อยู่ภายใต้ปีที่กำลังเลือกในปัจจุบัน
-    const yearYlos = (this.selectedPlo.ylos || []).filter(
-      (y: any) => Number(y.year || y.level) === Number(currentYear),
+  // 🟢 ปรับสูตรคำนวณชื่อ YLO ให้รองรับการนับตามชั้นปี 1-4 โดยตรง
+ getDynamicYloLabel(): string {
+  if (!this.selectedPlo) return '';
+  const currentYear = this.yloForm.get('year')?.value || 1;
+
+  let sourceYlos: any[] = [];
+
+  if (this.selectedSubPlo) {
+    const matchedSub = (this.selectedPlo.sub_plos || []).find(
+      (s: any) => Number(s.sub_plo_id) === Number(this.selectedSubPlo.sub_plo_id)
     );
-
-    if (this.isEditMode && this.selectedYlo) {
-      const index = yearYlos.findIndex((y: any) => y.ylo_id === this.selectedYlo.ylo_id);
-      return `YLO ${currentYear}.${index !== -1 ? index + 1 : yearYlos.length + 1}`;
-    } else {
-      // โหมดเพิ่มใหม่: ลำดับถัดไปคือจำนวนที่มีอยู่แล้วบวกด้วย 1
-      return `YLO ${currentYear}.${yearYlos.length + 1}`;
-    }
+    sourceYlos = matchedSub?.ylos || [];
+  } else {
+    sourceYlos = this.selectedPlo.ylos || [];
   }
+
+  const yearYlos = sourceYlos.filter(
+    (y: any) => Number(y.level || y.year) === Number(currentYear),
+  );
+
+  if (this.isEditMode && this.selectedYlo) {
+    const index = yearYlos.findIndex((y: any) => y.ylo_id === this.selectedYlo.ylo_id);
+    return `YLO ${currentYear}.${index !== -1 ? index + 1 : yearYlos.length + 1}`;
+  } else {
+    return `YLO ${currentYear}.${yearYlos.length + 1}`;
+  }
+}
 
   openEditYlo(plo: any, ylo: any) {
     this.isEditMode = true;
     this.selectedPlo = plo;
     this.selectedYlo = ylo;
 
-    const currentLevel = ylo.level || ylo.year;
-    this.hasYearLevel = !!currentLevel; // ถ้ามีเลขชั้นปี ให้เปิดโหมดรายชั้นปี
+    // ✅ แก้ไข: resolve full SubPLO object เพื่อให้ getDynamicYloLabel นับ ylos ได้ถูก
+    if (ylo.sub_plo_id) {
+      this.selectedSubPlo =
+        (plo.sub_plos || []).find(
+          (s: any) => String(s.sub_plo_id) === String(ylo.sub_plo_id),
+        ) || { sub_plo_id: ylo.sub_plo_id };
+    } else {
+      this.selectedSubPlo = null;
+    }
+
+    this.hasYearLevel = true;
+    const currentLevel = ylo.level ?? ylo.year ?? 1;
 
     this.yloForm.patchValue({
       ylo_id: ylo.ylo_id,
       ylo_name: ylo.ylo_name,
-      year: currentLevel ? Number(currentLevel) : null,
+      year: Number(currentLevel),
       description: ylo.description,
       sub_plo_id: ylo.sub_plo_id || null,
     });
@@ -384,7 +411,7 @@ export class PloComponent implements OnInit {
     const body = {
       type: 'curriculum',
       is_edit: this.isEditMode,
-      curriculum_id: this.isEditMode ? formValue.curriculum_id : null,      //curriculum_id: formValue.curriculum_id, 
+      curriculum_id: this.isEditMode ? formValue.curriculum_id : null,
       curriculum_name: formValue.curriculum_name,
       dept_id: Number(formValue.dept_id),
       year: formValue.year,
@@ -395,7 +422,9 @@ export class PloComponent implements OnInit {
         if (res.success) {
           alert('บันทึกข้อมูลเรียบร้อย');
           this.loadPloYloData();
-          this.closeModals();
+          // ✅ ลบ closeModals() ซ้ำออก และส่ง true เพราะปิด course modal (ไม่มี detail modal เปิดอยู่)
+          this.closeModals(true);
+          this.cdr.detectChanges();
         } else {
           alert(res.message || 'เกิดข้อผิดพลาดในการบันทึก');
         }
@@ -410,7 +439,7 @@ export class PloComponent implements OnInit {
     return dept ? dept.dept_name_th : 'เลือกภาควิชา';
   }
 
-  savePlo() {
+ savePlo() {
     if (this.ploForm.invalid) {
       this.ploForm.markAllAsTouched();
       return;
@@ -425,37 +454,36 @@ export class PloComponent implements OnInit {
       description: formValue.description,
     };
 
-    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe((res: any) => {
+    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
       if (res.success) {
         alert(res.message || 'บันทึก PLO สำเร็จ');
-        this.loadPloYloData();
+        await this.loadPloYloData();
         this.showPloModal = false;
+        this.cdr.detectChanges(); 
       } else {
         alert(res.message);
       }
     });
   }
+
   getYlosByYear(plo: any, year: number) {
     return (plo.ylos || []).filter((y: any) => Number(y.level) === Number(year));
   }
-  // ✨ ฟังก์ชันบันทึกข้อมูล SubPLO
-  saveSubPlo() {
+
+ saveSubPlo() {
     if (this.subPloForm.invalid) {
       this.subPloForm.markAllAsTouched();
       return;
     }
 
     const formValue = this.subPloForm.value;
-
     let subPloName = '';
 
     if (this.isEditMode) {
       subPloName = this.selectedSubPlo.sub_plo_name;
     } else {
       const ploNo = String(this.selectedPlo.plo_name).replace('PLO', '').trim();
-
       const nextSubNo = (this.selectedPlo.sub_plos || []).length + 1;
-
       subPloName = `SubPLOs${ploNo}.${nextSubNo}`;
     }
 
@@ -463,81 +491,76 @@ export class PloComponent implements OnInit {
       type: 'sub_plo',
       is_edit: this.isEditMode,
       sub_plo_id: this.isEditMode ? this.selectedSubPlo.sub_plo_id : null,
-
       plo_id: this.selectedPlo.plo_id,
-
       sub_plo_name: subPloName,
-
       description: formValue.description,
     };
 
-    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe((res: any) => {
+    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
       if (res.success) {
         alert(res.message || 'บันทึก SubPLO สำเร็จ');
-
-        this.loadPloYloData();
-
+        await this.loadPloYloData();
         this.showSubPloModal = false;
+        this.cdr.detectChanges();
       } else {
         alert(res.message);
       }
     });
   }
-
-  //  ฟังก์ชันบันทึก YLO แบบใหม่ (ปรับให้เข้ากับสวิตช์เปิดปิดชั้นปี)
+  // 🟢 บังคับส่งค่า level เสมอ (ไม่มีเงื่อนไข null ของทั่วไปแล้ว)
   saveYloCustom() {
-    if (this.yloForm.invalid) {
-      this.yloForm.markAllAsTouched();
-      return;
-    }
-
-    const formValue = this.yloForm.value;
-
-    let yloName = formValue.ylo_name;
-    let level: number | null = null;
-
-    if (this.hasYearLevel) {
-      level = Number(formValue.year);
-    }
-
-    // เพิ่มใหม่เท่านั้น ค่อย generate อัตโนมัติ
-    if (!this.isEditMode) {
-      if (this.hasYearLevel) {
-        const yearYlos = (this.selectedPlo.ylos || []).filter(
-          (y: any) => Number(y.level) === Number(level),
-        );
-
-        yloName = `YLO${level}.${yearYlos.length + 1}`;
-      } else {
-        const generalYlos = (this.selectedPlo.ylos || []).filter((y: any) => !y.level);
-
-        yloName = `YLO1.${generalYlos.length + 1}`;
-      }
-    }
-
-    const body = {
-      type: 'ylo',
-      is_edit: this.isEditMode,
-      ylo_id: this.isEditMode ? this.selectedYlo?.ylo_id : null,
-      plo_id: this.selectedPlo.plo_id,
-      sub_plo_id: formValue.sub_plo_id,
-      level: level,
-      ylo_name: yloName,
-      description: formValue.description,
-    };
-
-    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe((res: any) => {
-      if (res.success) {
-        alert('บันทึก YLO สำเร็จ');
-        this.loadPloYloData();
-        this.showYloModal = false;
-      } else {
-        alert(res.message);
-      }
-    });
+  if (this.yloForm.invalid) {
+    this.yloForm.markAllAsTouched();
+    return;
   }
 
-  // ✨ ฟังก์ชันลบข้อมูลแบบครอบคลุมประเภทใหม่
+  const formValue = this.yloForm.value;
+  const level = Number(formValue.year || 1);
+  let yloName = formValue.ylo_name;
+
+  if (!this.isEditMode) {
+    // ✅ ถ้าผูก SubPLO → นับจาก sub.ylos
+    // ✅ ถ้าไม่ผูก → นับจาก plo.ylos
+    let sourceYlos: any[] = [];
+
+    if (this.selectedSubPlo) {
+      // หา SubPLO ที่ตรงกันจาก plo.sub_plos แล้วดึง ylos ออกมา
+      const matchedSub = (this.selectedPlo.sub_plos || []).find(
+        (s: any) => Number(s.sub_plo_id) === Number(this.selectedSubPlo.sub_plo_id)
+      );
+      sourceYlos = (matchedSub?.ylos || []);
+    } else {
+      sourceYlos = (this.selectedPlo.ylos || []);
+    }
+
+    const yearYlos = sourceYlos.filter((y: any) => Number(y.level) === Number(level));
+    yloName = `YLO${level}.${yearYlos.length + 1}`;
+  }
+
+  const body = {
+    type: 'ylo',
+    is_edit: this.isEditMode,
+    ylo_id: this.isEditMode ? this.selectedYlo?.ylo_id : null,
+    plo_id: this.selectedPlo.plo_id,
+    sub_plo_id: this.selectedSubPlo
+      ? this.selectedSubPlo.sub_plo_id
+      : formValue.sub_plo_id || null,
+    level: level,
+    ylo_name: yloName,
+    description: formValue.description,
+  };
+
+  this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe((res: any) => {
+    if (res.success) {
+      alert('บันทึก YLO สำเร็จ');
+      this.loadPloYloData();
+      this.showYloModal = false;
+    } else {
+      alert(res.message);
+    }
+  });
+}
+
   confirmDelete(type: string, item: any) {
     this.deleteTargetType = type;
     if (type === 'course') this.selectedCourse = item;
@@ -547,7 +570,7 @@ export class PloComponent implements OnInit {
     this.showDeleteModal = true;
   }
 
-  executeDelete() {
+ executeDelete() {
     let type = this.deleteTargetType;
     let id = null;
 
@@ -559,17 +582,20 @@ export class PloComponent implements OnInit {
     if (id) {
       this.http
         .post(`${environment.apiUrl}/delete_plo_ylo.php`, { type, id })
-        .subscribe((res: any) => {
+        .subscribe(async (res: any) => {
           if (res.success) {
             alert('ลบข้อมูลสำเร็จ');
-            this.loadPloYloData();
-            this.showDeleteModal = false;
+            await this.loadPloYloData();
+            // ✅ ถ้าลบ course ให้ปิด detail modal ด้วย, อื่นๆ แค่ปิด delete modal
+            this.closeModals(type === 'course');
+            this.cdr.detectChanges();
           } else {
             alert(res.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
           }
         });
     } else {
       this.showDeleteModal = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -578,13 +604,24 @@ export class PloComponent implements OnInit {
     this.showDetailModal = true;
   }
 
-  closeModals() {
+  closeModals(closeDetail = false) {
     this.showCourseModal = false;
-    this.showDetailModal = false;
     this.showPloModal = false;
     this.showSubPloModal = false;
     this.showYloModal = false;
     this.showDeleteModal = false;
+    this.isDepartmentDropdownOpen = false;
+    this.isYloYearDropdownOpen = false;
+    this.selectedPlo = null;
+    this.selectedSubPlo = null;
+    this.selectedYlo = null;
+    this.isEditMode = false;
+
+    // ✅ ปิด detail modal เฉพาะเมื่อกดปุ่ม X หรือลบ course เท่านั้น
+    if (closeDetail) {
+      this.showDetailModal = false;
+      this.selectedCourse = null;
+    }
   }
 
   getDeleteModalTitle(): string {
