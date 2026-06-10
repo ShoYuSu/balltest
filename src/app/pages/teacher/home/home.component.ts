@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
 import { StudentResultModalComponent } from '../student-result-modal/student-result-modal.component';
-import { CommonModule } from '@angular/common'; // สำคัญสำหรับ DatePipe ถ้าใช้
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFFDF0]',
     },
     {
-      label: 'บันทึกการปรึกษา',
+      label: 'บันทึกการปรึกษา (คน)', // 🎯 เปลี่ยน Label ให้ชัดเจนขึ้น
       value: 0,
       icon: 'assignment',
       bgColor: 'bg-purple-100',
@@ -73,7 +73,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ของจริงจาก DB
+    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
@@ -82,8 +82,8 @@ export class HomeComponent implements OnInit {
             id: student.student_code,
             name: student.full_name,
             year: student.year,
-            gpa: student.gpa || '-', // แสดง - หากไม่มีเกรด
-            ploStatus: student.ploStatus, // รับค่า ผ่าน/ไม่ผ่าน/รอประเมิน ตรงๆ จาก PHP
+            gpa: student.gpa || '-',
+            ploStatus: student.ploStatus,
             img: student.image
               ? `${environment.apiUrl}/${student.image}`
               : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
@@ -91,7 +91,6 @@ export class HomeComponent implements OnInit {
 
           this.studentsInCare.set(formattedStudents);
 
-          // อัปเดตสถิติใน Dashboard Cards
           this.dashboardStats[0].value = formattedStudents.length;
           this.dashboardStats[1].value = formattedStudents.filter(
             (s) => s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน',
@@ -99,12 +98,35 @@ export class HomeComponent implements OnInit {
         },
       });
 
-    // 2. ดึงข้อมูลนัดหมายล่าสุด
+    // 2. ดึงข้อมูลนัดหมายและคำนวณการให้คำปรึกษา
     this.http
       .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          const formatted = (data || [])
+          const allApps = data || [];
+
+          // 🎯 อัปเดตสถิติ: นัดหมายทั้งหมด (นับจำนวนรายการทั้งหมดที่มีในระบบ)
+          this.dashboardStats[2].value = allApps.length;
+
+          // 🎯 อัปเดตสถิติ: บันทึกการปรึกษา (นับจำนวนนักศึกษาที่ไม่ซ้ำคน)
+          const completedApps = allApps.filter((app: any) => app.status === 'ดำเนินการแล้ว');
+          const consultedStudents = new Set<string>(); // ใช้ Set เพื่อกรองคนซ้ำออกอัตโนมัติ
+
+          completedApps.forEach((app: any) => {
+            if (app.students && Array.isArray(app.students)) {
+              app.students.forEach((student: any) => {
+                if (student.id) {
+                  consultedStudents.add(student.id.toString()); // โยนรหัสเด็กใส่กล่อง
+                }
+              });
+            }
+          });
+
+          // จำนวนเด็กทั้งหมดที่ไม่ซ้ำหน้า ที่เคยให้คำปรึกษาไปแล้ว
+          this.dashboardStats[3].value = consultedStudents.size;
+
+          // 🎯 จัดการข้อมูลสำหรับโชว์ใน "การนัดหมายล่าสุด" (โชว์เฉพาะคิวที่ยังไม่เสร็จ)
+          const formatted = allApps
             .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
             .map((app: any) => {
               const first = app.students?.[0];
@@ -126,8 +148,8 @@ export class HomeComponent implements OnInit {
                 memberCount: app.students.length,
               };
             });
+
           this.appointments.set(formatted);
-          this.dashboardStats[2].value = formatted.length;
         },
       });
   }
