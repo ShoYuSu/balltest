@@ -1,11 +1,10 @@
 <div class="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800">
 
-  <!-- Top Bar: ย้อนกลับ + ข้อมูลนักศึกษา -->
-  <div class="flex items-center gap-4 mb-8">
+  <div class="flex items-center gap-4 mb-8 flex-wrap">
     <button
       (click)="goBack()"
-      class="flex items-center justify-center w-10 h-10 rounded-2xl bg-white border border-gray-200 shadow-sm hover:bg-orange-50 hover:border-orange-200 hover:text-primary transition-all duration-200">
-      <span class="material-symbols-outlined text-[22px] text-gray-600">arrow_back</span>
+      class="flex shrink-0 items-center justify-center w-10 h-10 rounded-2xl bg-white border border-gray-200 shadow-sm hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600 transition-all duration-200">
+      <span class="material-symbols-outlined text-[22px] text-gray-600 hover:text-orange-600">arrow_back</span>
     </button>
 
     @if (student) {
@@ -25,7 +24,7 @@
       </div>
 
       <span
-        class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border flex-shrink-0"
+        class="hidden sm:inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold border"
         [ngClass]="student.ploStatus === 'PLO รอประเมิน' || student.ploStatus === 'รอประเมิน'
           ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
           : (student.ploStatus === 'PLO ไม่ผ่าน' || student.ploStatus === 'ไม่ผ่าน'
@@ -34,6 +33,13 @@
         <span class="material-symbols-outlined text-[14px]">verified</span>
         {{ student.ploStatus }}
       </span>
+
+      <button
+        (click)="goToEvaluation()"
+        class="ml-auto shrink-0 flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-orange-200 transition-all duration-200 active:scale-[0.98]">
+        <span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+        <span class="hidden sm:inline">ไปหน้าประเมิน PLO</span>
+      </button>
     }
 
     @if (!student) {
@@ -44,17 +50,15 @@
     }
   </div>
 
-  <!-- Loading -->
   @if (isLoading()) {
     <div class="flex flex-col items-center justify-center py-32 gap-4">
-      <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      <div class="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
       <p class="text-sm text-gray-400 font-medium">กำลังโหลดผลการศึกษา...</p>
     </div>
   }
 
   @if (!isLoading()) {
 
-    <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
       <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-green-100 transition-all duration-300 group">
         <div>
@@ -78,31 +82,30 @@
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300 group">
+      <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-lg hover:-translate-y-1 hover:border-orange-500/30 transition-all duration-300 group">
         <div>
           <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">เกรดเฉลี่ยสะสม (GPAX)</p>
-          <p class="text-3xl font-extrabold text-gray-900 group-hover:text-primary transition-colors">{{ gpax() }}</p>
+          <p class="text-3xl font-extrabold text-gray-900 group-hover:text-orange-500 transition-colors">{{ gpax() }}</p>
         </div>
-        <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+        <div class="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500 group-hover:bg-orange-500/20 transition-colors">
           <span class="material-symbols-outlined text-[28px]">analytics</span>
         </div>
       </div>
     </div>
 
-    <!-- Tab Bar + Dropdown -->
     <div class="bg-white rounded-2xl border border-gray-100 p-2 md:p-3 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4 mb-6">
 
       <div class="flex bg-gray-50/80 rounded-xl p-1 w-full md:w-auto border border-gray-100">
         <button
           (click)="activeTab='result'"
           class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
-          [ngClass]="activeTab === 'result' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+          [ngClass]="activeTab === 'result' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
           <span class="material-symbols-outlined text-[18px]">history_edu</span> ผลการเรียน
         </button>
         <button
           (click)="activeTab='credit'"
           class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
-          [ngClass]="activeTab === 'credit' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+          [ngClass]="activeTab === 'credit' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
           <span class="material-symbols-outlined text-[18px]">rule</span> เช็คหน่วยกิต
         </button>
       </div>
@@ -113,10 +116,10 @@
             type="button"
             (click)="isDropdownOpen = !isDropdownOpen"
             class="w-full md:w-auto flex items-center gap-2.5 pl-10 pr-4 py-2.5 bg-white border-[1.5px] rounded-[14px] text-sm font-bold text-gray-700 shadow-sm transition-all duration-200 relative"
-            [ngClass]="isDropdownOpen ? 'border-primary' : 'border-gray-200 hover:border-primary/50'">
+            [ngClass]="isDropdownOpen ? 'border-orange-500' : 'border-gray-200 hover:border-orange-500/50'">
             <span
               class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] pointer-events-none transition-colors"
-              [ngClass]="isDropdownOpen ? 'text-primary' : 'text-gray-400'">
+              [ngClass]="isDropdownOpen ? 'text-orange-500' : 'text-gray-400'">
               calendar_month
             </span>
             <span class="flex-1 text-left whitespace-nowrap">ภาคเรียนที่ {{ selectedTerm() }}</span>
@@ -135,15 +138,15 @@
                 type="button"
                 (click)="selectTerm(term)"
                 class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-left transition-colors"
-                [ngClass]="selectedTerm() === term ? 'bg-orange-50 text-primary' : 'text-gray-600 hover:bg-orange-50/60 hover:text-primary'">
+                [ngClass]="selectedTerm() === term ? 'bg-orange-50 text-orange-500' : 'text-gray-600 hover:bg-orange-50/60 hover:text-orange-500'">
                 <span
                   class="material-symbols-outlined text-[17px]"
-                  [ngClass]="selectedTerm() === term ? 'text-primary' : 'text-gray-300'">
+                  [ngClass]="selectedTerm() === term ? 'text-orange-500' : 'text-gray-300'">
                   event_note
                 </span>
                 <span class="flex-1">ภาคเรียนที่ {{ term }}</span>
                 @if (selectedTerm() === term) {
-                  <span class="material-symbols-outlined text-[17px] text-primary">check</span>
+                  <span class="material-symbols-outlined text-[17px] text-orange-500">check</span>
                 }
               </button>
             }
@@ -152,7 +155,6 @@
       }
     </div>
 
-    <!-- Result Table -->
     @if (activeTab === 'result') {
       <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -168,8 +170,8 @@
             <tbody class="divide-y divide-gray-50">
               @for (s of displayedSubjects(); track s.code) {
                 <tr class="hover:bg-orange-50/30 transition-colors group">
-                  <td class="py-4 px-8 font-bold text-gray-500 group-hover:text-primary transition-colors">{{ s.code }}</td>
-                  <td class="py-4 px-6 font-bold text-gray-900 group-hover:text-primary transition-colors">{{ s.name }}</td>
+                  <td class="py-4 px-8 font-bold text-gray-500 group-hover:text-orange-500 transition-colors">{{ s.code }}</td>
+                  <td class="py-4 px-6 font-bold text-gray-900 group-hover:text-orange-500 transition-colors">{{ s.name }}</td>
                   <td class="py-4 px-6 font-medium text-gray-600 text-center">{{ s.credit }}</td>
                   <td class="py-4 px-8 text-center">
                     <div
@@ -203,14 +205,13 @@
             </div>
             <div class="flex items-center gap-3">
               <span class="text-xs font-extrabold text-gray-400 uppercase tracking-widest">เกรดเฉลี่ย (GPA)</span>
-              <span class="px-5 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-xl font-black text-lg shadow-sm">{{ termStats().gpa }}</span>
+              <span class="px-5 py-1.5 bg-orange-500/10 text-orange-600 border border-orange-500/20 rounded-xl font-black text-lg shadow-sm">{{ termStats().gpa }}</span>
             </div>
           </div>
         }
       </div>
     }
 
-    <!-- Credit Table -->
     @if (activeTab === 'credit') {
       <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -228,7 +229,7 @@
                 <tr class="hover:bg-gray-50/50 transition-colors group">
                   <td class="py-4 px-8 font-bold text-gray-800">
                     <div class="flex items-center gap-3">
-                      <div class="w-2 h-2 rounded-full bg-primary/40 group-hover:bg-primary transition-colors flex-shrink-0"></div>
+                      <div class="w-2 h-2 rounded-full bg-orange-500/40 group-hover:bg-orange-500 transition-colors flex-shrink-0"></div>
                       {{ c.name }}
                     </div>
                   </td>
@@ -243,7 +244,7 @@
                 </tr>
               }
             </tbody>
-            <tfoot class="bg-primary/5 border-t-2 border-primary/10">
+            <tfoot class="bg-orange-500/5 border-t-2 border-orange-500/10">
             <tr>
               <td class="py-5 px-8 font-black text-gray-900 text-right uppercase tracking-wider">รวมทั้งหมด</td>
               <td class="py-5 px-6 font-black text-gray-900 text-center text-base">{{ creditsNeed() }}</td>
