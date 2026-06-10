@@ -28,7 +28,6 @@ export class PloComponent implements OnInit {
     { dept_id: 2, dept_name_th: 'ภาควิชาเทคโนโลยีการอาหาร' },
   ];
 
-  // 🟢 รายการชั้นปีที่เหลือเฉพาะ ชั้นปี 1 - 4 เท่านั้น (ตัดทั่วไปออกเรียบร้อย)
   public yearsList = [
     { year_id: 1, year_name: 'ชั้นปีที่ 1' },
     { year_id: 2, year_name: 'ชั้นปีที่ 2' },
@@ -56,7 +55,7 @@ export class PloComponent implements OnInit {
   deleteTargetType: string = '';
   isEditMode = false;
   isYloYearDropdownOpen = false;
-  hasYearLevel = true; // 🟢 ล็อกสิทธิ์เป็น true ตลอดเวลา เพื่อให้ระบุชั้นปีเท่านั้น
+  hasYearLevel = true; 
 
   public columns: TableColumnModel[] = [
     {
@@ -166,7 +165,6 @@ export class PloComponent implements OnInit {
       description: ['', Validators.required],
     });
 
-    // 🟢 ปรับฟอร์ม YLO ให้ Default เริ่มต้นที่ ชั้นปีที่ 1 เสมอ และบังคับกรอก (Validators.required)
     this.yloForm = this.fb.group({
       ylo_id: [''],
       ylo_name: [''],
@@ -213,14 +211,12 @@ export class PloComponent implements OnInit {
                 const ploSubPlos = ploSubPlosRaw.map((subPlo: any) => {
                   return {
                     ...subPlo,
-                    // ✅ แก้ไข: เปรียบเทียบเป็น string เพื่อป้องกัน "3" !== 3
                     ylos: allPloYlos.filter(
                       (y: any) => String(y.sub_plo_id) === String(subPlo.sub_plo_id),
                     ),
                   };
                 });
 
-                // ✅ แก้ไข: เช็คทั้ง null, undefined, "0", 0, "" ครบทุกกรณีที่ MySQL ส่งมา
                 const ploYlos = allPloYlos.filter((y: any) => {
                   const sid = y.sub_plo_id;
                   return sid === null || sid === undefined || sid === '' || sid === '0' || Number(sid) === 0;
@@ -248,6 +244,7 @@ export class PloComponent implements OnInit {
           this.cdr.detectChanges();
           resolve();
         },
+        error: (err) => reject(err)
       });
     });
   }
@@ -279,9 +276,11 @@ export class PloComponent implements OnInit {
     this.isYloYearDropdownOpen = !this.isYloYearDropdownOpen;
   }
 
+  // 🟢 อัปเดตเมื่อเลือกชั้นปี เพื่อให้รหัส YLO ในกล่อง Preview คำนวณใหม่ตามทันที
   selectYloYear(year: number) {
     this.yloForm.patchValue({ year: year });
     this.isYloYearDropdownOpen = false;
+    this.cdr.detectChanges(); 
   }
 
   openEditCourse(course: any) {
@@ -330,7 +329,6 @@ export class PloComponent implements OnInit {
     this.showSubPloModal = true;
   }
 
-  // 🟢 ฟังก์ชันเปิดเพิ่ม YLO: บังคับชั้นปีที่ 1 รอไว้เลย
   openAddYloCustom(plo: any, subPlo?: any) {
     this.isEditMode = false;
     this.selectedPlo = plo;
@@ -338,47 +336,27 @@ export class PloComponent implements OnInit {
     this.hasYearLevel = true;
     this.yloForm.reset({
       ylo_id: '',
-      year: 1, // เริ่มที่ชั้นปี 1 เสมอ
+      year: 1, 
       description: '',
       sub_plo_id: subPlo ? subPlo.sub_plo_id : null,
     });
     this.showYloModal = true;
+    this.cdr.detectChanges();
   }
 
-  // 🟢 ปรับสูตรคำนวณชื่อ YLO ให้รองรับการนับตามชั้นปี 1-4 โดยตรง
- getDynamicYloLabel(): string {
-  if (!this.selectedPlo) return '';
-  const currentYear = this.yloForm.get('year')?.value || 1;
-
-  let sourceYlos: any[] = [];
-
-  if (this.selectedSubPlo) {
-    const matchedSub = (this.selectedPlo.sub_plos || []).find(
-      (s: any) => Number(s.sub_plo_id) === Number(this.selectedSubPlo.sub_plo_id)
-    );
-    sourceYlos = matchedSub?.ylos || [];
-  } else {
-    sourceYlos = this.selectedPlo.ylos || [];
+  // 🟢 คำนวณรหัสทศนิยมอิงตามตัวเลขของชื่อ PLO (เช่น PLO6 -> 2.6 หรือ 1.6)
+  getDynamicYloLabel(): string {
+    if (!this.selectedPlo) return '';
+    const currentYear = this.yloForm.get('year')?.value || 1;
+    const ploNo = String(this.selectedPlo.plo_name).replace(/[^0-9]/g, '').trim();
+    return `YLO ${currentYear}.${ploNo || '1'}`;
   }
-
-  const yearYlos = sourceYlos.filter(
-    (y: any) => Number(y.level || y.year) === Number(currentYear),
-  );
-
-  if (this.isEditMode && this.selectedYlo) {
-    const index = yearYlos.findIndex((y: any) => y.ylo_id === this.selectedYlo.ylo_id);
-    return `YLO ${currentYear}.${index !== -1 ? index + 1 : yearYlos.length + 1}`;
-  } else {
-    return `YLO ${currentYear}.${yearYlos.length + 1}`;
-  }
-}
 
   openEditYlo(plo: any, ylo: any) {
     this.isEditMode = true;
     this.selectedPlo = plo;
     this.selectedYlo = ylo;
 
-    // ✅ แก้ไข: resolve full SubPLO object เพื่อให้ getDynamicYloLabel นับ ylos ได้ถูก
     if (ylo.sub_plo_id) {
       this.selectedSubPlo =
         (plo.sub_plos || []).find(
@@ -399,6 +377,7 @@ export class PloComponent implements OnInit {
       sub_plo_id: ylo.sub_plo_id || null,
     });
     this.showYloModal = true;
+    this.cdr.detectChanges();
   }
 
   saveCourse() {
@@ -418,13 +397,11 @@ export class PloComponent implements OnInit {
     };
 
     this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe({
-      next: (res: any) => {
+      next: async (res: any) => {
         if (res.success) {
           alert('บันทึกข้อมูลเรียบร้อย');
-          this.loadPloYloData();
-          // ✅ ลบ closeModals() ซ้ำออก และส่ง true เพราะปิด course modal (ไม่มี detail modal เปิดอยู่)
-          this.closeModals(true);
-          this.cdr.detectChanges();
+          await this.loadPloYloData();
+          this.closeModals(false); 
         } else {
           alert(res.message || 'เกิดข้อผิดพลาดในการบันทึก');
         }
@@ -439,7 +416,7 @@ export class PloComponent implements OnInit {
     return dept ? dept.dept_name_th : 'เลือกภาควิชา';
   }
 
- savePlo() {
+  savePlo() {
     if (this.ploForm.invalid) {
       this.ploForm.markAllAsTouched();
       return;
@@ -458,8 +435,8 @@ export class PloComponent implements OnInit {
       if (res.success) {
         alert(res.message || 'บันทึก PLO สำเร็จ');
         await this.loadPloYloData();
-        this.showPloModal = false;
-        this.cdr.detectChanges(); 
+        this.showPloModal = false; 
+        this.closeModals(false);
       } else {
         alert(res.message);
       }
@@ -470,7 +447,7 @@ export class PloComponent implements OnInit {
     return (plo.ylos || []).filter((y: any) => Number(y.level) === Number(year));
   }
 
- saveSubPlo() {
+  saveSubPlo() {
     if (this.subPloForm.invalid) {
       this.subPloForm.markAllAsTouched();
       return;
@@ -500,66 +477,52 @@ export class PloComponent implements OnInit {
       if (res.success) {
         alert(res.message || 'บันทึก SubPLO สำเร็จ');
         await this.loadPloYloData();
-        this.showSubPloModal = false;
-        this.cdr.detectChanges();
+        this.showSubPloModal = false; 
+        this.closeModals(false);
       } else {
         alert(res.message);
       }
     });
   }
-  // 🟢 บังคับส่งค่า level เสมอ (ไม่มีเงื่อนไข null ของทั่วไปแล้ว)
+
+  // 🟢 ปรับสูตรบันทึก YLO: ส่งรหัสชื่อแบบใหม่ไปบันทึก และเมื่อทำเสร็จให้ปิดหน้าต่างพร้อมรีโหลดข้อมูลทันที
   saveYloCustom() {
-  if (this.yloForm.invalid) {
-    this.yloForm.markAllAsTouched();
-    return;
-  }
-
-  const formValue = this.yloForm.value;
-  const level = Number(formValue.year || 1);
-  let yloName = formValue.ylo_name;
-
-  if (!this.isEditMode) {
-    // ✅ ถ้าผูก SubPLO → นับจาก sub.ylos
-    // ✅ ถ้าไม่ผูก → นับจาก plo.ylos
-    let sourceYlos: any[] = [];
-
-    if (this.selectedSubPlo) {
-      // หา SubPLO ที่ตรงกันจาก plo.sub_plos แล้วดึง ylos ออกมา
-      const matchedSub = (this.selectedPlo.sub_plos || []).find(
-        (s: any) => Number(s.sub_plo_id) === Number(this.selectedSubPlo.sub_plo_id)
-      );
-      sourceYlos = (matchedSub?.ylos || []);
-    } else {
-      sourceYlos = (this.selectedPlo.ylos || []);
+    if (this.yloForm.invalid) {
+      this.yloForm.markAllAsTouched();
+      return;
     }
 
-    const yearYlos = sourceYlos.filter((y: any) => Number(y.level) === Number(level));
-    yloName = `YLO${level}.${yearYlos.length + 1}`;
+    const formValue = this.yloForm.value;
+    const level = Number(formValue.year || 1);
+    
+    // ตั้งชื่อรหัส YLO ให้สอดคล้องกับเลข PLO หลัก เช่น YLO2.6 หรือ YLO2.2 ทันทีไม่ว่าจะเป็นโหมดแก้หรือเพิ่ม
+    const ploNo = String(this.selectedPlo.plo_name).replace(/[^0-9]/g, '').trim();
+    const yloName = `YLO${level}.${ploNo || '1'}`;
+
+    const body = {
+      type: 'ylo',
+      is_edit: this.isEditMode,
+      ylo_id: this.isEditMode ? this.selectedYlo?.ylo_id : null,
+      plo_id: this.selectedPlo.plo_id,
+      sub_plo_id: this.selectedSubPlo
+        ? this.selectedSubPlo.sub_plo_id
+        : formValue.sub_plo_id || null,
+      level: level,
+      ylo_name: yloName,
+      description: formValue.description,
+    };
+
+    this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
+      if (res.success) {
+        alert('บันทึก YLO สำเร็จ');
+        await this.loadPloYloData(); // ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์
+        this.showYloModal = false;   // ปิด Modal บันทึก YLO
+        this.closeModals(false);     // รีเซ็ตสเตตัสและค้างคำสั่ง detectChanges ให้ UI เปลี่ยนทันที
+      } else {
+        alert(res.message);
+      }
+    });
   }
-
-  const body = {
-    type: 'ylo',
-    is_edit: this.isEditMode,
-    ylo_id: this.isEditMode ? this.selectedYlo?.ylo_id : null,
-    plo_id: this.selectedPlo.plo_id,
-    sub_plo_id: this.selectedSubPlo
-      ? this.selectedSubPlo.sub_plo_id
-      : formValue.sub_plo_id || null,
-    level: level,
-    ylo_name: yloName,
-    description: formValue.description,
-  };
-
-  this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe((res: any) => {
-    if (res.success) {
-      alert('บันทึก YLO สำเร็จ');
-      this.loadPloYloData();
-      this.showYloModal = false;
-    } else {
-      alert(res.message);
-    }
-  });
-}
 
   confirmDelete(type: string, item: any) {
     this.deleteTargetType = type;
@@ -568,9 +531,10 @@ export class PloComponent implements OnInit {
     if (type === 'sub_plo') this.selectedSubPlo = item;
     if (type === 'ylo') this.selectedYlo = item;
     this.showDeleteModal = true;
+    this.cdr.detectChanges();
   }
 
- executeDelete() {
+  executeDelete() {
     let type = this.deleteTargetType;
     let id = null;
 
@@ -586,9 +550,8 @@ export class PloComponent implements OnInit {
           if (res.success) {
             alert('ลบข้อมูลสำเร็จ');
             await this.loadPloYloData();
-            // ✅ ถ้าลบ course ให้ปิด detail modal ด้วย, อื่นๆ แค่ปิด delete modal
-            this.closeModals(type === 'course');
-            this.cdr.detectChanges();
+            this.showDeleteModal = false; 
+            this.closeModals(type === 'course'); 
           } else {
             alert(res.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
           }
@@ -602,8 +565,10 @@ export class PloComponent implements OnInit {
   openDetail(course: any) {
     this.selectedCourse = course;
     this.showDetailModal = true;
+    this.cdr.detectChanges();
   }
 
+  // 🟢 แก้ไขการเคลียร์สเตตัสให้ปิดสนิท ไม่ค้างหน้านิ่ง
   closeModals(closeDetail = false) {
     this.showCourseModal = false;
     this.showPloModal = false;
@@ -612,16 +577,17 @@ export class PloComponent implements OnInit {
     this.showDeleteModal = false;
     this.isDepartmentDropdownOpen = false;
     this.isYloYearDropdownOpen = false;
+    
     this.selectedPlo = null;
     this.selectedSubPlo = null;
     this.selectedYlo = null;
     this.isEditMode = false;
 
-    // ✅ ปิด detail modal เฉพาะเมื่อกดปุ่ม X หรือลบ course เท่านั้น
     if (closeDetail) {
       this.showDetailModal = false;
       this.selectedCourse = null;
     }
+    this.cdr.detectChanges(); 
   }
 
   getDeleteModalTitle(): string {
