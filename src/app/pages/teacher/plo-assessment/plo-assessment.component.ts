@@ -76,14 +76,12 @@ export class PloAssessmentComponent implements OnInit {
       .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          // 🛡️ ป้องกันบัคหน้าขาว: ถ้า API ส่งค่าแปลกๆ มาให้หยุดทำงาน
           if (!data || !Array.isArray(data)) {
             this.students.set([]);
             return;
           }
           const formattedData = data.map((s) => ({
             ...s,
-            // 🛡️ ป้องกันบัคหน้าขาว: ถ้าชื่อหรือรหัสเป็น Null ให้ใส่ค่าว่างไปแทน
             name: s.name || 'ไม่ระบุชื่อ',
             studentId: s.studentId || '-',
             img: s.img
@@ -158,39 +156,47 @@ export class PloAssessmentComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 🎯 อัปเดต: กดปุ่มเดิมซ้ำ = ยกเลิกการเลือก (Untick)
   setYLOStatus(pIndex: number, sIndex: number, yIndex: number, status: 'passed' | 'failed') {
     const plos = [...this.evalPLOs()];
     const targetYLO = plos[pIndex].sub_plos[sIndex].ylos[yIndex];
+    const newStatus = targetYLO.status === status ? null : status;
+    const targetYloName = targetYLO.ylo_name;
 
-    // ถ้าสถานะปัจจุบันตรงกับปุ่มที่กด ให้เคลียร์กลับเป็น null (ยกเลิก)
-    if (targetYLO.status === status) {
-      targetYLO.status = null;
-    } else {
-      targetYLO.status = status;
-    }
+    // อัปเดต YLO ที่ชื่อตรงกันทั้งหมด
+    plos.forEach((plo) => {
+      plo.sub_plos?.forEach((sub) => {
+        sub.ylos?.forEach((ylo) => {
+          if (ylo.ylo_name === targetYloName) {
+            ylo.status = newStatus;
+          }
+        });
+      });
+    });
 
     this.evalPLOs.set(plos);
   }
 
+  // 🎯 ความคืบหน้าของ SubPLO = (จำนวน YLO ที่ผ่าน / YLO ทั้งหมดใน SubPLO นั้น)
   calculateSubPLOProgress(sub: EvalSubPLO): number {
     if (!sub.ylos || sub.ylos.length === 0) return 0;
     const passed = sub.ylos.filter((y) => y.status === 'passed').length;
     return Math.round((passed / sub.ylos.length) * 100);
   }
 
+  // 🎯 อัปเดตโลจิกใหม่: ความคืบหน้าของ PLO = (เอาเปอร์เซ็นต์ของทุก SubPLO มาบวกกัน / จำนวน SubPLO)
   calculatePLOProgress(plo: EvalPLO): number {
-    let totalYLOs = 0;
-    let passedYLOs = 0;
-    if (!plo.sub_plos) return 0;
+    // ถ้าไม่มี SubPLO เลย ให้ได้ 0%
+    if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
 
+    let totalSubScore = 0;
+
+    // คำนวณเปอร์เซ็นต์ของแต่ละ SubPLO แล้วเอามารวมกัน
     plo.sub_plos.forEach((sub) => {
-      if (sub.ylos) {
-        totalYLOs += sub.ylos.length;
-        passedYLOs += sub.ylos.filter((y) => y.status === 'passed').length;
-      }
+      totalSubScore += this.calculateSubPLOProgress(sub);
     });
-    return totalYLOs === 0 ? 0 : Math.round((passedYLOs / totalYLOs) * 100);
+
+    // หารด้วยจำนวน SubPLO ทั้งหมด เพื่อหาค่าเฉลี่ย
+    return Math.round(totalSubScore / plo.sub_plos.length);
   }
 
   saveEvaluation() {
@@ -200,7 +206,7 @@ export class PloAssessmentComponent implements OnInit {
 
     const evaluatedPLOs = this.evalPLOs().map((p) => ({
       code: p.plo_name,
-      score: this.calculatePLOProgress(p),
+      score: this.calculatePLOProgress(p), // ค่าใหม่ที่คำนวณจาก SubPLO จะถูกส่งไปเซฟด้วย
     }));
 
     const evaluatedYLOs: any[] = [];
@@ -238,7 +244,6 @@ export class PloAssessmentComponent implements OnInit {
 
   filteredStudents = computed(() => {
     const tab = this.activeTab();
-    // 🛡️ ป้องกันบัคหน้าขาว: ใส่ || '' ป้องกัน query เป็น null
     const query = (this.searchQuery() || '').toLowerCase().trim();
     let result = this.students();
     if (tab === 'รอประเมิน') result = result.filter((s) => s.status === 'pending');
@@ -266,7 +271,6 @@ export class PloAssessmentComponent implements OnInit {
     () => this.students().filter((s) => s.status === 'failed' && this.matchesSearch(s)).length,
   );
 
-  // 🛡️ ป้องกันบัคหน้าขาว: ดักจับ null ก่อนใช้ .toLowerCase()
   private matchesSearch(s: StudentAssessment): boolean {
     const q = (this.searchQuery() || '').toLowerCase().trim();
     if (!q) return true;
