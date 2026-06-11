@@ -257,7 +257,7 @@ export class StudentsComponent implements OnInit {
     const studentData = {
       ...this.studentForm.value,
       image: this.imagePreview,
-      user_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
+      student_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
     };
 
     this.http.post(`${environment.apiUrl}/add_student.php`, studentData).subscribe({
