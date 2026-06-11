@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFFDF0]',
     },
     {
-      label: 'บันทึกการปรึกษา (คน)', // 🎯 เปลี่ยน Label ให้ชัดเจนขึ้น
+      label: 'บันทึกการปรึกษา (คน)',
       value: 0,
       icon: 'assignment',
       bgColor: 'bg-purple-100',
@@ -73,7 +73,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO
+    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ก่อน
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
@@ -95,61 +95,73 @@ export class HomeComponent implements OnInit {
           this.dashboardStats[1].value = formattedStudents.filter(
             (s) => s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน',
           ).length;
-        },
-      });
 
-    // 2. ดึงข้อมูลนัดหมายและคำนวณการให้คำปรึกษา
-    this.http
-      .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
-      .subscribe({
-        next: (data) => {
-          const allApps = data || [];
+          // 🌟 สร้าง List รหัสนักศึกษา "เฉพาะเด็กในการดูแล 16 คนนี้" เอาไว้กรอง
+          const validStudentIds = new Set(formattedStudents.map((s) => s.id.toString()));
 
-          // 🎯 อัปเดตสถิติ: นัดหมายทั้งหมด (นับจำนวนรายการทั้งหมดที่มีในระบบ)
-          this.dashboardStats[2].value = allApps.length;
+          // 2. ดึงข้อมูลนัดหมายมาคำนวณ (ทำต่อเมื่อมีข้อมูลเด็ก 16 คนแล้ว)
+          this.http
+            .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
+            .subscribe({
+              next: (appData) => {
+                const allApps = appData || [];
 
-          // 🎯 อัปเดตสถิติ: บันทึกการปรึกษา (นับจำนวนนักศึกษาที่ไม่ซ้ำคน)
-          const completedApps = allApps.filter((app: any) => app.status === 'ดำเนินการแล้ว');
-          const consultedStudents = new Set<string>(); // ใช้ Set เพื่อกรองคนซ้ำออกอัตโนมัติ
+                // 🎯 นัดหมายทั้งหมด (นับเฉพาะนักศึกษาที่ไม่ซ้ำคน และต้องเป็นเด็กของเรา)
+                const allScheduledStudents = new Set<string>();
+                allApps.forEach((app: any) => {
+                  if (app.students && Array.isArray(app.students)) {
+                    app.students.forEach((student: any) => {
+                      // 👉 เช็คว่ารหัสเด็กคนนี้ อยู่ในแก๊ง 16 คนของเราไหม?
+                      if (student.id && validStudentIds.has(student.id.toString())) {
+                        allScheduledStudents.add(student.id.toString());
+                      }
+                    });
+                  }
+                });
+                this.dashboardStats[2].value = allScheduledStudents.size;
 
-          completedApps.forEach((app: any) => {
-            if (app.students && Array.isArray(app.students)) {
-              app.students.forEach((student: any) => {
-                if (student.id) {
-                  consultedStudents.add(student.id.toString()); // โยนรหัสเด็กใส่กล่อง
-                }
-              });
-            }
-          });
+                // 🎯 บันทึกการปรึกษา (นับเฉพาะคิวที่ทำเสร็จแล้ว และต้องเป็นเด็กของเรา)
+                const completedApps = allApps.filter((app: any) => app.status === 'ดำเนินการแล้ว');
+                const consultedStudents = new Set<string>();
 
-          // จำนวนเด็กทั้งหมดที่ไม่ซ้ำหน้า ที่เคยให้คำปรึกษาไปแล้ว
-          this.dashboardStats[3].value = consultedStudents.size;
+                completedApps.forEach((app: any) => {
+                  if (app.students && Array.isArray(app.students)) {
+                    app.students.forEach((student: any) => {
+                      if (student.id && validStudentIds.has(student.id.toString())) {
+                        consultedStudents.add(student.id.toString());
+                      }
+                    });
+                  }
+                });
+                this.dashboardStats[3].value = consultedStudents.size;
 
-          // 🎯 จัดการข้อมูลสำหรับโชว์ใน "การนัดหมายล่าสุด" (โชว์เฉพาะคิวที่ยังไม่เสร็จ)
-          const formatted = allApps
-            .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
-            .map((app: any) => {
-              const first = app.students?.[0];
-              return {
-                id: app.appointment_id,
-                studentCode: first?.id || '-',
-                name: first
-                  ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
-                  : 'ไม่ระบุ',
-                topic: app.title,
-                type: app.type,
-                note: app.note,
-                date: this.formatDate(app.appointment_date),
-                time: app.start_time?.substring(0, 5) + ' น.',
-                img: first?.img
-                  ? `${environment.apiUrl}/${first.img}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
-                isGroup: app.students.length > 1,
-                memberCount: app.students.length,
-              };
+                // 🎯 จัดการข้อมูลสำหรับโชว์ใน "การนัดหมายล่าสุด"
+                const formatted = allApps
+                  .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
+                  .map((app: any) => {
+                    const first = app.students?.[0];
+                    return {
+                      id: app.appointment_id,
+                      studentCode: first?.id || '-',
+                      name: first
+                        ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
+                        : 'ไม่ระบุ',
+                      topic: app.title,
+                      type: app.type,
+                      note: app.note,
+                      date: this.formatDate(app.appointment_date),
+                      time: app.start_time?.substring(0, 5) + ' น.',
+                      img: first?.img
+                        ? `${environment.apiUrl}/${first.img}`
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
+                      isGroup: app.students.length > 1,
+                      memberCount: app.students.length,
+                    };
+                  });
+
+                this.appointments.set(formatted);
+              },
             });
-
-          this.appointments.set(formatted);
         },
       });
   }
