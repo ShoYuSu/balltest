@@ -47,7 +47,7 @@
       <span class="material-symbols-outlined ">settings</span> จัดการประเภท
     </button>
     <button (click)="openCreateModal()"
-            class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
+            class="ml-auto bg-primary   hover:bg-primary_hover text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
       <span class="material-symbols-outlined">add</span> เพิ่มนัดหมาย
     </button>
   </div>
@@ -128,7 +128,7 @@
          (click)="$event.stopPropagation()">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-orange-500">add_circle</span> สร้างนัดหมายใหม่
+          <span class="material-symbols-outlined text-primary">add_circle</span> สร้างนัดหมายใหม่
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
@@ -247,7 +247,7 @@
 
       <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 rounded-b-2xl">
         <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
-        <button (click)="submitCreateAppointment()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">ตกลง</button>
+        <button (click)="submitCreateAppointment()" class="px-8 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary_hover transition-colors">ตกลง</button>
       </div>
     </div>
   </div>
@@ -349,7 +349,7 @@
 
       <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
         <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
-        <button (click)="submitEditAppointment()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึกการแก้ไข</button>
+        <button (click)="submitEditAppointment()" class="px-8 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary_hover transition-colors">บันทึกการแก้ไข</button>
       </div>
     </div>
   </div>
@@ -360,13 +360,13 @@
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-orange-500">assignment</span> บันทึกผลการปรึกษา
+          <span class="material-symbols-outlined text-primary">assignment</span> บันทึกผลการปรึกษา
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
       <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
         <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
-          <span class="material-symbols-outlined text-orange-500">info</span>
+          <span class="material-symbols-outlined text-primary">info</span>
           <p class="text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที และจะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา-รายบุคคล"</p>
         </div>
         <div>
@@ -392,7 +392,7 @@
                  class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1 text-orange-600">รายละเอียดที่นักศึกษาแจ้ง</label>
+          <label class="block text-sm font-bold text-gray-700 mb-1 text-primary">รายละเอียดที่นักศึกษาแจ้ง</label>
           <p class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 min-h-[48px]">{{ selectedApp.topic }}</p>
         </div>
         <div>
@@ -403,7 +403,7 @@
       </div>
       <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
         <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
-        <button (click)="submitConsultationLog()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึก</button>
+        <button (click)="submitConsultationLog()" class="px-8 py-2 bg-primary text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึก</button>
       </div>
     </div>
   </div>
@@ -430,7 +430,7 @@
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-orange-500">category</span> จัดการประเภทหัวข้อ
+          <span class="material-symbols-outlined text-primary">category</span> จัดการประเภทหัวข้อ
         </h2>
         <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
