@@ -196,6 +196,7 @@ export class StudentsComponent implements OnInit {
   email: ['', [Validators.required, Validators.email]],
   faculty: ['วิทยาศาสตร์', Validators.required],
   major: ['', Validators.required],
+  curriculum_id: [''],
   curriculum_year: [''],
   year: ['1', Validators.required],
 });
@@ -388,6 +389,7 @@ export class StudentsComponent implements OnInit {
       student.major === 'เทคโนโลยีการอาหาร'
         ? '2567'
         : '2566',
+        curriculum_id: student.curriculum_id
   });
 
   this.cdr.detectChanges();
@@ -602,16 +604,20 @@ export class StudentsComponent implements OnInit {
 selectFormMajor(major: string) {
   // หาปีหลักสูตรโดยอัตโนมัติตามเงื่อนไขบรีฟของอาจารย์
   let curriculumYear = '';
+  let curriculumId: number | null = null;
   if (major === 'เทคโนโลยีการอาหาร') {
     curriculumYear = '2567';
+    curriculumId = 2;
   } else if (major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || major === 'วิทยาการคอม') {
     curriculumYear = '2566';
+    curriculumId = 3;
   }
 
   // ⭐️ แพทช์ค่าทั้งชื่อสาขา และ ปีหลักสูตร เข้าไปใน FormGroup พร้อมกันทันที
   this.studentForm.patchValue({ 
     major: major,
-    curriculum_year: curriculumYear // มั่นใจว่าฟอร์มมี Control ชื่อนี้ หรือเพิ่มฟิลด์นี้ใน FormBuilder
+    curriculum_year: curriculumYear,
+    curriculum_id: curriculumId // มั่นใจว่าฟอร์มมี Control ชื่อนี้ หรือเพิ่มฟิลด์นี้ใน FormBuilder
   });
   
   this.isFormMajorDropdownOpen = false;

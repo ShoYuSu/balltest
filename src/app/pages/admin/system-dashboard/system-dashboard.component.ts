@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core'; //  เพิ่ม HostListener เข้ามาตรงนี้
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,15 +12,18 @@ import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-c
   styleUrl: './system-dashboard.component.css',
 })
 export class SystemDashboardComponent implements OnInit {
-  // กำหนดสิทธิ์และตัวกรองตามบรีฟอาจารย์ (ไม่สะสมข้ามปี เก็บประวัติรายเทอม)
   selectedYear!: number;
   selectedSemester: number = 1;
+  selectedMajor: string = 'all'; // 🆕 กรองภาควิชา
   userRole: string = 'admin';
   currentAdvisorId: number = 14;
 
   availableYears: number[] = [];
+  availableMajors: string[] = []; // 🆕 รายชื่อภาควิชา
+
   isYearDropdownOpen: boolean = false;
   isSemesterDropdownOpen: boolean = false;
+  isMajorDropdownOpen: boolean = false; // 🆕
 
   dashboardStats = [
     {
@@ -67,36 +70,38 @@ export class SystemDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadStats();
-    this.loadAvailableYears(); //  เปลี่ยนมาเรียกฟังก์ชันดึงปีการศึกษาก่อน เพื่อเอาค่าปีไปโหลดกราฟต่อ
+    this.loadAvailableYears();
+    this.loadAvailableMajors(); // 🆕
   }
 
-  //  ฟังก์ชันดึงปีการศึกษาที่มีข้อมูลจริงทั้งหมดมาจาก PHP
   loadAvailableYears() {
     this.http.get('http://localhost:8080/api/get_dashboard_stats.php?action=get_years').subscribe({
       next: (res: any) => {
-        this.availableYears = res; //  พัดเอาอาร์เรย์ปี พ.ศ. [2570, 2569] จาก PHP มาเก็บไว้
-        
-        // ดักเช็ก: ถ้าดึงปีมาได้สำเร็จ ให้ระบบทำการล็อกเลือกปีล่าสุด (ตัวแรกของอาเรย์) ให้ผู้ใช้อัตโนมัติ
-        if (this.availableYears && this.availableYears.length > 0) {
-          this.selectedYear = this.availableYears[0]; // หน้าจอจะถูกตั้งเป็น 2570 ทันที
-        } else {
-          this.selectedYear = 2569; // กรณีฉุกเฉินฐานข้อมูลไม่มีหลักสูตรเลย
-        }
-
-        // พอได้ปีการศึกษาที่ถูกต้องและมีอยู่จริงแล้ว ค่อยสั่งโหลดข้อมูลกราฟแสดงผลต่อครับ
-        this.loadKpiData(); 
+        this.availableYears = res;
+        this.selectedYear = this.availableYears?.length > 0 ? this.availableYears[0] : 2569;
+        this.loadKpiData();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('โหลดข้อมูลปีการศึกษาล้มเหลว:', err);
+      error: () => {
         this.selectedYear = 2569;
         this.loadKpiData();
       }
     });
   }
 
+  // 🆕 โหลดรายชื่อภาควิชาที่มีนักศึกษาจริงจาก API
+  loadAvailableMajors() {
+    this.http.get('http://localhost:8080/api/get_dashboard_stats.php?action=get_majors').subscribe({
+      next: (res: any) => {
+        this.availableMajors = res;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดภาควิชาล้มเหลว:', err)
+    });
+  }
+
   onFilterChange() {
-    this.loadKpiData(); // กดเปลี่ยนปีการศึกษาหรือเทอมแล้วข้อมูลจะรีโหลดเรียลไทม์
+    this.loadKpiData();
   }
 
   loadStats() {
@@ -107,9 +112,9 @@ export class SystemDashboardComponent implements OnInit {
           if (res.success) {
             this.dashboardStats = this.dashboardStats.map((stat) => {
               if (stat.label === 'จำนวนผู้ใช้งานทั้งหมด') return { ...stat, value: res.total };
-              if (stat.label === 'จำนวนนักศึกษา') return { ...stat, value: res.student };
-              if (stat.label === 'จำนวนอาจารย์') return { ...stat, value: res.teacher };
-              if (stat.label === 'ผู้ดูแลระบบ') return { ...stat, value: res.admin };
+              if (stat.label === 'จำนวนนักศึกษา')         return { ...stat, value: res.student };
+              if (stat.label === 'จำนวนอาจารย์')           return { ...stat, value: res.teacher };
+              if (stat.label === 'ผู้ดูแลระบบ')             return { ...stat, value: res.admin };
               return stat;
             });
             this.cdr.detectChanges();
@@ -118,18 +123,30 @@ export class SystemDashboardComponent implements OnInit {
       });
   }
 
+  // ── Dropdown toggles ──────────────────────────────────────────
   toggleYearDropdown(event: Event) {
     event.stopPropagation();
     this.isYearDropdownOpen = !this.isYearDropdownOpen;
     this.isSemesterDropdownOpen = false;
+    this.isMajorDropdownOpen = false;
   }
 
   toggleSemesterDropdown(event: Event) {
     event.stopPropagation();
     this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
     this.isYearDropdownOpen = false;
+    this.isMajorDropdownOpen = false;
   }
 
+  // 🆕
+  toggleMajorDropdown(event: Event) {
+    event.stopPropagation();
+    this.isMajorDropdownOpen = !this.isMajorDropdownOpen;
+    this.isYearDropdownOpen = false;
+    this.isSemesterDropdownOpen = false;
+  }
+
+  // ── Select handlers ───────────────────────────────────────────
   selectYear(year: number) {
     this.selectedYear = year;
     this.isYearDropdownOpen = false;
@@ -142,56 +159,54 @@ export class SystemDashboardComponent implements OnInit {
     this.onFilterChange();
   }
 
-  //  แถมโค้ดตรวจจับการคลิกด้านนอกเมนูเพื่อให้กล่องยอมหุบกลับไปอัตโนมัติครับ
-  @HostListener('document:click', ['$event'])
-  clickout(event: any) {
+  // 🆕
+  selectMajor(major: string) {
+    this.selectedMajor = major;
+    this.isMajorDropdownOpen = false;
+    this.onFilterChange();
+  }
+
+  @HostListener('document:click')
+  clickout() {
     this.isYearDropdownOpen = false;
     this.isSemesterDropdownOpen = false;
+    this.isMajorDropdownOpen = false; // 🆕
   }
 
   loadKpiData() {
-    // ป้องกันกรณีที่ฟังก์ชันเผลอทำงานตอนที่ปีการศึกษายังโหลดไม่เสร็จ
     if (!this.selectedYear) return;
 
     const apiBase = 'http://localhost:8080/api/get_dashboard_stats.php';
+    // 🆕 ส่ง major ไปกรองด้วยทุก request
+    const majorParam = `&major=${encodeURIComponent(this.selectedMajor)}`;
 
-    // 🟢 1. เรียกดึงข้อมูลร้อยละคำปรึกษา พร้อมระบบแมปคำนวณเฉดสีเขียวอัตโนมัติ
+    // Advising KPI
     this.http
-      .get(
-        `${apiBase}?action=advising_kpi&year=${this.selectedYear}&semester=${this.selectedSemester}`,
-      )
+      .get(`${apiBase}?action=advising_kpi&year=${this.selectedYear}&semester=${this.selectedSemester}${majorParam}`)
       .subscribe((res: any) => {
         this.advisingKpiData = res.map((item: any) => {
           let greenTone = '';
           let textStatus = '';
-          
-          // 💡 ตรรกะแยกความเข้มของเฉดสีเขียวตามระดับร้อยละความขยันของอาจารย์ที่ปรึกษา
+
           if (item.advising_percentage >= 90) {
-            greenTone = 'bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-200'; // 🏆 เขียวมรกตกลุ่มผู้นำ
+            greenTone  = 'bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-200';
             textStatus = '🏆 Leader Tier (ดูแลดีเยี่ยม)';
-          } else if (item.advising_percentage >= 70 && item.advising_percentage < 90) {
-            greenTone = 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-green-100';  // ✨ เขียวใบไม้ระดับมาตรฐาน
+          } else if (item.advising_percentage >= 70) {
+            greenTone  = 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-green-100';
             textStatus = '✨ Passed Tier (ผ่านเกณฑ์ดี)';
           } else {
-            greenTone = 'bg-gradient-to-r from-lime-400 to-green-400';                      // ⚡ เขียวตองอ่อนกลุ่มปรับปรุง
+            greenTone  = 'bg-gradient-to-r from-lime-400 to-green-400';
             textStatus = '⚡ Improving Tier (ควรเร่งส่งเสริม)';
           }
-          
-          // ส่งค่า Object ตัวเดิมกลับไป พร้อมเพิ่มตัวแปรแต่งสีและป้ายกำกับเข้าหน้าจอ HTML
-          return { 
-            ...item, 
-            colorClass: greenTone,
-            statusLabel: textStatus
-          };
+
+          return { ...item, colorClass: greenTone, statusLabel: textStatus };
         });
         this.cdr.detectChanges();
       });
 
-    // 🟣 2. เรียกดูผลสรุปคะแนนประเมิน PLO (คงของเดิมไว้ 100% ข้อมูลไม่หายแน่นอนครับ)
+    // PLO KPI
     this.http
-      .get(
-        `${apiBase}?action=plo_kpi&year=${this.selectedYear}&semester=${this.selectedSemester}&role=${this.userRole}&advisor_id=${this.currentAdvisorId}`,
-      )
+      .get(`${apiBase}?action=plo_kpi&year=${this.selectedYear}&semester=${this.selectedSemester}&role=${this.userRole}&advisor_id=${this.currentAdvisorId}${majorParam}`)
       .subscribe((res: any) => {
         this.ploKpiData = res;
         this.cdr.detectChanges();
