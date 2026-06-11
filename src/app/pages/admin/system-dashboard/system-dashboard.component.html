@@ -1,20 +1,14 @@
-<!-- <app-action-menu></app-action-menu> -->
-
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-8">
   <div class="max-w-7xl mx-auto space-y-8">
     <div>
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-          <h1
-            class="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-600 bg-clip-text text-transparent"
-          >
+          <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-600 bg-clip-text text-transparent">
             KPI Dashboard
           </h1>
           <p class="text-sm text-gray-500 mt-2">ระบบติดตามประสิทธิภาพและผลสัมฤทธิ์ทางการศึกษา</p>
 
-          <div
-            class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100"
-          >
+          <div class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100">
             <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse"></div>
             <span class="text-sm font-semibold text-indigo-700 uppercase">
               {{ userRole }}
@@ -22,276 +16,200 @@
           </div>
         </div>
 
-        <!-- Filter Bar -->
         <div class="flex flex-wrap gap-4 bg-slate-50 border border-gray-200 p-4 rounded-2xl shadow-sm">
-
-          <!-- ปีการศึกษา -->
           <div class="space-y-1 relative w-36">
-            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
-              ปีการศึกษา
-            </label>
-            <button
-              (click)="toggleYearDropdown($event)"
-              class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700"
-            >
+            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">ปีการศึกษา</label>
+            <button (click)="toggleYearDropdown($event)" class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700">
               <span>{{ selectedYear || 'เลือกปี' }}</span>
-              <span
-                class="material-symbols-outlined text-gray-400 text-lg transition-transform"
-                [class.rotate-180]="isYearDropdownOpen"
-              >expand_more</span>
+              <span class="material-symbols-outlined text-gray-400 text-lg transition-transform" [class.rotate-180]="isYearDropdownOpen">expand_more</span>
             </button>
-            <div
-              *ngIf="isYearDropdownOpen"
-              class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 max-h-48 overflow-y-auto animate-fade-in"
-            >
-              <button
-                *ngFor="let year of availableYears"
-                (click)="selectYear(year)"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                [class.bg-indigo-50]="selectedYear === year"
-              >
-                {{ year }}
-              </button>
+            <div *ngIf="isYearDropdownOpen" class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 max-h-48 overflow-y-auto animate-fade-in">
+              <button *ngFor="let year of availableYears" (click)="selectYear(year)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedYear === year">{{ year }}</button>
             </div>
           </div>
 
-          <!-- ภาคเรียน -->
           <div class="space-y-1 relative w-44">
-            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
-              ภาคเรียน
-            </label>
-            <button
-              (click)="toggleSemesterDropdown($event)"
-              class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700"
-            >
+            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">ภาคเรียน</label>
+            <button (click)="toggleSemesterDropdown($event)" class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700">
               <span>ภาคเรียนที่ {{ selectedSemester }}</span>
-              <span
-                class="material-symbols-outlined text-gray-400 text-lg transition-transform"
-                [class.rotate-180]="isSemesterDropdownOpen"
-              >expand_more</span>
+              <span class="material-symbols-outlined text-gray-400 text-lg transition-transform" [class.rotate-180]="isSemesterDropdownOpen">expand_more</span>
             </button>
-            <div
-              *ngIf="isSemesterDropdownOpen"
-              class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 animate-fade-in"
-            >
-              <button
-                (click)="selectSemester(1)"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                [class.bg-indigo-50]="selectedSemester === 1"
-              >ภาคเรียนที่ 1</button>
-              <button
-                (click)="selectSemester(2)"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                [class.bg-indigo-50]="selectedSemester === 2"
-              >ภาคเรียนที่ 2</button>
+            <div *ngIf="isSemesterDropdownOpen" class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 animate-fade-in">
+              <button (click)="selectSemester(1)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedSemester === 1">ภาคเรียนที่ 1</button>
+              <button (click)="selectSemester(2)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedSemester === 2">ภาคเรียนที่ 2</button>
             </div>
           </div>
 
-          <!-- 🆕 ภาควิชา -->
           <div class="space-y-1 relative w-64">
-            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
-              ภาควิชา
-            </label>
-            <button
-              (click)="toggleMajorDropdown($event)"
-              class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700"
-            >
+            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">ภาควิชา</label>
+            <button (click)="toggleMajorDropdown($event)" class="w-full px-4 py-2 text-left rounded-xl border border-gray-200 bg-white shadow-sm hover:border-indigo-400 flex justify-between items-center outline-none transition text-sm font-medium text-gray-700">
               <span class="truncate">{{ selectedMajor === 'all' ? 'ทุกภาควิชา' : selectedMajor }}</span>
-              <span
-                class="material-symbols-outlined text-gray-400 text-lg transition-transform shrink-0"
-                [class.rotate-180]="isMajorDropdownOpen"
-              >expand_more</span>
+              <span class="material-symbols-outlined text-gray-400 text-lg transition-transform shrink-0" [class.rotate-180]="isMajorDropdownOpen">expand_more</span>
             </button>
-            <div
-              *ngIf="isMajorDropdownOpen"
-              class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 max-h-48 overflow-y-auto animate-fade-in"
-            >
-              <button
-                (click)="selectMajor('all')"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                [class.bg-indigo-50]="selectedMajor === 'all'"
-              >ทุกภาควิชา</button>
-              <button
-                *ngFor="let m of availableMajors"
-                (click)="selectMajor(m)"
-                class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                [class.bg-indigo-50]="selectedMajor === m"
-              >{{ m }}</button>
+            <div *ngIf="isMajorDropdownOpen" class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 max-h-48 overflow-y-auto animate-fade-in">
+              <button (click)="selectMajor('all')" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedMajor === 'all'">ทุกภาควิชา</button>
+              <button *ngFor="let m of availableMajors" (click)="selectMajor(m)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedMajor === m">{{ m }}</button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
 
     <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-      <!-- Advising KPI Card -->
-      <div
-        class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500"
-      >
-        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+      <div class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500 flex flex-col h-[550px]">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-2 shrink-0">
           <div>
             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span class="material-symbols-outlined text-emerald-600 font-semibold text-2xl">leaderboard</span>
-              อัตราความครอบคลุมการให้คำปรึกษา
+              <span class="material-symbols-outlined text-indigo-600 font-semibold text-2xl">timeline</span>
+              กราฟเส้นอัตราความครอบคลุม
             </h3>
             <p class="text-sm text-gray-400 mt-1">
-              ประเมินประสิทธิภาพความขยันของอาจารย์ที่ปรึกษารายภาควิชา
+              แนวโน้มร้อยละการให้คำปรึกษาเปรียบเทียบแต่ละภาควิชา
             </p>
           </div>
-          <div class="px-3 py-1 bg-emerald-50 rounded-xl border border-emerald-100 shrink-0">
-            <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">ข้อมูลสแตนด์บาย</span>
+          <div class="px-3 py-1 bg-indigo-50 rounded-xl border border-indigo-100 shrink-0">
+            <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">เทรนด์ภาพรวม</span>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <div *ngFor="let item of advisingKpiData; let i = index" class="group">
-            <div class="flex justify-between items-end mb-2">
-              <div class="flex items-center gap-2.5 min-w-0 pr-4">
-                <span
-                  class="flex items-center justify-center w-6 h-6 shrink-0 rounded-lg text-xs font-black transition-colors"
-                  [ngClass]="{
-                    'bg-amber-500 text-white shadow-sm': i === 0,
-                    'bg-slate-200 text-slate-600':       i === 1,
-                    'bg-amber-700/20 text-amber-900':    i === 2,
-                    'bg-slate-100 text-slate-400':       i > 2
-                  }"
-                >{{ i + 1 }}</span>
-                <span class="font-bold text-gray-700 text-sm tracking-tight truncate group-hover:text-indigo-900 transition-colors">
-                  {{ item.major }}
-                </span>
-              </div>
-              <div class="text-right shrink-0">
-                <span class="text-base font-black text-gray-800">{{ item.advising_percentage }}%</span>
-                <span class="text-[10px] font-bold text-gray-400 block -mt-1">
-                  (เข้าพบแล้ว {{ item.advised_students }}/{{ item.total_students }} คน)
-                </span>
-              </div>
+        <div class="w-full flex-1 overflow-x-auto overflow-y-hidden relative mt-4">
+          <div class="min-w-[600px] h-full relative flex items-center">
+            <svg viewBox="0 0 800 250" class="w-full h-auto drop-shadow-sm overflow-visible">
+              <line x1="40" y1="30" x2="760" y2="30" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="86" x2="760" y2="86" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="143" x2="760" y2="143" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="200" x2="760" y2="200" stroke="#e2e8f0" stroke-width="2"/>
+
+              <text x="30" y="34" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">100%</text>
+              <text x="30" y="90" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">66%</text>
+              <text x="30" y="147" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">33%</text>
+              <text x="30" y="204" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">0%</text>
+
+              <defs>
+                <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <path [attr.d]="areaChartPath" fill="url(#lineGradient)" />
+              <path [attr.d]="lineChartPath" fill="none" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"/>
+
+              <g *ngFor="let item of advisingKpiData; let i = index" class="group cursor-pointer">
+                <line 
+                  [attr.x1]="getPointX(i)" [attr.y1]="30" 
+                  [attr.x2]="getPointX(i)" [attr.y2]="200" 
+                  stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4" 
+                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                />
+
+                <circle
+                  [attr.cx]="getPointX(i)"
+                  [attr.cy]="getPointY(item.advising_percentage)"
+                  r="10"
+                  fill="#ffffff"
+                  [attr.stroke]="item.colorHex || '#4f46e5'"
+                  stroke-width="5"
+                  class="transition-all duration-300 group-hover:r-[14px] shadow-lg"
+                />
+
+                <rect 
+                  [attr.x]="getPointX(i) - 25" 
+                  [attr.y]="getPointY(item.advising_percentage) - 42" 
+                  width="50" height="24" rx="12" fill="#1e293b" 
+                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                />
+                <text 
+                  [attr.x]="getPointX(i)" 
+                  [attr.y]="getPointY(item.advising_percentage) - 26" 
+                  text-anchor="middle" 
+                  class="text-xs font-bold fill-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  {{item.advising_percentage}}%
+                </text>
+
+                <text 
+                  [attr.x]="getPointX(i)" y="225" text-anchor="middle" 
+                  class="text-[12px] font-bold fill-gray-600 transition-colors group-hover:fill-indigo-600"
+                >
+                  {{item.major}}
+                </text>
+                <text 
+                  [attr.x]="getPointX(i)" y="240" text-anchor="middle" 
+                  class="text-[10px] font-medium fill-gray-400"
+                >
+                  ({{item.advised_students}}/{{item.total_students}})
+                </text>
+              </g>
+            </svg>
+            
+            <div *ngIf="advisingKpiData.length === 0" class="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-10">
+              <span class="material-symbols-outlined text-4xl text-slate-300">show_chart</span>
+              <p class="text-xs text-gray-400 mt-2 font-semibold">ยังไม่มีข้อมูลสถิติการให้คำปรึกษาในระบบ</p>
             </div>
-
-            <div class="relative w-full bg-slate-100 rounded-2xl h-5 p-0.5 overflow-hidden shadow-inner border border-slate-200/40">
-              <div
-                [class]="item.colorClass + ' h-full rounded-xl transition-all duration-1000 ease-out shadow-sm relative overflow-hidden'"
-                [style.width.%]="item.advising_percentage > 0 ? item.advising_percentage : 5"
-              >
-                <div class="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,rgba(255,255,255,0.3)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.3)_50%,rgba(255,255,255,0.3)_75%,transparent_75%,transparent)] bg-[length:15px_15px]"></div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5 mt-1.5 ml-1">
-              <span
-                class="text-[10px] font-bold tracking-wide"
-                [ngClass]="{
-                  'text-emerald-600': item.advising_percentage >= 90,
-                  'text-green-600':   item.advising_percentage >= 70 && item.advising_percentage < 90,
-                  'text-amber-500':   item.advising_percentage < 70
-                }"
-              >{{ item.statusLabel }}</span>
-            </div>
-          </div>
-
-          <div
-            *ngIf="advisingKpiData.length === 0"
-            class="text-center py-10 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50"
-          >
-            <span class="material-symbols-outlined text-4xl text-slate-300">supervised_user_circle</span>
-            <p class="text-xs text-gray-400 mt-2 font-semibold">ยังไม่มีข้อมูลสถิติการให้คำปรึกษาในระบบ</p>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap justify-center gap-4 text-[10px] font-black text-gray-400 uppercase tracking-wider">
-          <div class="flex items-center gap-1.5">
-            <div class="w-3 h-3 rounded bg-gradient-to-r from-emerald-500 to-teal-600"></div>
-            90-100% เขียวมรกต
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div class="w-3 h-3 rounded bg-gradient-to-r from-green-400 to-emerald-500"></div>
-            70-89% เขียวใบไม้
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div class="w-3 h-3 rounded bg-gradient-to-r from-lime-400 to-green-400"></div>
-            ต่ำกว่า 70% เขียวไลม์
           </div>
         </div>
       </div>
 
-      <!-- PLO KPI Card -->
-      <div
-        class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500"
-      >
-        <div class="flex justify-between items-start mb-6">
+      <div class="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-3xl p-7 hover:shadow-2xl transition-all duration-500 flex flex-col h-[550px]">
+        <div class="flex justify-between items-start mb-4 shrink-0">
           <div>
             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span class="material-symbols-outlined text-indigo-600 font-semibold text-2xl">analytics</span>
-              คะแนนประเมินผลลัพธ์การเรียนรู้ PLO
+              <span class="material-symbols-outlined text-emerald-600 font-semibold text-2xl">analytics</span>
+              คะแนนประเมินผลลัพธ์ (PLO)
             </h3>
             <p class="text-sm text-gray-400 mt-1">วิเคราะห์สมรรถนะเฉลี่ยนักศึกษา</p>
           </div>
-          <span
-            class="text-xs px-4 py-2 rounded-full font-semibold shadow-sm"
-            [ngClass]="userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'"
-          >
+          <span class="text-xs px-4 py-2 rounded-full font-semibold shadow-sm" [ngClass]="userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'">
             {{ userRole === 'admin' ? 'ภาพรวมคณะ' : 'กลุ่มดูแล' }}
           </span>
         </div>
 
-        <div class="space-y-4">
-          <div
-            *ngFor="let plo of ploKpiData"
-            class="group flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/40 hover:to-white hover:shadow-lg transition-all duration-300"
-          >
+        <div class="flex-1 overflow-y-auto pr-2 space-y-3 pb-2 custom-scrollbar">
+          <div *ngFor="let plo of ploKpiData" class="group flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/40 hover:to-white hover:shadow-lg transition-all duration-300">
             <div class="flex items-center gap-4 flex-1 pr-4 min-w-0">
-              <div class="relative w-14 h-14 shrink-0 flex items-center justify-center">
-                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              
+              <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
                   <path
                     class="text-slate-100"
-                    stroke-width="3" stroke="currentColor" fill="none"
+                    stroke-width="3.5" stroke="currentColor" fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
                     [class]="plo.avg_score >= 75 ? 'text-emerald-500' : 'text-amber-500'"
                     [attr.stroke-dasharray]="plo.avg_score + ', 100'"
-                    stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none"
+                    stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                 </svg>
-                <div class="absolute flex items-center justify-center">
-                  <span class="text-[10px] font-extrabold text-gray-700 tracking-tighter">{{ plo.plo_code }}</span>
+                <div class="absolute flex items-center justify-center bg-white rounded-full w-11 h-11 shadow-inner border border-slate-50">
+                  <span class="text-xs font-black text-gray-800 tracking-tighter">{{ plo.plo_code }}</span>
                 </div>
               </div>
 
               <div class="min-w-0">
-                <p
-                  class="font-bold text-gray-700 text-xs line-clamp-2 leading-snug group-hover:text-indigo-900 transition-colors"
-                  [title]="plo.plo_description"
-                >
+                <p class="font-bold text-gray-700 text-[13px] line-clamp-2 leading-snug group-hover:text-indigo-900 transition-colors" [title]="plo.plo_description">
                   {{ plo.plo_description || 'ผลลัพธ์การเรียนรู้ตามมาตรฐานหลักสูตร' }}
                 </p>
-                <div class="flex items-center gap-1.5 mt-1 text-[10px] text-gray-400 font-medium">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full"
-                    [ngClass]="plo.avg_score >= 75 ? 'bg-emerald-500' : 'bg-amber-500'"
-                  ></span>
-                  <span>{{ plo.avg_score >= 75 ? 'ผ่านเกณฑ์มาตรฐาน' : 'ควรปรับปรุงส่งเสริม' }}</span>
+                <div class="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400 font-medium">
+                  <span class="w-2 h-2 rounded-full" [ngClass]="plo.avg_score >= 75 ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                  <span>{{ plo.avg_score >= 75 ? 'ผ่านเกณฑ์มาตรฐาน' : 'ควรปรับปรุง' }}</span>
                 </div>
               </div>
             </div>
 
             <div class="shrink-0 text-right">
-              <span
-                class="text-xl font-black block tracking-tight"
-                [ngClass]="plo.avg_score >= 75 ? 'text-emerald-600' : 'text-amber-500'"
-              >{{ plo.avg_score }}%</span>
+              <span class="text-xl font-black block tracking-tight" [ngClass]="plo.avg_score >= 75 ? 'text-emerald-600' : 'text-amber-500'">
+                {{ plo.avg_score }}%
+              </span>
             </div>
           </div>
 
-          <div
-            *ngIf="ploKpiData.length === 0"
-            class="text-center py-12 text-gray-400 text-xs font-semibold"
-          >
+          <div *ngIf="ploKpiData.length === 0" class="flex items-center justify-center h-full text-gray-400 text-sm font-semibold">
             ยังไม่มีข้อมูลประเมิน PLO สำหรับภาคเรียนนี้
           </div>
         </div>

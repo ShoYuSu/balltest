@@ -257,7 +257,7 @@ export class StudentsComponent implements OnInit {
     const studentData = {
       ...this.studentForm.value,
       image: this.imagePreview,
-      student_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
+      user_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
     };
 
     this.http.post(`${environment.apiUrl}/add_student.php`, studentData).subscribe({
@@ -402,7 +402,7 @@ export class StudentsComponent implements OnInit {
 
   this.http
     .post(`${environment.apiUrl}/toggle_student_status.php`, {
-      student_id: student.student_id,
+      student_id: student.student_id, // ✅ เปลี่ยนจาก user_id เป็น student_id
       status: newStatus,
     })
     .subscribe({
@@ -415,7 +415,7 @@ export class StudentsComponent implements OnInit {
 
           alert(
             newStatus === 'inactive'
-              ? 'ซ่อนนักศึกษาเรียบร้อย'
+              ? 'เปลี่ยนสถานะนักศึกษาเป็นศิษย์เก่าเรียบร้อย'
               : 'เปิดการมองเห็นนักศึกษาเรียบร้อย'
           );
         }
