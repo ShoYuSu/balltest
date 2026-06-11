@@ -122,7 +122,7 @@
 </div>
 
 @if (isCreateModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible"
          (click)="$event.stopPropagation()">
@@ -133,7 +133,7 @@
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
 
         <div class="relative">
           <label class="block text-sm font-bold text-gray-700 mb-2">เลือกนักศึกษา</label>
@@ -149,7 +149,7 @@
                    [ngClass]="newApp.studentId ? 'border-orange-400 bg-orange-50/30' : ''">
           </div>
           @if (isStudentDropdownOpen()) {
-            <div class="absolute w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto">
+            <div class="absolute w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto overscroll-contain">
               @for (std of filteredStudents(); track std.student_code) {
                 <div (click)="selectStudent(std)"
                      class="flex items-center gap-4 p-4 hover:bg-orange-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
@@ -195,7 +195,7 @@
                    placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
             @if (isCreateTypeOpen()) {
-              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto">
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredCreateTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="newApp.type === t ? 'bg-orange-50' : ''">
@@ -245,7 +245,7 @@
         </div>
       </div>
 
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 rounded-b-2xl">
         <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
         <button (click)="submitCreateAppointment()" class="px-8 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">ตกลง</button>
       </div>
@@ -254,7 +254,7 @@
 }
 
 @if (isEditModalOpen() && selectedApp) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible"
          (click)="$event.stopPropagation()">
@@ -265,7 +265,7 @@
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
           <input type="text" [value]="selectedApp.studentName" readonly
@@ -300,7 +300,7 @@
                    (input)="isEditTypeOpen.set(true)"
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
             @if (isEditTypeOpen()) {
-              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto">
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredEditTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="selectedApp.type === t ? 'bg-orange-50' : ''">
@@ -356,7 +356,7 @@
 }
 
 @if (isLogModalOpen() && selectedApp) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
@@ -364,7 +364,7 @@
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
         <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
           <span class="material-symbols-outlined text-orange-500">info</span>
           <p class="text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที และจะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา-รายบุคคล"</p>
@@ -410,7 +410,7 @@
 }
 
 @if (isConfirmCancelModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 text-center">
       <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="material-symbols-outlined text-4xl">warning</span>
@@ -426,7 +426,7 @@
 }
 
 @if (isManageTypesModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
@@ -435,7 +435,7 @@
         <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-3 max-h-[55vh] overflow-y-auto">
+      <div class="p-6 space-y-3 max-h-[55vh] overflow-y-auto overscroll-contain">
         @if (availableTypes().length === 0) {
           <div class="text-center py-8 text-gray-400">
             <span class="material-symbols-outlined text-4xl mb-2 block text-gray-300">label_off</span>
