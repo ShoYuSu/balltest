@@ -11,7 +11,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { TableColumnModel } from '../../../shared/components/stat-cards/models/table-option';
-// import { ConfirmModalComponent } from '../../../shared/components/stat-cards/models/comfirm-modal/confirm-modal.component';
 import { environment } from '../../../../environments/environment';
 import { CurriculumManagementComponent } from '../../curriculum-management/curriculum-management.component';
 
@@ -25,7 +24,6 @@ import { CurriculumManagementComponent } from '../../curriculum-management/curri
     HttpClientModule,
     StatCardsComponent,
     ButtonComponent,
-    // ConfirmModalComponent,
     CurriculumManagementComponent,
   ],
   templateUrl: './students.html',
@@ -146,8 +144,6 @@ export class StudentsComponent implements OnInit {
   ];
 
   isModalOpen = false;
-  // isDeleteModalOpen = false;
-  // studentToDelete: any = null;
   submitted = false;
   searchText = '';
   imagePreview: string | ArrayBuffer | null = null;
@@ -176,10 +172,14 @@ export class StudentsComponent implements OnInit {
   newMajorName: string = '';
   isCurriculumModalOpen = false;
 
+  // 💡 [เพิ่มใหม่] ตัวแปรสำหรับคุมระบบแบ่งหน้า (Pagination) หน้าละ 5 คน
+  currentPage: number = 1;
+  pageSize: number = 5;
+
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef, // เพิ่มเพื่อบังคับ Refresh หน้าจอ
+    private cdr: ChangeDetectorRef,
   ) {
     this.initForm();
   }
@@ -191,29 +191,29 @@ export class StudentsComponent implements OnInit {
 
   initForm() {
     this.studentForm = this.fb.group({
-  student_code: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
-  full_name: ['', Validators.required],
-  email: ['', [Validators.required, Validators.email]],
-  faculty: ['วิทยาศาสตร์', Validators.required],
-  major: ['', Validators.required],
-  curriculum_id: [''],
-  curriculum_year: [''],
-  year: ['1', Validators.required],
-});
+      student_code: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      full_name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      faculty: ['วิทยาศาสตร์', Validators.required],
+      major: ['', Validators.required],
+      curriculum_id: [''],
+      curriculum_year: [''],
+      year: ['1', Validators.required],
+    });
   }
 
-  // 2. ปรับการดึงข้อมูลให้นิ่งและรองรับ Change Detection
   loadStudents() {
     this.http.get<any[]>(`${environment.apiUrl}/get_students.php`).subscribe({
       next: (res) => {
-        // ใช้ Spread Operator เพื่อสร้าง Array ใหม่ ป้องกันปัญหา UI ไม่ยอม Refresh
         this.students = [...res];
         this.updateStats();
-        this.cdr.detectChanges(); // สั่งให้ Angular วาดหน้าจอทันที
+        this.currentPage = 1; // 💡 รีเซ็ตกลับไปหน้า 1 เสมอเมื่อโหลดข้อมูลใหม่
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Fetch error:', err),
     });
   }
+
   addNewMajor() {
     const trimmedMajor = this.newMajorName.trim();
     if (trimmedMajor) {
@@ -225,7 +225,6 @@ export class StudentsComponent implements OnInit {
               if (!this.majors.includes(trimmedMajor)) {
                 this.majors.push(trimmedMajor);
               }
-              // เลือกสาขานี้ให้ฟอร์มทันทีเพื่อให้ Valid และกดบันทึกได้
               this.selectMajor(trimmedMajor);
               this.newMajorName = '';
             } else {
@@ -257,12 +256,11 @@ export class StudentsComponent implements OnInit {
     const studentData = {
       ...this.studentForm.value,
       image: this.imagePreview,
-      student_id: this.isEditMode ? this.editingStudentId : null, // ส่งรูป Base64 ไปยัง PHP
+      student_id: this.isEditMode ? this.editingStudentId : null,
     };
 
     this.http.post(`${environment.apiUrl}/add_student.php`, studentData).subscribe({
       next: (response: any) => {
-        // รองรับทั้ง status success และ success: true
         if (response && (response.status === 'success' || response.success)) {
           alert('บันทึกข้อมูลสำเร็จ!');
           this.loadStudents();
@@ -280,54 +278,69 @@ export class StudentsComponent implements OnInit {
     });
   }
 
-  // --- UI Helpers ---
   updateStats() {
     const totalStudents = this.students.length;
-    
-    // 1. นับจำนวนคนที่มีที่ปรึกษา (ต้องมีค่า, ไม่ใช่ค่าว่าง และไม่ใช่ขีด '-')
     const studentsWithAdvisor = this.students.filter(
       (s) => s.advisor_name && s.advisor_name.trim() !== '' && s.advisor_name !== '-'
     ).length;
-
-    // 2. คนที่ยังไม่มีที่ปรึกษา (เอาจำนวนทั้งหมด ลบด้วยคนที่มีที่ปรึกษาแล้ว)
     const studentsWithoutAdvisor = totalStudents - studentsWithAdvisor;
 
-    // 3. อัปเดตค่าเข้ากล่องสถิติทั้ง 3 กล่องให้ครบ
-    this.studentStats[0].value = totalStudents;          // กล่องสีเขียว: นักศึกษาทั้งหมด
-    this.studentStats[1].value = studentsWithAdvisor;    // กล่องสีเหลือง: มีที่ปรึกษาแล้ว
-    this.studentStats[2].value = studentsWithoutAdvisor; // กล่องสีแดง: ยังไม่มีที่ปรึกษา
+    this.studentStats[0].value = totalStudents;
+    this.studentStats[1].value = studentsWithAdvisor;
+    this.studentStats[2].value = studentsWithoutAdvisor;
   }
 
+  // 💡 [จุดแก้ไขหลัก] ฟังก์ชันค้นหาและกรองข้อมูลแบบแบ่งหน้าละ 5 คน
   get filteredStudents() {
     const search = this.searchText.toLowerCase();
 
-    return this.students.filter((s) => {
-      // ตรวจสอบกล่องพิมพ์ Search
+    // 1. ทำการกรองค้นหาตามคำค้นหา/สาขา/ชั้นปีให้เสร็จก่อน
+    const filtered = this.students.filter((s) => {
       const matchesSearch =
         (s.full_name || '').toLowerCase().includes(search) ||
         (s.student_code || '').includes(search);
-
-      // ตรวจสอบ Dropdown สาขา
       const matchesMajor = this.selectedMajor === '' || s.major === this.selectedMajor;
-
-      // ตรวจสอบ Dropdown ชั้นปี (แปลงเป็น string ป้องกัน Type Error)
       const matchesYear = this.selectedYear === '' || String(s.year) === String(this.selectedYear);
 
       return matchesSearch && matchesMajor && matchesYear;
     });
+
+    // 2. คำนวณตัดแบ่งข้อมูลส่งออกไปแสดงผลบนตารางแค่ 5 คนเฉพาะของหน้านั้น ๆ
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return filtered.slice(startIndex, startIndex + this.pageSize);
   }
-  toggleGradeDropdown(courseId: number) {
-    if (this.activeGradeDropdownId === courseId) {
-      this.activeGradeDropdownId = null; // ถ้ากดซ้ำช่องเดิมให้หุบปิด
-    } else {
-      this.activeGradeDropdownId = courseId; // เปิดช่องใหม่
+
+  // 💡 [เพิ่มใหม่] ฟังก์ชันสำหรับคำนวณจำนวนหน้าทั้งหมดที่มี (เพื่อให้ฝั่ง HTML ทำปุ่ม กดเปลี่ยนหน้า)
+  get totalPages(): number {
+    const search = this.searchText.toLowerCase();
+    const filteredCount = this.students.filter((s) => {
+      const matchesSearch = (s.full_name || '').toLowerCase().includes(search) || (s.student_code || '').includes(search);
+      const matchesMajor = this.selectedMajor === '' || s.major === this.selectedMajor;
+      const matchesYear = this.selectedYear === '' || String(s.year) === String(this.selectedYear);
+      return matchesSearch && matchesMajor && matchesYear;
+    }).length;
+
+    return Math.ceil(filteredCount / this.pageSize) || 1;
+  }
+
+  // 💡 [เพิ่มใหม่] ฟังก์ชันจังหวะกดเปลี่ยนหน้า
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cdr.detectChanges();
     }
   }
-  selectGrade(courseId: number, gradeValue: string) {
-    // 1. สั่งบันทึกข้อมูลและอัปเดตสเตตัสตัวแปรเกรดในระบบ
-    this.onCourseStateChange(courseId, 'grade', gradeValue);
 
-    // 2. ปิดหน้าต่างตัวเลือกเกรดที่กางอยู่ลงทันที
+  toggleGradeDropdown(courseId: number) {
+    if (this.activeGradeDropdownId === courseId) {
+      this.activeGradeDropdownId = null;
+    } else {
+      this.activeGradeDropdownId = courseId;
+    }
+  }
+
+  selectGrade(courseId: number, gradeValue: string) {
+    this.onCourseStateChange(courseId, 'grade', gradeValue);
     this.activeGradeDropdownId = null;
   }
 
@@ -339,20 +352,17 @@ export class StudentsComponent implements OnInit {
   }
 
   closeModal() {
-  this.isModalOpen = false;
-  this.submitted = false;
-  this.isEditMode = false;
-
-  this.studentForm.reset({
-    faculty: 'วิทยาศาสตร์',
-    year: '1',
-    curriculum_year: '',
-  });
-
-  this.imagePreview = null;
-
-  this.cdr.detectChanges();
-}
+    this.isModalOpen = false;
+    this.submitted = false;
+    this.isEditMode = false;
+    this.studentForm.reset({
+      faculty: 'วิทยาศาสตร์',
+      year: '1',
+      curriculum_year: '',
+    });
+    this.imagePreview = null;
+    this.cdr.detectChanges();
+  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -360,135 +370,80 @@ export class StudentsComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result;
-        this.cdr.detectChanges(); // บังคับให้พรีวิวรูปขึ้นทันที
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
   }
 
- editStudent(student: any) {
-  this.isEditMode = true;
-   this.editingStudentId = student.student_id;
+  editStudent(student: any) {
+    this.isEditMode = true;
+    this.editingStudentId = student.student_id;
+    this.studentForm.reset();
+    this.isModalOpen = true;
+    this.imagePreview = student.image ? `http://localhost:8080/api/${student.image}` : null;
 
-  this.studentForm.reset();
-
-  this.isModalOpen = true;
-
-  this.imagePreview = student.image
-    ? `http://localhost:8080/api/${student.image}`
-    : null;
-
-  this.studentForm.patchValue({
-    student_code: student.student_code,
-    full_name: student.full_name,
-    email: student.email,
-    faculty: student.faculty,
-    major: student.major,
-    year: student.year,
-    curriculum_year:
-      student.major === 'เทคโนโลยีการอาหาร'
-        ? '2567'
-        : '2566',
-        curriculum_id: student.curriculum_id
-  });
-
-  this.cdr.detectChanges();
-}
-  toggleStudentStatus(student: any) {
-  const newStatus =
-    student.status === 'inactive'
-      ? 'active'
-      : 'inactive';
-
-  this.http
-    .post(`${environment.apiUrl}/toggle_student_status.php`, {
-      student_id: student.student_id, // ✅ เปลี่ยนจาก user_id เป็น student_id
-      status: newStatus,
-    })
-    .subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          student.status = newStatus;
-
-          this.updateStats();
-          this.cdr.detectChanges();
-
-          alert(
-            newStatus === 'inactive'
-              ? 'เปลี่ยนสถานะนักศึกษาเป็นศิษย์เก่าเรียบร้อย'
-              : 'เปิดการมองเห็นนักศึกษาเรียบร้อย'
-          );
-        }
-      },
-      error: () => {
-        alert('เกิดข้อผิดพลาด');
-      },
+    this.studentForm.patchValue({
+      student_code: student.student_code,
+      full_name: student.full_name,
+      email: student.email,
+      faculty: student.faculty,
+      major: student.major,
+      year: student.year,
+      curriculum_year: student.major === 'เทคโนโลยีการอาหาร' ? '2567' : '2566',
+      curriculum_id: student.curriculum_id
     });
-}
 
-  // confirmDelete() {
-  //   if (this.studentToDelete) {
-  //     this.http
-  //       .post(`${environment.apiUrl}/delete_student.php`, {
-  //         student_id: this.studentToDelete.student_id,
-  //       })
-  //       .subscribe({
-  //         next: (res: any) => {
-  //           if (res.success) {
-  //             // แจ้งเตือนย้ายสถานะเรียบร้อย
-  //             alert('ย้ายสถานะนักศึกษาเป็นนักศึกษาเก่าเรียบร้อยแล้ว');
+    this.cdr.detectChanges();
+  }
 
-  //             // ⭐️ สั่งให้แถวของนักศึกษาคนนี้กลายเป็นสีเทาทันทีบนหน้าจอ
-  //             const target = this.students.find(
-  //               (s) => s.student_id === this.studentToDelete.student_id,
-  //             );
-  //             if (target) {
-  //               target.status = 'inactive';
-  //             }
+  toggleStudentStatus(student: any) {
+    const newStatus = student.status === 'inactive' ? 'active' : 'inactive';
 
-  //             this.updateStats(); // คำนวณยอดสถิติใหม่
-  //             this.isDeleteModalOpen = false;
-  //             this.cdr.detectChanges(); // บังคับ Refresh หน้าจอ
-  //           } else {
-  //             alert(res.message);
-  //           }
-  //         },
-  //         error: () => alert('เกิดข้อผิดพลาดทางเซิร์ฟเวอร์'),
-  //       });
-  //   }
-  // }
- openStudentCurriculum(student: any) {
-  this.selectedStudentForCurriculum = student;
-
-  this.curriculumData = [];
-  this.studentCoursesState = {};
-  this.activeGradeDropdownId = null;
-
-  this.isStudentCurriculumOpen = true;
-
-  setTimeout(() => {
     this.http
-      .get<any[]>(
-        `${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(student.major)}`
-      )
+      .post(`${environment.apiUrl}/toggle_student_status.php`, {
+        student_id: student.student_id,
+        status: newStatus,
+      })
       .subscribe({
-        next: (res) => {
-          console.log('curriculum by major:', res);
+        next: (res: any) => {
+          if (res.success) {
+            student.status = newStatus;
+            this.updateStats();
+            this.cdr.detectChanges();
 
-          this.curriculumData = Array.isArray(res) ? [...res] : [];
-
-          this.cdr.detectChanges();
-
-          this.loadStudentPassedCourses(student.student_id);
+            alert(
+              newStatus === 'inactive'
+                ? 'เปลี่ยนสถานะนักศึกษาเป็นศิษย์เก่าเรียบร้อย'
+                : 'เปิดการมองเห็นนักศึกษาเรียบร้อย'
+            );
+          }
         },
-        error: (err) => {
-          console.error('โหลดหลักสูตรไม่สำเร็จ', err);
-        },
+        error: () => alert('เกิดข้อผิดพลาด'),
       });
-  }, 0);
-}
+  }
 
-  // ปรับฟังก์ชันโหลดประวัติเรียนผ่านให้สั่งอัปเดตหน้าจอด้วยเช่นกัน (ติ๊กถูกจะได้เด้งขึ้นมา)
+  openStudentCurriculum(student: any) {
+    this.selectedStudentForCurriculum = student;
+    this.curriculumData = [];
+    this.studentCoursesState = {};
+    this.activeGradeDropdownId = null;
+    this.isStudentCurriculumOpen = true;
+
+    setTimeout(() => {
+      this.http
+        .get<any[]>(`${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(student.major)}`)
+        .subscribe({
+          next: (res) => {
+            this.curriculumData = Array.isArray(res) ? [...res] : [];
+            this.cdr.detectChanges();
+            this.loadStudentPassedCourses(student.student_id);
+          },
+          error: (err) => console.error('โหลดหลักสูตรไม่สำเร็จ', err),
+        });
+    }, 0);
+  }
+
   loadStudentPassedCourses(studentId: number) {
     this.http
       .get<any[]>(`${environment.apiUrl}/get_student_passed_courses.php?student_id=${studentId}`)
@@ -502,18 +457,16 @@ export class StudentsComponent implements OnInit {
                   isChecked: true,
                   grade: item.grade || '-',
                   semester: item.semester,
-                  year: item.year ,
+                  year: item.year,
                 },
               };
             });
-            // สั่งอัปเดตตัวติ๊กถูกบนหน้าจอ
             this.cdr.detectChanges();
           }
         },
       });
   }
 
-  // ฟังก์ชันจังหวะกด ติ๊กถูก/ติ๊กออก วงกลมหน้าวิชา
   toggleCourseStatus(courseId: number) {
     const isCurrentlyChecked = this.studentCoursesState[courseId]?.isChecked || false;
 
@@ -532,7 +485,6 @@ export class StudentsComponent implements OnInit {
     }
   }
 
-  // ฟังก์ชันจังหวะที่แอดมินคลิกเปลี่ยนเกรด หรือเปลี่ยนเทอม/ปี ในตาราง
   onCourseStateChange(courseId: number, field: 'grade' | 'semester' | 'year', value: any) {
     if (!this.studentCoursesState[courseId]) {
       this.studentCoursesState[courseId] = { isChecked: true, grade: '-', semester: null, year: null };
@@ -545,7 +497,6 @@ export class StudentsComponent implements OnInit {
     this.updateCourseOnServer(courseId);
   }
 
-  // ฟังก์ชันส่วนกลางสำหรับส่งข้อมูลปัจจุบันไปเซฟหลังบ้าน
   updateCourseOnServer(courseId: number) {
     const state = this.studentCoursesState[courseId];
     this.http
@@ -564,10 +515,6 @@ export class StudentsComponent implements OnInit {
     return Object.values(this.studentCoursesState).filter((v) => v.isChecked).length;
   }
 
-  // cancelDelete() {
-  //   this.isDeleteModalOpen = false;
-  // }
-
   toggleYearDropdown() {
     this.isYearDropdownOpen = !this.isYearDropdownOpen;
     if (this.isYearDropdownOpen) this.isMajorDropdownOpen = false;
@@ -577,20 +524,25 @@ export class StudentsComponent implements OnInit {
     this.isMajorDropdownOpen = !this.isMajorDropdownOpen;
     if (this.isMajorDropdownOpen) this.isYearDropdownOpen = false;
   }
+
   get uniqueMajors() {
     if (!this.students) return [];
     const majorsFromStudents = this.students.map((s) => s.major).filter((m) => m);
     return [...new Set(majorsFromStudents)];
   }
+
   selectYear(year: any) {
     this.selectedYear = year;
     this.isYearDropdownOpen = false;
+    this.currentPage = 1; // 💡 รีเซ็ตหน้ากลับมาหน้า 1 เสมอเมื่อเปลี่ยนตัวกรอง
   }
 
   selectMajor(major: string) {
     this.selectedMajor = major;
     this.isMajorDropdownOpen = false;
+    this.currentPage = 1; // 💡 รีเซ็ตหน้ากลับมาหน้า 1 เสมอเมื่อเปลี่ยนตัวกรอง
   }
+
   toggleFormMajorDropdown() {
     this.isFormMajorDropdownOpen = !this.isFormMajorDropdownOpen;
     if (this.isFormMajorDropdownOpen) this.isFormYearDropdownOpen = false;
@@ -601,46 +553,44 @@ export class StudentsComponent implements OnInit {
     if (this.isFormYearDropdownOpen) this.isFormMajorDropdownOpen = false;
   }
 
-selectFormMajor(major: string) {
-  // หาปีหลักสูตรโดยอัตโนมัติตามเงื่อนไขบรีฟของอาจารย์
-  let curriculumYear = '';
-  let curriculumId: number | null = null;
-  if (major === 'เทคโนโลยีการอาหาร') {
-    curriculumYear = '2567';
-    curriculumId = 2;
-  } else if (major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || major === 'วิทยาการคอม') {
-    curriculumYear = '2566';
-    curriculumId = 3;
+  selectFormMajor(major: string) {
+    let curriculumYear = '';
+    let curriculumId: number | null = null;
+    if (major === 'เทคโนโลยีการอาหาร') {
+      curriculumYear = '2567';
+      curriculumId = 2;
+    } else if (major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || major === 'วิทยาการคอม') {
+      curriculumYear = '2566';
+      curriculumId = 3;
+    }
+
+    this.studentForm.patchValue({ 
+      major: major,
+      curriculum_year: curriculumYear,
+      curriculum_id: curriculumId
+    });
+    
+    this.isFormMajorDropdownOpen = false;
   }
 
-  // ⭐️ แพทช์ค่าทั้งชื่อสาขา และ ปีหลักสูตร เข้าไปใน FormGroup พร้อมกันทันที
-  this.studentForm.patchValue({ 
-    major: major,
-    curriculum_year: curriculumYear,
-    curriculum_id: curriculumId // มั่นใจว่าฟอร์มมี Control ชื่อนี้ หรือเพิ่มฟิลด์นี้ใน FormBuilder
-  });
-  
-  this.isFormMajorDropdownOpen = false;
-}
-prepareStudentData() {
-  const formValue = this.studentForm.value;
-  let detectedYear = formValue.curriculum_year;
+  prepareStudentData() {
+    const formValue = this.studentForm.value;
+    let detectedYear = formValue.curriculum_year;
 
-  if (formValue.major === 'เทคโนโลยีการอาหาร') {
-    detectedYear = '2567';
-  } else if (formValue.major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
-    detectedYear = '2566';
+    if (formValue.major === 'เทคโนโลยีการอาหาร') {
+      detectedYear = '2567';
+    } else if (formValue.major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
+      detectedYear = '2566';
+    }
+
+    return {
+      ...formValue,
+      curriculum_year: detectedYear
+    };
   }
-
-  // คืนค่าออบเจกต์ข้อมูลที่จะยิงไปหา API หลังบ้าน
-  return {
-    ...formValue,
-    curriculum_year: detectedYear
-  };
-}
 
   selectFormYear(year: number) {
-    this.studentForm.patchValue({ year: year.toString() }); // ⭐️ ยัดค่าเข้า FormGroup
-    this.isFormYearDropdownOpen = false; // เลือกเสร็จปิดกล่องชั้นปีในฟอร์ม
+    this.studentForm.patchValue({ year: year.toString() });
+    this.isFormYearDropdownOpen = false;
   }
 }

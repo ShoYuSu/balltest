@@ -11,6 +11,7 @@ import { TableColumnModel } from '../../../shared/components/stat-cards/models/t
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ChangeDetectorRef } from '@angular/core';
+import Swal from 'sweetalert2';
 
 @Component({
   standalone: true,
@@ -55,7 +56,7 @@ export class PloComponent implements OnInit {
   deleteTargetType: string = '';
   isEditMode = false;
   isYloYearDropdownOpen = false;
-  hasYearLevel = true; 
+  hasYearLevel = true;
 
   public columns: TableColumnModel[] = [
     {
@@ -151,6 +152,7 @@ export class PloComponent implements OnInit {
 
   initForms() {
     this.courseForm = this.fb.group({
+       curriculum_id: [null], 
       curriculum_name: ['', Validators.required],
       dept_id: [1, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
@@ -244,7 +246,7 @@ export class PloComponent implements OnInit {
           this.cdr.detectChanges();
           resolve();
         },
-        error: (err) => reject(err)
+        error: (err) => reject(err),
       });
     });
   }
@@ -276,11 +278,10 @@ export class PloComponent implements OnInit {
     this.isYloYearDropdownOpen = !this.isYloYearDropdownOpen;
   }
 
-  // 🟢 อัปเดตเมื่อเลือกชั้นปี เพื่อให้รหัส YLO ในกล่อง Preview คำนวณใหม่ตามทันที
   selectYloYear(year: number) {
     this.yloForm.patchValue({ year: year });
     this.isYloYearDropdownOpen = false;
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   openEditCourse(course: any) {
@@ -304,7 +305,7 @@ export class PloComponent implements OnInit {
 
   openEditPlo(plo: any) {
     this.isEditMode = true;
-    this.selectedPlo = plo;
+    this.selectedPlo = { ...plo }; // ✅ clone เพื่อกัน reference หาย
     this.ploForm.patchValue({
       plo_name: plo.plo_name || plo.code,
       description: plo.description,
@@ -314,15 +315,15 @@ export class PloComponent implements OnInit {
 
   openAddSubPlo(plo: any) {
     this.isEditMode = false;
-    this.selectedPlo = plo;
+    this.selectedPlo = { ...plo }; // ✅ clone
     this.subPloForm.reset();
     this.showSubPloModal = true;
   }
 
   openEditSubPlo(plo: any, subPlo: any) {
     this.isEditMode = true;
-    this.selectedPlo = plo;
-    this.selectedSubPlo = subPlo;
+    this.selectedPlo = { ...plo };       // ✅ clone
+    this.selectedSubPlo = { ...subPlo }; // ✅ clone
     this.subPloForm.patchValue({
       description: subPlo.description,
     });
@@ -331,12 +332,12 @@ export class PloComponent implements OnInit {
 
   openAddYloCustom(plo: any, subPlo?: any) {
     this.isEditMode = false;
-    this.selectedPlo = plo;
-    this.selectedSubPlo = subPlo;
+    this.selectedPlo = { ...plo };                              // ✅ clone
+    this.selectedSubPlo = subPlo ? { ...subPlo } : null;        // ✅ clone
     this.hasYearLevel = true;
     this.yloForm.reset({
       ylo_id: '',
-      year: 1, 
+      year: 1,
       description: '',
       sub_plo_id: subPlo ? subPlo.sub_plo_id : null,
     });
@@ -344,7 +345,6 @@ export class PloComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 🟢 คำนวณรหัสทศนิยมอิงตามตัวเลขของชื่อ PLO (เช่น PLO6 -> 2.6 หรือ 1.6)
   getDynamicYloLabel(): string {
     if (!this.selectedPlo) return '';
     const currentYear = this.yloForm.get('year')?.value || 1;
@@ -354,14 +354,14 @@ export class PloComponent implements OnInit {
 
   openEditYlo(plo: any, ylo: any) {
     this.isEditMode = true;
-    this.selectedPlo = plo;
-    this.selectedYlo = ylo;
+    this.selectedPlo = { ...plo };   // ✅ clone
+    this.selectedYlo = { ...ylo };   // ✅ clone
 
     if (ylo.sub_plo_id) {
-      this.selectedSubPlo =
-        (plo.sub_plos || []).find(
-          (s: any) => String(s.sub_plo_id) === String(ylo.sub_plo_id),
-        ) || { sub_plo_id: ylo.sub_plo_id };
+      const found = (plo.sub_plos || []).find(
+        (s: any) => String(s.sub_plo_id) === String(ylo.sub_plo_id),
+      );
+      this.selectedSubPlo = found ? { ...found } : { sub_plo_id: ylo.sub_plo_id }; // ✅ clone
     } else {
       this.selectedSubPlo = null;
     }
@@ -383,30 +383,59 @@ export class PloComponent implements OnInit {
   saveCourse() {
     if (this.courseForm.invalid) {
       this.courseForm.markAllAsTouched();
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      Swal.fire({
+        icon: 'warning',
+        title: 'ข้อมูลไม่ครบถ้วน',
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนทำการบันทึก',
+        confirmButtonColor: '#6366f1',
+      });
       return;
     }
+
     const formValue = this.courseForm.getRawValue();
+    const currentId = this.courseForm.get('curriculum_id')?.value;
+
     const body = {
       type: 'curriculum',
       is_edit: this.isEditMode,
-      curriculum_id: this.isEditMode ? formValue.curriculum_id : null,
+      curriculum_id: this.isEditMode ? currentId : null,
       curriculum_name: formValue.curriculum_name,
       dept_id: Number(formValue.dept_id),
       year: formValue.year,
     };
 
+    // ✅ console.log ตรวจสอบค่าก่อนส่ง
+    console.log('[saveCourse] isEditMode:', this.isEditMode);
+    console.log('[saveCourse] body:', body);
+
     this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe({
       next: async (res: any) => {
         if (res.success) {
-          alert('บันทึกข้อมูลเรียบร้อย');
+          Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ',
+            text: res.message || 'บันทึกข้อมูลเรียบร้อย',
+            confirmButtonColor: '#6366f1',
+            timer: 1500,
+          });
           await this.loadPloYloData();
-          this.closeModals(false); 
+          this.closeModals(false);
         } else {
-          alert(res.message || 'เกิดข้อผิดพลาดในการบันทึก');
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: res.message || 'เกิดข้อผิดพลาดในการบันทึก',
+            confirmButtonColor: '#ef4444',
+          });
         }
       },
-      error: (err) => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+      error: (err) =>
+        Swal.fire({
+          icon: 'error',
+          title: 'ผิดพลาด',
+          text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้',
+          confirmButtonColor: '#ef4444',
+        }),
     });
   }
 
@@ -421,6 +450,19 @@ export class PloComponent implements OnInit {
       this.ploForm.markAllAsTouched();
       return;
     }
+
+    // ✅ ตรวจสอบ selectedPlo ก่อนบันทึก
+    if (this.isEditMode && !this.selectedPlo?.plo_id) {
+      console.error('[savePlo] isEditMode=true แต่ selectedPlo หรือ plo_id หายไป:', this.selectedPlo);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่พบข้อมูล PLO ที่จะแก้ไข กรุณาลองใหม่',
+        confirmButtonColor: '#ef4444',
+      });
+      return;
+    }
+
     const formValue = this.ploForm.value;
     const body = {
       type: 'plo',
@@ -431,14 +473,30 @@ export class PloComponent implements OnInit {
       description: formValue.description,
     };
 
+    // ✅ console.log ตรวจสอบค่าก่อนส่ง
+    console.log('[savePlo] isEditMode:', this.isEditMode);
+    console.log('[savePlo] selectedPlo:', this.selectedPlo);
+    console.log('[savePlo] body:', body);
+
     this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
       if (res.success) {
-        alert(res.message || 'บันทึก PLO สำเร็จ');
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ',
+          text: res.message || 'บันทึก PLO สำเร็จ',
+          confirmButtonColor: '#6366f1',
+          timer: 1500,
+        });
         await this.loadPloYloData();
-        this.showPloModal = false; 
+        this.showPloModal = false;
         this.closeModals(false);
       } else {
-        alert(res.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: res.message,
+          confirmButtonColor: '#ef4444',
+        });
       }
     });
   }
@@ -450,6 +508,18 @@ export class PloComponent implements OnInit {
   saveSubPlo() {
     if (this.subPloForm.invalid) {
       this.subPloForm.markAllAsTouched();
+      return;
+    }
+
+    // ✅ ตรวจสอบ selectedSubPlo ก่อนบันทึก
+    if (this.isEditMode && !this.selectedSubPlo?.sub_plo_id) {
+      console.error('[saveSubPlo] isEditMode=true แต่ selectedSubPlo หรือ sub_plo_id หายไป:', this.selectedSubPlo);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่พบข้อมูล SubPLO ที่จะแก้ไข กรุณาลองใหม่',
+        confirmButtonColor: '#ef4444',
+      });
       return;
     }
 
@@ -473,29 +543,54 @@ export class PloComponent implements OnInit {
       description: formValue.description,
     };
 
+    // ✅ console.log ตรวจสอบค่าก่อนส่ง
+    console.log('[saveSubPlo] isEditMode:', this.isEditMode);
+    console.log('[saveSubPlo] selectedSubPlo:', this.selectedSubPlo);
+    console.log('[saveSubPlo] body:', body);
+
     this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
       if (res.success) {
-        alert(res.message || 'บันทึก SubPLO สำเร็จ');
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ',
+          text: res.message || 'บันทึก SubPLO สำเร็จ',
+          confirmButtonColor: '#6366f1',
+          timer: 1500,
+        });
         await this.loadPloYloData();
-        this.showSubPloModal = false; 
+        this.showSubPloModal = false;
         this.closeModals(false);
       } else {
-        alert(res.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: res.message,
+          confirmButtonColor: '#ef4444',
+        });
       }
     });
   }
 
-  // 🟢 ปรับสูตรบันทึก YLO: ส่งรหัสชื่อแบบใหม่ไปบันทึก และเมื่อทำเสร็จให้ปิดหน้าต่างพร้อมรีโหลดข้อมูลทันที
   saveYloCustom() {
     if (this.yloForm.invalid) {
       this.yloForm.markAllAsTouched();
       return;
     }
 
+    // ✅ ตรวจสอบ selectedYlo ก่อนบันทึก
+    if (this.isEditMode && !this.selectedYlo?.ylo_id) {
+      console.error('[saveYloCustom] isEditMode=true แต่ selectedYlo หรือ ylo_id หายไป:', this.selectedYlo);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่พบข้อมูล YLO ที่จะแก้ไข กรุณาลองใหม่',
+        confirmButtonColor: '#ef4444',
+      });
+      return;
+    }
+
     const formValue = this.yloForm.value;
     const level = Number(formValue.year || 1);
-    
-    // ตั้งชื่อรหัส YLO ให้สอดคล้องกับเลข PLO หลัก เช่น YLO2.6 หรือ YLO2.2 ทันทีไม่ว่าจะเป็นโหมดแก้หรือเพิ่ม
     const ploNo = String(this.selectedPlo.plo_name).replace(/[^0-9]/g, '').trim();
     const yloName = `YLO${level}.${ploNo || '1'}`;
 
@@ -512,14 +607,30 @@ export class PloComponent implements OnInit {
       description: formValue.description,
     };
 
+    // ✅ console.log ตรวจสอบค่าก่อนส่ง
+    console.log('[saveYloCustom] isEditMode:', this.isEditMode);
+    console.log('[saveYloCustom] selectedYlo:', this.selectedYlo);
+    console.log('[saveYloCustom] body:', body);
+
     this.http.post(`${environment.apiUrl}/save_plo_ylo.php`, body).subscribe(async (res: any) => {
       if (res.success) {
-        alert('บันทึก YLO สำเร็จ');
-        await this.loadPloYloData(); // ดึงข้อมูลล่าสุดจากเซิร์ฟเวอร์
-        this.showYloModal = false;   // ปิด Modal บันทึก YLO
-        this.closeModals(false);     // รีเซ็ตสเตตัสและค้างคำสั่ง detectChanges ให้ UI เปลี่ยนทันที
+        Swal.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ',
+          text: 'บันทึก YLO สำเร็จ',
+          confirmButtonColor: '#6366f1',
+          timer: 1500,
+        });
+        await this.loadPloYloData();
+        this.showYloModal = false;
+        this.closeModals(false);
       } else {
-        alert(res.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: res.message,
+          confirmButtonColor: '#ef4444',
+        });
       }
     });
   }
@@ -548,12 +659,23 @@ export class PloComponent implements OnInit {
         .post(`${environment.apiUrl}/delete_plo_ylo.php`, { type, id })
         .subscribe(async (res: any) => {
           if (res.success) {
-            alert('ลบข้อมูลสำเร็จ');
+            Swal.fire({
+              icon: 'success',
+              title: 'ลบสำเร็จ',
+              text: 'ลบข้อมูลเรียบร้อย',
+              confirmButtonColor: '#6366f1',
+              timer: 1500,
+            });
             await this.loadPloYloData();
-            this.showDeleteModal = false; 
-            this.closeModals(type === 'course'); 
+            this.showDeleteModal = false;
+            this.closeModals(type === 'course');
           } else {
-            alert(res.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: res.message || 'เกิดข้อผิดพลาดในการลบข้อมูล',
+              confirmButtonColor: '#ef4444',
+            });
           }
         });
     } else {
@@ -568,7 +690,6 @@ export class PloComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 🟢 แก้ไขการเคลียร์สเตตัสให้ปิดสนิท ไม่ค้างหน้านิ่ง
   closeModals(closeDetail = false) {
     this.showCourseModal = false;
     this.showPloModal = false;
@@ -577,7 +698,7 @@ export class PloComponent implements OnInit {
     this.showDeleteModal = false;
     this.isDepartmentDropdownOpen = false;
     this.isYloYearDropdownOpen = false;
-    
+
     this.selectedPlo = null;
     this.selectedSubPlo = null;
     this.selectedYlo = null;
@@ -587,7 +708,7 @@ export class PloComponent implements OnInit {
       this.showDetailModal = false;
       this.selectedCourse = null;
     }
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   getDeleteModalTitle(): string {
