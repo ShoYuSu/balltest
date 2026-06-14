@@ -1,129 +1,102 @@
 .page-wrapper { display: flex; justify-content: center; }
 .content { width: 100%; max-width: 1400px; }
-.section-bg { background: #EEF2F6; border-radius: 28px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.section-bg {
+  background: #F3F4F6;
+  border-radius: 28px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
+/* Title */
 .title-row { display: flex; align-items: center; gap: 8px; color: #4B5563; font-weight: 700; font-size: 15px; }
 .title-row .material-symbols-outlined { font-size: 20px; color: #7B4A1E; }
+.advisor-count {
+  background: #7B4A1E; color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
+}
 
-.advisor-count { background: #7B4A1E; color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
-.advisor-num   { background: #EDE9FE; color: #6D28D9; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid #DDD6FE; }
-
-.advisor-block { display: flex; flex-direction: column; gap: 12px; }
-
-.empty-state { display: flex; align-items: center; gap: 10px; padding: 40px; color: #9CA3AF; font-size: 14px; justify-content: center; background: white; border-radius: 20px; }
+/* Empty */
+.empty-state {
+  display: flex; align-items: center; gap: 10px;
+  padding: 48px; color: #9CA3AF; font-size: 14px;
+  justify-content: center;
+  background: white; border-radius: 20px;
+}
 .empty-state .material-symbols-outlined { font-size: 28px; }
 
-/* ===== HERO CARD (1/4 + 3/4) ===== */
+/* ===== SINGLE CARD ===== */
 .advisor-card {
-  display: flex;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-
-/* LEFT 1/4 */
-.adv-photo-side {
-  width: 25%; flex-shrink: 0;
-  position: relative;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 10px; padding: 28px 16px;
-}
-.adv-photo-bg {
-  position: absolute; inset: 0;
-  background: #F8F4F0;
-  border-right: 1px solid #EDE8E3;
-}
-.adv-photo {
-  position: relative; z-index: 1;
-  width: 100px; height: 100px;
-  border-radius: 24px; object-fit: cover;
-  border: 3px solid white;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-}
-.adv-photo-badge {
-  position: relative; z-index: 1;
-  display: flex; align-items: center; gap: 4px;
-  background: white; color: #7B4A1E;
-  font-size: 11px; font-weight: 600;
-  padding: 4px 10px; border-radius: 999px;
-  border: 1px solid #EDE8E3;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.adv-photo-badge .material-symbols-outlined { font-size: 13px; }
-
-/* RIGHT 3/4 */
-.adv-info-side {
-  flex: 1;
-  display: flex; flex-direction: column;
   background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-.adv-bar {
-  height: 52px;
+
+/* TOP HALF */
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
   background: linear-gradient(135deg, #7B4A1E 0%, #A0622A 60%, #C8813E 100%);
+}
+
+.adv-photo {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.4);
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(123, 74, 30, 0.35);
 }
-.adv-text {
-  flex: 1;
-  padding: 20px 24px;
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 4px;
+
+.adv-info { display: flex; flex-direction: column; gap: 4px; }
+
+.adv-name-row { display: flex; align-items: center; gap: 10px; }
+.adv-name     { font-size: 19px; font-weight: 700; color: white; }
+.adv-position { font-size: 13px; color: rgba(255,255,255,0.75); }
+.advisor-num  {
+  background: rgba(255,255,255,0.2); color: white;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 999px;
 }
-.adv-name-row  { display: flex; align-items: center; gap: 10px; }
-.adv-name      { font-size: 20px; font-weight: 800; color: #111827; }
-.adv-position  { font-size: 13px; color: #6B7280; }
 
 .tag-dept {
-  background: #F3F4F6; color: #374151;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9);
   font-size: 12px; font-weight: 600;
-  padding: 5px 14px; border-radius: 999px;
-  border: 1px solid #E5E7EB;
-  white-space: nowrap; width: fit-content;
-  margin-top: 4px;
+  padding: 4px 12px; border-radius: 999px;
+  width: fit-content;
+  margin-top: 2px;
 }
 
-/* ===== CONTACT GRID ===== */
+.divider { height: 1px; background: #F1F5F9; }
+
+/* BOTTOM HALF */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 1px;
+  background: #F1F5F9;
 }
 
-.contact-card {
-  background: white; border-radius: 18px;
+.contact-item {
+  background: white;
   padding: 18px 20px;
-  display: flex; align-items: center; gap: 14px;
-  border: 1px solid #F1F5F9;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  transition: all .2s ease;
-}
-.contact-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  border-color: #E2E8F0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .contact-icon {
-  width: 46px; height: 46px; border-radius: 14px;
+  width: 40px; height: 40px;
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: transform .22s cubic-bezier(.34,1.56,.64,1),
-              box-shadow .2s ease,
-              background .2s ease,
-              color .2s ease;
 }
-.contact-card:hover .contact-icon {
-  transform: scale(1.18) translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.14);
-}
-.contact-card:hover .ci-blue   { background: #93C5FD; color: #1D4ED8; }
-.contact-card:hover .ci-green  { background: #6EE7B7; color: #047857; }
-.contact-card:hover .ci-orange { background: #FCA5A5; color: #B91C1C; }
-.contact-card:hover .ci-teal   { background: #5EEAD4; color: #0F766E; }
-.contact-card:hover .ci-purple { background: #C4B5FD; color: #6D28D9; }
-.contact-card:hover .ci-brown  { background: #FCD34D; color: #92400E; }
-.contact-icon .material-symbols-outlined { font-size: 22px; }
+.contact-icon .material-symbols-outlined { font-size: 20px; }
 
 .ci-blue   { background: #DBEAFE; color: #2563EB; }
 .ci-green  { background: #D1FAE5; color: #059669; }
@@ -132,5 +105,5 @@
 .ci-purple { background: #EDE9FE; color: #7C3AED; }
 .ci-brown  { background: #FEF3C7; color: #92400E; }
 
-.ci-label { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-bottom: 3px; }
+.ci-label { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-bottom: 2px; }
 .ci-value { font-size: 14px; color: #1F2937; font-weight: 600; }
