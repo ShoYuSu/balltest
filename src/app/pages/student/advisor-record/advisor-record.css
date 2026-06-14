@@ -111,20 +111,66 @@
 .record-list { @apply flex flex-col gap-3; }
 
 .record-card {
-  @apply flex items-center gap-4 bg-white rounded-2xl
+  @apply flex items-center gap-4 rounded-2xl
          cursor-pointer transition-all duration-200
-         shadow-sm border-l-4 border-gray-200
+         shadow-sm border-l-4
          hover:-translate-y-1 hover:shadow-md;
   padding: 20px 20px;
   min-height: 88px;
 }
 
+/* ปรึกษาแล้ว */
+.card-consulted {
+  background: #f0fdf4;
+  border-left-color: #22c55e;
+  opacity: 0.88;
+}
+.card-consulted:hover { opacity: 1; }
+
+/* รอปรึกษา */
+.card-pending {
+  background: #ffffff;
+  border-left-color: #f59e0b;
+}
+
+/* ===== CONSULT CHIP ===== */
+.consult-chip {
+  @apply flex items-center gap-1.5 text-xs font-semibold
+         px-3 py-1.5 rounded-full shrink-0 whitespace-nowrap;
+}
+
+.chip-done {
+  background: #dcfce7;
+  color: #15803d;
+}
+.chip-done .chip-icon { font-size: 15px; }
+
+.chip-wait {
+  background: #fef9c3;
+  color: #92400e;
+}
+
+.chip-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
+
 /* ===== DATE BLOCK ===== */
 .date-block {
-  @apply flex flex-col items-center justify-center bg-[#F5EFE6] text-[#8B5E3C]
+  @apply flex flex-col items-center justify-center
          rounded-xl px-3 py-2 min-w-[52px] shrink-0;
 }
-.date-day { @apply text-xl font-bold leading-none; }
+.date-consulted { background: #dcfce7; color: #15803d; }
+.date-pending   { background: #fef3c7; color: #b45309; }
+.date-day   { @apply text-xl font-bold leading-none; }
 .date-month { @apply text-xs font-medium mt-0.5 uppercase; }
 
 /* ===== RECORD BODY ===== */

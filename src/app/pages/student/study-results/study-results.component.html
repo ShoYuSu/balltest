@@ -233,101 +233,242 @@
 
       <!-- Curriculum Content -->
       @if (!modalLoading()) {
-        <div class="p-6 space-y-5">
+        <div class="overflow-auto" style="max-height: 62vh;">
+          <table class="w-full border-collapse text-sm">
 
-          <!-- Column Labels -->
-          <div class="hidden md:grid grid-cols-[120px_1fr_56px_130px_72px_100px_28px] gap-3 px-4 text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">
-            <span>รหัสวิชา</span>
-            <span>ชื่อวิชา</span>
-            <span class="text-center">นก.</span>
-            <span class="text-center">เกรด</span>
-            <span class="text-center">เทอม</span>
-            <span class="text-center">ปีการศึกษา</span>
-            <span></span>
-          </div>
+            <!-- Sticky Header -->
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-gray-100 border-b-2 border-gray-300">
+                <th class="text-left px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider w-[110px]">รหัสวิชา</th>
+                <th class="text-left px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider">ชื่อวิชา</th>
+                <th class="text-center px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider w-[48px]">นก.</th>
+                <th class="text-center px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider w-[120px]">เกรด</th>
+                <th class="text-center px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider w-[64px]">เทอม</th>
+                <th class="text-center px-3 py-2.5 font-extrabold text-gray-500 text-[11px] uppercase tracking-wider w-[90px]">ปีการศึกษา</th>
+                <th class="w-[28px]"></th>
+              </tr>
+            </thead>
 
-          @for (cat of curriculum(); track cat.category_id) {
-            <div class="border border-gray-200 rounded-2xl overflow-hidden">
+            <tbody>
+              @for (cat of curriculum(); track cat.category_id) {
 
-              <!-- Category Header -->
-              <div class="bg-gray-50 px-5 py-3.5 flex items-center justify-between border-b border-gray-200">
-                <span class="font-extrabold text-gray-800">{{ cat.category_name }}</span>
-                <span class="text-sm font-bold text-gray-500">ต้องการ {{ cat.required_credit }} หน่วยกิต</span>
-              </div>
+                <!-- Category Row (คลิกพับ/ขยาย) -->
+                <tr class="border-t border-b border-[#7B4A1E]/20 cursor-pointer select-none"
+                  (click)="toggleCat(cat.category_id)">
+                  <td colspan="7" class="px-4 py-2.5"
+                    style="background: linear-gradient(90deg, #7B4A1E 0%, #A0622A 100%);">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-white/80 transition-transform duration-200 text-[18px]"
+                          [style.transform]="isCatCollapsed(cat.category_id) ? 'rotate(-90deg)' : 'rotate(0deg)'">
+                          expand_more
+                        </span>
+                        <span class="font-extrabold text-white text-[13px] tracking-wide">
+                          {{ cat.category_name }}
+                        </span>
+                      </div>
+                      <span class="text-[11px] font-semibold text-white/70 bg-white/15 px-2.5 py-0.5 rounded-full">
+                        ต้องการ {{ cat.required_credit }} นก.
+                      </span>
+                    </div>
+                  </td>
+                </tr>
 
-              @for (mod of cat.modules; track mod.module_id) {
-                <div class="px-5 py-3 border-b border-gray-100 last:border-b-0">
+                @if (!isCatCollapsed(cat.category_id)) {
 
-                  <!-- Module Name -->
-                  <p class="text-xs font-extrabold text-primary/70 uppercase tracking-wide mb-2 mt-1">
-                    {{ mod.module_name }}
-                  </p>
+                <!-- Free Elective: ไม่มี modules → แสดง 2 ช่องค้นหา -->
+                @if (cat.modules.length === 0) {
+                  @for (slot of freeSlots(); track $index; let idx = $index) {
+                    <tr class="border-b border-gray-100" [class.bg-white]="idx === 0" [class.bg-gray-50]="idx === 1">
+                      <!-- Search Box (colspan 2: code + name) -->
+                      <td colspan="2" class="px-3 py-2 relative">
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-[11px] text-gray-400 font-bold shrink-0">ช่อง {{ idx + 1 }}</span>
+                          <div class="relative flex-1">
+                            <input type="text"
+                              [value]="slot.query"
+                              (input)="onFreeSearch(idx, $any($event.target).value)"
+                              (blur)="closeFreeDropdown(idx)"
+                              placeholder="ค้นหารหัส หรือชื่อวิชา..."
+                              class="w-full text-[12px] border border-gray-200 rounded-lg px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 pr-7"
+                              [ngClass]="slot.course ? 'border-primary/40 bg-primary/5' : ''" />
+                            @if (slot.course) {
+                              <button (click)="clearFreeSlot(idx)"
+                                class="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400 transition-colors">
+                                <span class="material-symbols-outlined" style="font-size:15px">close</span>
+                              </button>
+                            }
+                            <!-- Dropdown -->
+                            @if (slot.show && slot.results.length > 0) {
+                              <div class="absolute top-full left-0 mt-1 z-50 w-full min-w-[340px] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                                @for (c of slot.results; track c.course_id) {
+                                  <button type="button"
+                                    (click)="selectFreeCourse(idx, c)"
+                                    class="w-full text-left px-3 py-2 text-[12px] hover:bg-orange-50 flex items-center gap-2 border-b border-gray-50 last:border-0">
+                                    <span class="font-mono font-bold text-primary/80 shrink-0">{{ c.course_code }}</span>
+                                    <span class="text-gray-700 truncate">{{ c.course_name }}</span>
+                                    <span class="ml-auto text-gray-400 shrink-0">{{ c.credit }} นก.</span>
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- หน่วยกิต -->
+                      <td class="px-3 py-2 text-[12px] text-center text-gray-400 font-semibold">
+                        {{ slot.course?.credit || '-' }}
+                      </td>
+
+                      @if (slot.course) {
+                        <!-- เกรด -->
+                        <td class="px-2 py-2 text-center">
+                          <select
+                            [ngModel]="passedMap()[slot.course.course_id]?.grade || ''"
+                            (ngModelChange)="onGradeChange(slot.course.course_id, $event)"
+                            class="w-full text-[12px] font-bold text-center border rounded-lg px-1.5 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                            [ngClass]="passedMap()[slot.course.course_id]?.grade ? 'border-primary/40 text-gray-800 bg-primary/5' : 'border-gray-200 text-gray-300'">
+                            @for (g of gradeOptionsAF; track g) {
+                              <option [value]="g">{{ g || '—' }}</option>
+                            }
+                          </select>
+                        </td>
+                        <!-- เทอม -->
+                        <td class="px-2 py-2 text-center">
+                          <input type="number" min="1" max="3"
+                            [ngModel]="passedMap()[slot.course.course_id]?.semester || null"
+                            [disabled]="!passedMap()[slot.course.course_id]?.grade"
+                            (change)="onFieldChange(slot.course.course_id, 'semester', +$any($event.target).value)"
+                            placeholder="-"
+                            class="w-full text-[12px] text-center border border-gray-200 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-25 disabled:cursor-not-allowed" />
+                        </td>
+                        <!-- ปีการศึกษา -->
+                        <td class="px-2 py-2 text-center">
+                          <input type="number" min="2560" max="2580"
+                            [ngModel]="passedMap()[slot.course.course_id]?.year || null"
+                            [disabled]="!passedMap()[slot.course.course_id]?.grade"
+                            (change)="onFieldChange(slot.course.course_id, 'year', +$any($event.target).value)"
+                            placeholder="-"
+                            class="w-full text-[12px] text-center border border-gray-200 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-25 disabled:cursor-not-allowed" />
+                        </td>
+                        <!-- สถานะ -->
+                        <td class="px-1 py-2 text-center">
+                          @if (isSaving(slot.course.course_id)) {
+                            <div class="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                          } @else if (passedMap()[slot.course.course_id]?.grade) {
+                            <span class="material-symbols-outlined text-green-500" style="font-size:16px">check_circle</span>
+                          }
+                        </td>
+                      } @else {
+                        <td colspan="4" class="px-3 py-2 text-[11px] text-gray-300 italic text-center">เลือกวิชาก่อน</td>
+                      }
+                    </tr>
+                  }
+                }
+
+                @for (mod of cat.modules; track mod.module_id) {
+
+                  <!-- Module Row (คลิกพับ) -->
+                  <tr class="border-b border-orange-100 cursor-pointer select-none"
+                    (click)="toggleMod(mod.module_id)">
+                    <td colspan="7" class="px-5 py-1.5 bg-orange-50">
+                      <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-orange-400 transition-transform duration-200 text-[16px]"
+                          [style.transform]="isModCollapsed(mod.module_id) ? 'rotate(-90deg)' : 'rotate(0deg)'">
+                          expand_more
+                        </span>
+                        <span class="text-[11px] font-bold text-orange-700 uppercase tracking-wide">
+                          {{ mod.module_name }}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  @if (!isModCollapsed(mod.module_id)) {
 
                   @if (!mod.courses || mod.courses.length === 0) {
-                    <p class="text-xs text-gray-300 italic px-1 pb-1">— ไม่มีรายวิชา</p>
+                    <tr>
+                      <td colspan="7" class="px-6 py-2 text-xs text-gray-300 italic bg-white">— ไม่มีรายวิชา</td>
+                    </tr>
                   }
 
-                  @for (course of mod.courses; track course.course_id) {
-                    <div class="grid grid-cols-1 md:grid-cols-[120px_1fr_56px_130px_72px_100px_28px] gap-2 md:gap-3 items-center py-2 px-1 rounded-xl hover:bg-orange-50/40 transition-colors group">
+                  @for (course of mod.courses; track course.course_id; let odd = $odd) {
+                    <tr class="border-b border-gray-100 transition-colors hover:bg-orange-50/50 group"
+                      [class.bg-white]="!odd"
+                      [class.bg-gray-50]="odd">
 
-                      <!-- Code -->
-                      <span class="font-mono text-sm font-bold text-gray-500 group-hover:text-primary transition-colors">
+                      <!-- รหัส -->
+                      <td class="px-3 py-1.5 font-mono text-[12px] font-bold text-gray-500 group-hover:text-primary transition-colors whitespace-nowrap">
                         {{ course.course_code }}
-                      </span>
+                      </td>
 
-                      <!-- Name -->
-                      <span class="text-sm text-gray-700 leading-tight">{{ course.course_name }}</span>
+                      <!-- ชื่อวิชา -->
+                      <td class="px-3 py-1.5 text-[12px] text-gray-700 leading-tight">
+                        {{ course.course_name }}
+                      </td>
 
-                      <!-- Credit -->
-                      <span class="text-sm text-center text-gray-400 font-semibold">{{ course.credit }}</span>
+                      <!-- หน่วยกิต -->
+                      <td class="px-3 py-1.5 text-[12px] text-center text-gray-400 font-semibold">
+                        {{ course.credit }}
+                      </td>
 
-                      <!-- Grade -->
-                      <select
-                        [ngModel]="passedMap()[course.course_id]?.grade || ''"
-                        (ngModelChange)="onGradeChange(course.course_id, $event)"
-                        class="text-sm font-bold text-center rounded-xl border border-gray-200 px-2 py-1.5 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                        [ngClass]="passedMap()[course.course_id]?.grade ? 'text-gray-800 border-primary/30 bg-primary/5' : 'text-gray-300'">
-                        @for (g of gradeOptions(course.grade_system); track g) {
-                          <option [value]="g">{{ g || '— ยังไม่ได้เรียน' }}</option>
-                        }
-                      </select>
+                      <!-- เกรด -->
+                      <td class="px-2 py-1.5 text-center">
+                        <select
+                          [ngModel]="passedMap()[course.course_id]?.grade || ''"
+                          (ngModelChange)="onGradeChange(course.course_id, $event)"
+                          class="w-full text-[12px] font-bold text-center border rounded-lg px-1.5 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer transition-all"
+                          [ngClass]="passedMap()[course.course_id]?.grade
+                            ? 'border-primary/40 text-gray-800 bg-primary/5'
+                            : 'border-gray-200 text-gray-300'">
+                          @for (g of gradeOptions(course.grade_system); track g) {
+                            <option [value]="g">{{ g || '—' }}</option>
+                          }
+                        </select>
+                      </td>
 
-                      <!-- Semester -->
-                      <input
-                        type="number" min="1" max="3"
-                        [ngModel]="passedMap()[course.course_id]?.semester || null"
-                        [disabled]="!passedMap()[course.course_id]?.grade"
-                        (change)="onFieldChange(course.course_id, 'semester', +$any($event.target).value)"
-                        placeholder="เทอม"
-                        class="text-sm text-center rounded-xl border border-gray-200 px-2 py-1.5 w-full focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed" />
+                      <!-- เทอม -->
+                      <td class="px-2 py-1.5 text-center">
+                        <input type="number" min="1" max="3"
+                          [ngModel]="passedMap()[course.course_id]?.semester || null"
+                          [disabled]="!passedMap()[course.course_id]?.grade"
+                          (change)="onFieldChange(course.course_id, 'semester', +$any($event.target).value)"
+                          placeholder="-"
+                          class="w-full text-[12px] text-center border border-gray-200 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-25 disabled:cursor-not-allowed transition-all" />
+                      </td>
 
-                      <!-- Year -->
-                      <input
-                        type="number" min="2560" max="2580"
-                        [ngModel]="passedMap()[course.course_id]?.year || null"
-                        [disabled]="!passedMap()[course.course_id]?.grade"
-                        (change)="onFieldChange(course.course_id, 'year', +$any($event.target).value)"
-                        placeholder="ปีการศึกษา"
-                        class="text-sm text-center rounded-xl border border-gray-200 px-2 py-1.5 w-full focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed" />
+                      <!-- ปีการศึกษา -->
+                      <td class="px-2 py-1.5 text-center">
+                        <input type="number" min="2560" max="2580"
+                          [ngModel]="passedMap()[course.course_id]?.year || null"
+                          [disabled]="!passedMap()[course.course_id]?.grade"
+                          (change)="onFieldChange(course.course_id, 'year', +$any($event.target).value)"
+                          placeholder="-"
+                          class="w-full text-[12px] text-center border border-gray-200 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-25 disabled:cursor-not-allowed transition-all" />
+                      </td>
 
-                      <!-- Save indicator -->
-                      <div class="flex justify-center">
+                      <!-- สถานะ -->
+                      <td class="px-1 py-1.5 text-center">
                         @if (isSaving(course.course_id)) {
-                          <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                          <div class="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
                         } @else if (passedMap()[course.course_id]?.grade) {
-                          <span class="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
+                          <span class="material-symbols-outlined text-green-500" style="font-size:16px">check_circle</span>
                         }
-                      </div>
+                      </td>
 
-                    </div>
+                    </tr>
                   }
 
-                </div>
+                  } <!-- end @if (!isModCollapsed) -->
+
+                }
+                } <!-- end @if (!isCatCollapsed) -->
+
               }
+            </tbody>
 
-            </div>
-          }
-
+          </table>
         </div>
 
         <!-- Modal Footer -->

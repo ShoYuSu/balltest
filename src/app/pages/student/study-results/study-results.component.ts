@@ -61,10 +61,19 @@ export class StudyResultsComponent implements OnInit {
   studentId    = signal(0);
   savingSet    = signal<Set<number>>(new Set());
 
+  collapsedCats = signal<Set<number>>(new Set());
+  collapsedMods = signal<Set<number>>(new Set());
+
   readonly gradeOptionsAF = ['', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'W'];
   readonly gradeOptionsSU = ['', 'S', 'U'];
 
+  freeSlots = signal<{ query: string; results: any[]; show: boolean; course: any | null }[]>([
+    { query: '', results: [], show: false, course: null },
+    { query: '', results: [], show: false, course: null },
+  ]);
+
   private saveTimers: Record<number, any> = {};
+  private searchTimers: Record<number, any> = {};
 
   // ─── Lifecycle ─────────────────────────────────────────────
   ngOnInit() { this.loadStudyResults(); }
@@ -82,13 +91,12 @@ export class StudyResultsComponent implements OnInit {
     this.isDropdownOpen = false;
   }
 
-  loadStudyResults() {
+  loadStudyResults(restoreTerm?: string) {
     const studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '6504800006';
     if (!studentCode) return;
 
     this.http.get<any>(`${this.apiUrl}/get_study_results.php?student_code=${studentCode}&t=${Date.now()}`).subscribe({
       next: res => {
-        console.log('[study-results] API response:', res);
         if (res.error) { console.error('[study-results] error:', res.error); return; }
         this.gpax.set(res.gpax);
         this.latestGpa.set(res.latest_gpa);
@@ -97,8 +105,9 @@ export class StudyResultsComponent implements OnInit {
         this.allSubjects.set(res.subjects);
         this.creditSummary.set(res.credit_summary);
         this.terms.set(res.terms);
-        if (res.terms.length > 0) this.selectedTerm.set(res.terms[0]);
-        console.log('[study-results] subjects:', res.subjects?.length, '| terms:', res.terms, '| selected:', res.terms?.[0]);
+        // restore เทอมที่เลือกล่าสุด ถ้ายังมีอยู่ใน terms ไม่งั้นไปเทอมแรก
+        const target = restoreTerm && res.terms.includes(restoreTerm) ? restoreTerm : res.terms[0];
+        if (target) this.selectedTerm.set(target);
       },
       error: err => console.error('[study-results] HTTP error:', err)
     });
@@ -119,8 +128,9 @@ export class StudyResultsComponent implements OnInit {
   }
 
   closeModal() {
+    const lastTerm = this.selectedTerm();
     this.showModal.set(false);
-    this.loadStudyResults();
+    this.loadStudyResults(lastTerm);
   }
 
   loadModalData() {
@@ -148,6 +158,34 @@ export class StudyResultsComponent implements OnInit {
               };
             });
             this.passedMap.set(map);
+
+            // หา free elective courses (ไม่อยู่ใน curriculum modules)
+            const currIds = new Set<number>();
+            curriculum.forEach((cat: any) =>
+              cat.modules?.forEach((m: any) =>
+                m.courses?.forEach((c: any) => currIds.add(+c.course_id))
+              )
+            );
+            const freeIds = passed.filter((p: any) => !currIds.has(+p.course_id)).slice(0, 2).map((p: any) => +p.course_id);
+
+            if (freeIds.length > 0) {
+              this.http.get<any[]>(`${this.apiUrl}/search_courses.php?ids=${freeIds.join(',')}`).subscribe({
+                next: courses => {
+                  this.freeSlots.set([0, 1].map(i => {
+                    const c = courses.find((x: any) => +x.course_id === freeIds[i]);
+                    return c
+                      ? { query: `${c.course_code} – ${c.course_name}`, results: [], show: false, course: c }
+                      : { query: '', results: [], show: false, course: null };
+                  }));
+                }
+              });
+            } else {
+              this.freeSlots.set([
+                { query: '', results: [], show: false, course: null },
+                { query: '', results: [], show: false, course: null },
+              ]);
+            }
+
             this.modalLoading.set(false);
           }
         });
@@ -161,6 +199,70 @@ export class StudyResultsComponent implements OnInit {
 
   gradeOptions(gradeSystem: string) {
     return gradeSystem === 'ผ่าน/ไม่ผ่าน (S/U)' ? this.gradeOptionsSU : this.gradeOptionsAF;
+  }
+
+  toggleCat(catId: number) {
+    const s = new Set(this.collapsedCats());
+    s.has(catId) ? s.delete(catId) : s.add(catId);
+    this.collapsedCats.set(s);
+  }
+
+  isCatCollapsed(catId: number) { return this.collapsedCats().has(catId); }
+
+  toggleMod(modId: number) {
+    const s = new Set(this.collapsedMods());
+    s.has(modId) ? s.delete(modId) : s.add(modId);
+    this.collapsedMods.set(s);
+  }
+
+  isModCollapsed(modId: number) { return this.collapsedMods().has(modId); }
+
+  // ─── Free Elective Search ──────────────────────────────────
+  onFreeSearch(idx: number, query: string) {
+    this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, query } : s));
+    clearTimeout(this.searchTimers[idx]);
+    if (query.length < 2) {
+      this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, results: [], show: false } : s));
+      return;
+    }
+    this.searchTimers[idx] = setTimeout(() => {
+      this.http.get<any[]>(`${this.apiUrl}/search_courses.php?q=${encodeURIComponent(query)}`).subscribe({
+        next: results => {
+          this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, results, show: true } : s));
+        }
+      });
+    }, 300);
+  }
+
+  selectFreeCourse(idx: number, course: any) {
+    this.freeSlots.set(this.freeSlots().map((s, i) =>
+      i === idx ? { ...s, query: `${course.course_code} – ${course.course_name}`, results: [], show: false, course } : s
+    ));
+    if (!this.passedMap()[course.course_id]) {
+      this.passedMap.set({ ...this.passedMap(), [course.course_id]: { grade: '', semester: 1, year: 2566 } });
+    }
+  }
+
+  clearFreeSlot(idx: number) {
+    const slot = this.freeSlots()[idx];
+    if (slot.course) {
+      this.http.post(`${this.apiUrl}/save_student_course_check.php`, {
+        student_id: this.studentId(), course_id: slot.course.course_id, is_checked: false
+      }).subscribe();
+      const map = { ...this.passedMap() };
+      delete map[slot.course.course_id];
+      this.passedMap.set(map);
+    }
+    this.freeSlots.set(this.freeSlots().map((s, i) =>
+      i === idx ? { query: '', results: [], show: false, course: null } : s
+    ));
+  }
+
+  closeFreeDropdown(idx: number) {
+    // delay 200ms ให้ click บน dropdown item ทำงานก่อน
+    setTimeout(() => {
+      this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, show: false } : s));
+    }, 200);
   }
 
   isSaving(courseId: number) { return this.savingSet().has(courseId); }
