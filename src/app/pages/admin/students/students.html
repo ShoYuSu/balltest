@@ -222,6 +222,23 @@
       </tr>
     </tbody>
   </table>
+  <div class="flex items-center justify-between p-4 bg-white border-t border-slate-100 shrink-0">
+  <span class="text-xs text-slate-400">
+    กำลังแสดงหน้า {{ currentPage }} จากทั้งหมด {{ totalPages }} หน้า
+  </span>
+  <div class="flex gap-2">
+    <button (click)="goToPage(currentPage - 1)" 
+            [disabled]="currentPage === 1"
+            class="px-3 py-1.5 text-xs bg-slate-50 border rounded-xl hover:bg-slate-100 disabled:opacity-50">
+      ก่อนหน้า
+    </button>
+    <button (click)="goToPage(currentPage + 1)" 
+            [disabled]="currentPage === totalPages"
+            class="px-3 py-1.5 text-xs bg-slate-50 border rounded-xl hover:bg-slate-100 disabled:opacity-50">
+      ถัดไป
+    </button>
+  </div>
+</div>
 </div>
 
 <div
@@ -355,7 +372,7 @@
       </div>
 
       <div class="space-y-1 relative">
-        <label class="text-xs font-semibold text-gray-600 uppercase">สาขา</label>
+        <label class="text-xs font-semibold text-gray-600 uppercase">หลักสูตร</label>
         <div class="relative">
           <button
             type="button"
@@ -367,7 +384,7 @@
                 : 'border-gray-200 text-gray-700'
             "
           >
-            <span>{{ studentForm.get('major')?.value || 'เลือกสาขา' }}</span>
+            <span>{{ studentForm.get('major')?.value || 'เลือกหลักสูตร' }}</span>
             <span
               class="material-symbols-outlined text-gray-400"
               [class.rotate-180]="isFormMajorDropdownOpen"

@@ -4,11 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
 import { StudentResultModalComponent } from '../student-result-modal/student-result-modal.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent],
+  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent, CommonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
@@ -43,7 +44,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFFDF0]',
     },
     {
-      label: 'บันทึกการปรึกษา',
+      label: 'บันทึกการปรึกษา (คน)',
       value: 0,
       icon: 'assignment',
       bgColor: 'bg-purple-100',
@@ -64,65 +65,103 @@ export class HomeComponent implements OnInit {
     return this.studentsInCare().slice(start, start + this.itemsPerPage);
   });
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
   openStudentResult(student: any) {
     this.router.navigate(['/student-result', student.id], {
-      state: { student }, // ส่งข้อมูลนักศึกษาไปด้วยผ่าน router state
+      state: { student },
     });
   }
 
   ngOnInit() {
-    // 1. ดึงข้อมูลนักศึกษา
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const formattedStudents = data.map((student: any) => ({
-          id: student.student_code,
-          name: student.full_name,
-          year: student.year,
-          gpa: student.gpa,
-          ploStatus: student.ploStatus,
-          img: student.image
-            ? `${environment.apiUrl}/${student.image}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
-        }));
-        this.studentsInCare.set(formattedStudents);
-        this.dashboardStats[0].value = formattedStudents.length;
-        this.dashboardStats[1].value = formattedStudents.filter(
-          (s) => s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน',
-        ).length;
-      },
-    });
-
-    // 2. ดึงข้อมูลนัดหมายล่าสุด
+    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ก่อน
     this.http
-      .get<
-        any[]
-      >(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`)
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
-          const formatted = (data || [])
-            .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
-            .map((app: any) => {
-              const first = app.students?.[0];
-              return {
-                id: app.appointment_id, // 👉 ตัวนี้คือรหัสคิว (13, 14) เก็บไว้ใช้สำหรับกดเปลี่ยนหน้า
-                studentCode: first?.id || '-', // 👉 ตัวนี้คือรหัสนักศึกษาของจริง!
-                name: first
-                  ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
-                  : 'ไม่ระบุ',
-                topic: app.title,
-                type: app.type,
-                note: app.note,
-                date: this.formatDate(app.appointment_date),
-                time: app.start_time?.substring(0, 5) + ' น.',
-                img: first?.img
-                  ? `${environment.apiUrl}/${first.img}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
-                isGroup: app.students.length > 1,
-                memberCount: app.students.length,
-              };
+          const formattedStudents = data.map((student: any) => ({
+            id: student.student_code,
+            name: student.full_name,
+            year: student.year,
+            gpa: student.gpa || '-',
+            ploStatus: student.ploStatus,
+            img: student.image
+              ? `${environment.apiUrl}/${student.image}`
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
+          }));
+
+          this.studentsInCare.set(formattedStudents);
+
+          this.dashboardStats[0].value = formattedStudents.length;
+          this.dashboardStats[1].value = formattedStudents.filter(
+            (s) => s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน',
+          ).length;
+
+          // 🌟 สร้าง List รหัสนักศึกษา "เฉพาะเด็กในการดูแล 16 คนนี้" เอาไว้กรอง
+          const validStudentIds = new Set(formattedStudents.map((s) => s.id.toString()));
+
+          // 2. ดึงข้อมูลนัดหมายมาคำนวณ (ทำต่อเมื่อมีข้อมูลเด็ก 16 คนแล้ว)
+          this.http
+            .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
+            .subscribe({
+              next: (appData) => {
+                const allApps = appData || [];
+
+                // 🎯 นัดหมายทั้งหมด (นับเฉพาะนักศึกษาที่ไม่ซ้ำคน และต้องเป็นเด็กของเรา)
+                const allScheduledStudents = new Set<string>();
+                allApps.forEach((app: any) => {
+                  if (app.students && Array.isArray(app.students)) {
+                    app.students.forEach((student: any) => {
+                      // 👉 เช็คว่ารหัสเด็กคนนี้ อยู่ในแก๊ง 16 คนของเราไหม?
+                      if (student.id && validStudentIds.has(student.id.toString())) {
+                        allScheduledStudents.add(student.id.toString());
+                      }
+                    });
+                  }
+                });
+                this.dashboardStats[2].value = allScheduledStudents.size;
+
+                // 🎯 บันทึกการปรึกษา (นับเฉพาะคิวที่ทำเสร็จแล้ว และต้องเป็นเด็กของเรา)
+                const completedApps = allApps.filter((app: any) => app.status === 'ดำเนินการแล้ว');
+                const consultedStudents = new Set<string>();
+
+                completedApps.forEach((app: any) => {
+                  if (app.students && Array.isArray(app.students)) {
+                    app.students.forEach((student: any) => {
+                      if (student.id && validStudentIds.has(student.id.toString())) {
+                        consultedStudents.add(student.id.toString());
+                      }
+                    });
+                  }
+                });
+                this.dashboardStats[3].value = consultedStudents.size;
+
+                // 🎯 จัดการข้อมูลสำหรับโชว์ใน "การนัดหมายล่าสุด"
+                const formatted = allApps
+                  .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
+                  .map((app: any) => {
+                    const first = app.students?.[0];
+                    return {
+                      id: app.appointment_id,
+                      studentCode: first?.id || '-',
+                      name: first
+                        ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
+                        : 'ไม่ระบุ',
+                      topic: app.title,
+                      type: app.type,
+                      note: app.note,
+                      date: this.formatDate(app.appointment_date),
+                      time: app.start_time?.substring(0, 5) + ' น.',
+                      img: first?.img
+                        ? `${environment.apiUrl}/${first.img}`
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
+                      isGroup: app.students.length > 1,
+                      memberCount: app.students.length,
+                    };
+                  });
+
+                this.appointments.set(formatted);
+              },
             });
-          this.appointments.set(formatted);
-          this.dashboardStats[2].value = formatted.length;
         },
       });
   }
@@ -158,7 +197,6 @@ export class HomeComponent implements OnInit {
 
   goToAppointment(app: any) {
     const targetPath = app.isGroup ? '/group' : '/individual';
-    // ส่ง id ที่เป็นรหัสคิวนัดหมาย (appointment_id) ไปหน้าอื่น
     this.router.navigate([targetPath], { queryParams: { id: app.id } });
   }
 }

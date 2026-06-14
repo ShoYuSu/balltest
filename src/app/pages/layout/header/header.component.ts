@@ -44,7 +44,9 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
     this.userName = localStorage.getItem('full_name') || 'ผู้ใช้งาน';
     this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
-    this.studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '6504800006';
+    
+    // แก้ไข: เอา || '6504800006' ออก เพื่อดึงจากผู้ใช้ที่ล็อกอินจริงเท่านั้น
+    this.studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '';
 
     const savedImagePath = localStorage.getItem('img_profile');
     if (savedImagePath && savedImagePath !== 'null' && savedImagePath !== '') {

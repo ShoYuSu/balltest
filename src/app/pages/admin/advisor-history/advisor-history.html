@@ -1,6 +1,4 @@
 <div class="p-6 bg-gray-50/30 min-h-screen">
-  
-  <!-- Header Card (Stat Cards & Search) -->
   <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-6">
     <div class="flex justify-center w-full mb-7">
       <app-stat-cards [stats]="myStats" class="w-full"></app-stat-cards>
@@ -8,142 +6,250 @@
 
     <div class="flex items-center justify-between gap-4">
       <div class="relative flex-1 max-w-xl">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-        <input type="text" placeholder="ค้นหานักศึกษา..." 
-          class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          search
+        </span>
+        <input
+          type="text"
+          [(ngModel)]="searchText"
+          (input)="filterStudents()"
+          placeholder="ค้นหานักศึกษา..."
+          class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm"
+        />
       </div>
     </div>
 
     <div class="flex gap-3 mt-6 mb-4">
-      <div class="relative">
-        <select class="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm cursor-pointer min-w-[140px]">
-          <option>ทุกภาควิชา</option>
-        </select>
-        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg">expand_more</span>
+      
+      <div class="relative min-w-[180px]">
+        <button
+          type="button"
+          (click)="toggleMajorDropdown()"
+          class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          <span>{{ selectedMajor || 'หลักสูตรทั้งหมด' }}</span>
+          <span
+            class="material-symbols-outlined text-gray-400 text-lg transition-transform"
+            [class.rotate-180]="isMajorDropdownOpen"
+          >
+            expand_more
+          </span>
+        </button>
+
+        <div
+          *ngIf="isMajorDropdownOpen"
+          class="absolute left-0 z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+        >
+          <ul class="p-2 text-sm text-gray-700 font-medium max-h-60 overflow-y-auto">
+            <li>
+              <button
+                type="button"
+                (click)="selectMajor('')"
+                class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+                [class.bg-blue-50]="selectedMajor === ''"
+                [class.text-blue-600]="selectedMajor === ''"
+              >
+                หลักสูตรทั้งหมด
+              </button>
+            </li>
+            <li *ngFor="let major of uniqueMajors">
+              <button
+                type="button"
+                (click)="selectMajor(major)"
+                class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+                [class.bg-blue-50]="selectedMajor === major"
+                [class.text-blue-600]="selectedMajor === major"
+              >
+                {{ major }}
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div class="relative">
-        <select class="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm cursor-pointer min-w-[120px]">
-          <option>ทุกชั้นปี</option>
-        </select>
-        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg">expand_more</span>
+      <div class="relative min-w-[140px]">
+        <button
+          type="button"
+          (click)="toggleYearDropdown()"
+          class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          <span>{{ selectedYear ? 'ชั้นปีที่ ' + selectedYear : 'ทุกชั้นปี' }}</span>
+          <span
+            class="material-symbols-outlined text-gray-400 text-lg transition-transform"
+            [class.rotate-180]="isYearDropdownOpen"
+          >
+            expand_more
+          </span>
+        </button>
+
+        <div
+          *ngIf="isYearDropdownOpen"
+          class="absolute left-0 z-20 w-full mt-2 bg-white border border-gray-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+        >
+          <ul class="p-2 text-sm text-gray-700 font-medium">
+            <li>
+              <button
+                type="button"
+                (click)="selectYear('')"
+                class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+                [class.bg-blue-50]="selectedYear === ''"
+                [class.text-blue-600]="selectedYear === ''"
+              >
+                ทุกชั้นปี
+              </button>
+            </li>
+            <li *ngFor="let y of [1, 2, 3, 4]">
+              <button
+                type="button"
+                (click)="selectYear(y)"
+                class="flex items-center w-full p-2.5 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors text-left"
+                [class.bg-blue-50]="selectedYear === y"
+                [class.text-blue-600]="selectedYear === y"
+              >
+                ชั้นปีที่ {{ y }}
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
+
     </div>
-     <div class="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
     <table class="w-full text-left">
       <thead class="bg-white border-b border-gray-50">
         <tr>
-          <th *ngFor="let col of columns" 
+          <th
+            *ngFor="let col of columns"
             [class.text-center]="col.align === 'center'"
-            class="px-6 py-5 text-sm font-bold text-gray-800">
+            class="px-6 py-5 text-sm font-bold text-gray-800"
+          >
             {{ col.header }}
           </th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-50">
-        <tr *ngFor="let el of students" class="hover:bg-gray-50/50 transition-colors">
-          <td *ngFor="let col of columns" 
+        <tr *ngFor="let el of filteredStudents" class="hover:bg-gray-50/50 transition-colors">
+          <td
+            *ngFor="let col of columns"
             [class.text-center]="col.align === 'center'"
-            class="px-6 py-4">
-            
-            <!-- กรณีชื่อนักศึกษา -->
-            <div *ngIf="col.tag === 'name'" class="flex items-center gap-4">
-              <img [src]="col.cell(el).img" alt="avatar" class="w-10 h-10 rounded-full border border-gray-100 object-cover">
-              <span class="text-sm font-medium text-gray-700">{{ col.cell(el).name }}</span>
+            class="px-6 py-4"
+          >
+            <div *ngIf="col.tag === 'image'" class="flex justify-center items-center">
+              <img
+                [src]="
+                  col.cell(el) ||
+                  'https://ui-avatars.com/api/?name=' +
+                    ($any(el).full_name || 'User') +
+                    '&background=random'
+                "
+                alt="profile"
+                class="w-10 h-10 rounded-full border border-gray-100 object-cover shadow-sm"
+              />
             </div>
 
-            <!-- กรณีข้อความปกติ -->
-            <span *ngIf="col.tag === 'text'" class="text-sm text-gray-500">
+            <span *ngIf="col.tag === 'text'" class="text-sm font-medium text-gray-700">
               {{ col.cell(el) }}
             </span>
 
-            <!-- กรณีปุ่มดูประวัติ -->
             <div *ngIf="col.tag === 'icon'" class="flex justify-center">
-              <button (click)="openHistory(el)" class="p-2 hover:bg-blue-50 rounded-full transition-colors group">
+              <button
+                (click)="openHistory(el)"
+                class="p-2 hover:bg-blue-50 rounded-full transition-colors group"
+              >
                 <span class="material-symbols-outlined text-gray-400 group-hover:text-blue-500 transition-all">
                   {{ col.cell(el) }}
                 </span>
               </button>
             </div>
-
+          </td>
+        </tr>
+        
+        <tr *ngIf="filteredStudents.length === 0">
+          <td [attr.colspan]="columns.length" class="text-center py-10 text-gray-400 italic">
+            ไม่พบข้อมูลนักศึกษาที่ตรงตามเงื่อนไขการค้นหา
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-   <div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+
+  <div
+    *ngIf="isModalOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+  >
     <div class="bg-white w-full max-w-2xl rounded-[40px] p-10 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-      
-      <button (click)="closeModal()" class="absolute right-8 top-8 text-gray-300 hover:text-gray-500 transition-colors">
+      <button
+        (click)="closeModal()"
+        class="absolute right-8 top-8 text-gray-300 hover:text-gray-500 transition-colors"
+      >
         <span class="material-symbols-outlined text-3xl">close</span>
       </button>
 
       <h2 class="text-2xl font-bold text-gray-800 mb-8">ประวัติที่ปรึกษา</h2>
 
-      <!-- Profile Section -->
       <div class="bg-[#FFF8F8] rounded-3xl p-8 flex items-center gap-8 mb-8">
-        <img [src]="selectedStudent?.img" class="w-32 h-32 rounded-full border-4 border-white shadow-sm object-cover">
+        <img
+          [src]="
+            selectedStudent?.image
+              ? 'http://localhost:8080/api/' + selectedStudent.image
+              : 'https://ui-avatars.com/api/?name=' +
+                (selectedStudent?.full_name || 'User') +
+                '&background=random'
+          "
+          class="w-32 h-32 rounded-full border-4 border-white shadow-sm object-cover"
+        />
         <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ selectedStudent?.name }}</h3>
-          <p class="text-gray-500 text-sm mb-1">{{ selectedStudent?.id }}</p>
-          <p class="text-gray-500 text-sm">{{ selectedStudent?.department }}</p>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ selectedStudent?.full_name }}</h3>
+          <p class="text-gray-500 text-sm mb-1">รหัส: {{ selectedStudent?.student_code }}</p>
+          <p class="text-gray-500 text-sm mb-1">
+            ภาควิชา: {{ selectedStudent?.department || selectedStudent?.major || 'ไม่ระบุ' }}
+          </p>
+          <p class="text-blue-600 text-sm font-semibold bg-blue-50 px-2.5 py-1 rounded-md inline-block mt-1">
+            {{ selectedStudent?.displayYear || 'ไม่ระบุชั้นปี' }}
+          </p>
         </div>
       </div>
 
-      <!-- History List -->
       <div>
-        <p class="font-bold text-gray-800 mb-6">ประวัติอาจารย์ที่ปรึกษาตามชั้นปี</p>
-        <div class="space-y-8 ml-2">
-          <div *ngFor="let h of selectedStudent?.history" class="flex items-center gap-6">
-            <span [class]="h.color + ' ' + h.textColor" class="text-xs font-bold px-3 py-1 rounded-md min-w-[45px] text-center">
-              {{ h.year }}
+        <p class="font-bold text-gray-800 mb-6">ลำดับการมอบหมายอาจารย์ที่ปรึกษา</p>
+        <div class="space-y-6 ml-2">
+          <div
+            *ngFor="let h of selectedStudent?.history"
+            class="flex items-start gap-6 border-l-2 border-dashed border-gray-200 pl-4 pb-2"
+          >
+            <span
+              [class]="h.color + ' ' + h.textColor"
+              class="text-xs font-bold px-3 py-1 rounded-md min-w-[90px] text-center"
+            >
+              ปี พ.ศ. {{ h.year }}
             </span>
-            <p class="text-gray-700 font-medium">{{ h.name }}</p>
+
+            <div class="-mt-1">
+              <p class="text-gray-700 font-medium">{{ h.advisor_name }}</p>
+
+              <span
+                *ngIf="h.is_current == 1"
+                class="inline-block mt-1 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold"
+              >
+                ที่ปรึกษาปัจจุบัน
+              </span>
+
+              <p *ngIf="h.created_at" class="text-gray-400 text-xs mt-1">
+                วันที่เริ่มมอบหมาย: {{ h.created_at | date: 'dd MMM yyyy HH:mm' }} น.
+              </p>
+            </div>
           </div>
-          <p *ngIf="!selectedStudent?.history?.length" class="text-gray-400 italic">ไม่มีข้อมูลประวัติย้อนหลัง</p>
+
+          <p
+            *ngIf="!selectedStudent?.history?.length"
+            class="text-gray-400 italic text-center py-4"
+          >
+            ไม่มีข้อมูลประวัติย้อนหลังในระบบ
+          </p>
         </div>
       </div>
     </div>
   </div>
-  </div>
-
-  <!-- Student Table Section (Dynamic) -->
- 
-
-  <!-- Advisor History Modal -->
-  <div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-2xl rounded-[40px] p-10 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-      
-      <button (click)="closeModal()" class="absolute right-8 top-8 text-gray-300 hover:text-gray-500 transition-colors">
-        <span class="material-symbols-outlined text-3xl">close</span>
-      </button>
-
-      <h2 class="text-2xl font-bold text-gray-800 mb-8">ประวัติที่ปรึกษา</h2>
-
-      <!-- Profile Section -->
-      <div class="bg-[#FFF8F8] rounded-3xl p-8 flex items-center gap-8 mb-8">
-        <img [src]="selectedStudent?.img" class="w-32 h-32 rounded-full border-4 border-white shadow-sm object-cover">
-        <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ selectedStudent?.name }}</h3>
-          <p class="text-gray-500 text-sm mb-1">{{ selectedStudent?.id }}</p>
-          <p class="text-gray-500 text-sm">{{ selectedStudent?.department }}</p>
-        </div>
-      </div>
-
-      <!-- History List -->
-      <div>
-        <p class="font-bold text-gray-800 mb-6">ประวัติอาจารย์ที่ปรึกษาตามชั้นปี</p>
-        <div class="space-y-8 ml-2">
-          <div *ngFor="let h of selectedStudent?.history" class="flex items-center gap-6">
-            <span [class]="h.color + ' ' + h.textColor" class="text-xs font-bold px-3 py-1 rounded-md min-w-[45px] text-center">
-              {{ h.year }}
-            </span>
-            <p class="text-gray-700 font-medium">{{ h.name }}</p>
-          </div>
-          <p *ngIf="!selectedStudent?.history?.length" class="text-gray-400 italic">ไม่มีข้อมูลประวัติย้อนหลัง</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>

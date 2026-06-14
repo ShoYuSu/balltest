@@ -37,6 +37,6 @@ export class SidebarComponent implements OnInit {
   }
 
   goBack() {
-    window.location.href = 'http://localhost:4201/admin/dashboard';
+    window.location.href = 'http://localhost:4201/dashboard';
   }
 }
