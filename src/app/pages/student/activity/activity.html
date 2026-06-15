@@ -44,7 +44,6 @@
                 </div>
               }
               <div class="act-cover-overlay"></div>
-              <span class="act-date-badge">{{ formatDate(a.activity_date) }}</span>
               @if (a.files.length > 0) {
                 <span class="act-file-count">
                   <span class="material-symbols-outlined">attach_file</span>{{ a.files.length }}
@@ -56,23 +55,23 @@
             <div class="act-info">
               <h3 class="act-title">{{ a.title }}</h3>
               <p class="act-desc">{{ a.description || 'ไม่มีรายละเอียด' }}</p>
+            </div>
 
-              <!-- FOOTER -->
-              <div class="act-footer">
-                <span class="act-footer-date">
-                  <span class="material-symbols-outlined">calendar_month</span>
-                  {{ a.activity_date | date:'d MMM y' }}
-                </span>
-                <div class="act-footer-actions">
-                  <button class="act-btn-edit" title="แก้ไข"
-                    (click)="$event.stopPropagation(); openEdit(a)">
-                    <span class="material-symbols-outlined">edit</span>
-                  </button>
-                  <button class="act-btn-del" title="ลบ"
-                    (click)="$event.stopPropagation(); editingId = a.activity_id; showDeleteConfirm = true">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
-                </div>
+            <!-- FOOTER (แยกออกมาให้ติดขอบล่างเสมอ) -->
+            <div class="act-footer">
+              <span class="act-footer-date">
+                <span class="material-symbols-outlined">calendar_month</span>
+                {{ a.activity_date | date:'d MMM y' }}
+              </span>
+              <div class="act-footer-actions">
+                <button class="act-btn-edit" title="แก้ไข"
+                  (click)="$event.stopPropagation(); openEdit(a)">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="act-btn-del" title="ลบ"
+                  (click)="$event.stopPropagation(); editingId = a.activity_id; showDeleteConfirm = true">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
               </div>
             </div>
 

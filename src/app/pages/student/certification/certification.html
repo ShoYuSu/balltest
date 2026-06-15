@@ -20,77 +20,51 @@
           CERTIFICATE LIST
   ========================= -->
 
-  <div
-    class="certificate-grid"
-    *ngIf="certificates && certificates.length > 0">
+  <div class="certificate-grid" *ngIf="certificates && certificates.length > 0">
 
-    <div
-      class="certificate-card"
-      *ngFor="let item of certificates">
+    <div class="certificate-card" *ngFor="let item of certificates">
 
-      <div class="certificate-content">
+      <!-- Amber accent bar ด้านบน -->
+      <div class="cert-top-bar"></div>
 
-        <div class="certificate-badge">
-
-          <span class="material-symbols-outlined">
-            verified
-          </span>
-
-          Certification
-
+      <!-- Icon + Badge row -->
+      <div class="cert-header">
+        <div class="cert-icon-box">
+          <span class="material-symbols-outlined">workspace_premium</span>
         </div>
+        <div class="certificate-badge">
+          <span class="material-symbols-outlined">verified</span>
+          Certification
+        </div>
+      </div>
 
-        <h3 class="certificate-title">
-          {{ item.title }}
-        </h3>
+      <!-- Body -->
+      <div class="cert-body">
+        <h3 class="certificate-title">{{ item.title }}</h3>
 
         <div class="certificate-date">
-
-          <span class="material-symbols-outlined">
-            calendar_month
-          </span>
-
+          <span class="material-symbols-outlined">calendar_month</span>
           {{ item.issue_date }}
-
         </div>
 
-        <div class="certificate-file-box">
-
-          <span class="material-symbols-outlined">
-            description
-          </span>
-
+        <div class="cert-file-chip">
+          <span class="material-symbols-outlined">picture_as_pdf</span>
+          ไฟล์ PDF แนบแล้ว
         </div>
+      </div>
 
-        <div class="certificate-actions">
-
-          <a
-            class="download-btn"
-            [href]="item.file_url"
-            target="_blank">
-
-            ดาวน์โหลด
-
-          </a>
-
-          <button
-            class="edit-btn"
-            (click)="openEditModal(item)">
-
-            ✏️
-
-          </button>
-
-          <button
-            class="delete-btn"
-            (click)="openDeleteConfirm(item)">
-
-            🗑️
-
-          </button>
-
-        </div>
-
+      <!-- Footer actions -->
+      <div class="cert-footer">
+        <a class="cert-download-btn" [href]="item.file_url" target="_blank">
+          <span class="material-symbols-outlined">download</span>
+          ดาวน์โหลด
+        </a>
+        <button class="cert-icon-btn cert-edit-btn" (click)="openEditModal(item)">
+          <span class="material-symbols-outlined">edit</span>
+        </button>
+        <button class="cert-icon-btn cert-delete-btn" (click)="openDeleteConfirm(item)">
+          <span class="material-symbols-outlined">delete</span>
+        </button>
       </div>
 
     </div>
