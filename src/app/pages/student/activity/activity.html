@@ -379,74 +379,136 @@
   </div>
 }
 
-<!-- ===== DETAIL MODAL ===== -->
+<!-- ===== DETAIL MODAL (VIEWER) ===== -->
 @if (selected) {
-  <div class="modal-backdrop" [class.closing]="isDetailClosing" (click)="closeDetail()">
-    <div class="modal-card modal-detail" [class.closing]="isDetailClosing" (click)="$event.stopPropagation()">
+  <div class="viewer-backdrop" [class.closing]="isDetailClosing" (click)="closeDetail()">
+    <div class="viewer-modal" [class.closing]="isDetailClosing" (click)="$event.stopPropagation()">
 
-      <!-- COVER BIG -->
-      <div class="detail-cover">
-        @if (coverOf(selected)) {
-          <img [src]="coverOf(selected)" class="detail-cover-img" />
-        } @else {
-          <div class="detail-cover-placeholder">
+      <!-- Header -->
+      <div class="viewer-head">
+        <div class="viewer-head-left">
+          <div class="viewer-head-icon">
             <span class="material-symbols-outlined">event_note</span>
           </div>
-        }
-        <div class="detail-cover-overlay"></div>
-        <button class="detail-close" (click)="closeDetail()">
+          <div>
+            <h2 class="viewer-head-title">{{ selected.title }}</h2>
+            <p class="viewer-head-sub">กิจกรรมที่บันทึก</p>
+          </div>
+        </div>
+        <button class="viewer-close-btn" (click)="closeDetail()">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <!-- BODY -->
-      <div class="detail-body">
+      <!-- Body -->
+      <div class="viewer-body">
 
-        <h2 class="detail-title">{{ selected.title }}</h2>
-
-        <div class="detail-row">
-          <span class="material-symbols-outlined detail-icon">calendar_month</span>
-          <div>
-            <p class="detail-label">วันที่เข้าร่วม</p>
-            <p class="detail-val">{{ formatDate(selected.activity_date) }}</p>
-          </div>
-        </div>
-
-        <div class="detail-row">
-          <span class="material-symbols-outlined detail-icon">description</span>
-          <div>
-            <p class="detail-label">รายละเอียด</p>
-            <p class="detail-val">{{ selected.description || '-' }}</p>
-          </div>
-        </div>
-
-        <!-- Files -->
-        @if (selected.files.length > 0) {
-          <div class="detail-row">
-            <span class="material-symbols-outlined detail-icon">attach_file</span>
-            <div class="w-full">
-              <p class="detail-label">ไฟล์แนบ ({{ selected.files.length }} ไฟล์)</p>
-              <div class="file-gallery">
-                @for (f of selected.files; track f.file_id) {
-                  <a [href]="fileUrl(f.file_url)" target="_blank" class="gallery-item">
-                    @if (isImage(f)) {
-                      <img [src]="fileUrl(f.file_url)" class="gallery-img" />
-                    } @else {
-                      <div class="gallery-doc">
-                        <span class="material-symbols-outlined">description</span>
-                      </div>
-                    }
-                  </a>
-                }
+        <!-- Left: File viewer -->
+        <div class="viewer-left">
+          <div class="viewer-canvas">
+            @if (selected.files.length === 0) {
+              <div class="viewer-empty">
+                <span class="material-symbols-outlined">image_not_supported</span>
+                <p>ไม่มีไฟล์แนบ</p>
               </div>
+            } @else {
+              @let f = selected.files[viewFileIdx];
+              @if (isImage(f)) {
+                <img [src]="fileUrl(f.file_url)" class="viewer-img" />
+              } @else if (isPdf(f)) {
+                <iframe [src]="safeUrl(f.file_url)" class="viewer-iframe" frameborder="0"></iframe>
+              } @else {
+                <div class="viewer-doc-placeholder">
+                  <span class="material-symbols-outlined">description</span>
+                  <p>{{ f.file_url.split('/').pop() }}</p>
+                  <a [href]="fileUrl(f.file_url)" target="_blank" class="viewer-dl-link">
+                    <span class="material-symbols-outlined">download</span>ดาวน์โหลดไฟล์
+                  </a>
+                </div>
+              }
+            }
+
+            <!-- Arrow navigation — inside canvas so position:absolute is relative to canvas -->
+            @if (selected.files.length > 1) {
+              <button class="viewer-arrow viewer-arrow-left"
+                [class.hidden]="viewFileIdx === 0"
+                (click)="selectViewFile(viewFileIdx - 1)">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button class="viewer-arrow viewer-arrow-right"
+                [class.hidden]="viewFileIdx === selected.files.length - 1"
+                (click)="selectViewFile(viewFileIdx + 1)">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            }
+          </div>
+
+          <!-- File selector tabs (only when >1 files) -->
+          @if (selected.files.length > 1) {
+            <div class="viewer-tabs">
+              @for (f of selected.files; track f.file_id; let i = $index) {
+                <button class="viewer-tab" [class.active]="viewFileIdx === i"
+                  (click)="selectViewFile(i)">
+                  @if (isImage(f)) {
+                    <img [src]="fileUrl(f.file_url)" class="tab-thumb" />
+                  } @else {
+                    <span class="material-symbols-outlined tab-file-icon">
+                      {{ isPdf(f) ? 'picture_as_pdf' : 'description' }}
+                    </span>
+                  }
+                  <span class="tab-num">{{ i + 1 }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Right: Details -->
+        <div class="viewer-right">
+
+          <div class="viewer-detail-row">
+            <div class="viewer-detail-icon-box">
+              <span class="material-symbols-outlined">calendar_month</span>
+            </div>
+            <div>
+              <p class="viewer-detail-label">วันที่เข้าร่วม</p>
+              <p class="viewer-detail-val">{{ formatDate(selected.activity_date) }}</p>
             </div>
           </div>
-        }
 
-      </div>
+          <div class="viewer-detail-row">
+            <div class="viewer-detail-icon-box">
+              <span class="material-symbols-outlined">description</span>
+            </div>
+            <div>
+              <p class="viewer-detail-label">รายละเอียด</p>
+              <p class="viewer-detail-val viewer-detail-desc">{{ selected.description || 'ไม่มีรายละเอียด' }}</p>
+            </div>
+          </div>
 
-      <div class="modal-foot">
-        <button class="btn-cancel" (click)="closeDetail()">ปิด</button>
+          @if (selected.files.length > 0) {
+            <div class="viewer-detail-row">
+              <div class="viewer-detail-icon-box">
+                <span class="material-symbols-outlined">attach_file</span>
+              </div>
+              <div>
+                <p class="viewer-detail-label">ไฟล์แนบ</p>
+                <p class="viewer-detail-val">{{ selected.files.length }} ไฟล์</p>
+              </div>
+            </div>
+          }
+
+          <div class="viewer-actions">
+            <button class="viewer-btn-edit" (click)="openEdit(selected); closeDetail()">
+              <span class="material-symbols-outlined">edit</span>แก้ไข
+            </button>
+            <button class="viewer-btn-del"
+              (click)="editingId = selected.activity_id; showDeleteConfirm = true; closeDetail()">
+              <span class="material-symbols-outlined">delete</span>ลบ
+            </button>
+          </div>
+
+        </div>
       </div>
 
     </div>

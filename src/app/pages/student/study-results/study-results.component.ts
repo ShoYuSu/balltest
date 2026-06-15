@@ -72,6 +72,17 @@ export class StudyResultsComponent implements OnInit {
     { query: '', results: [], show: false, course: null, conflicted: false },
   ]);
 
+  // Fixed-position dropdown (เพื่อหลีกเลี่ยง overflow clip)
+  freeDropdownRect: { top: number; left: number; width: number } | null = null;
+  activeDropdownSlot = -1;
+
+  get activeDropdownData(): { slot: any; rect: { top: number; left: number; width: number } } | null {
+    if (this.activeDropdownSlot < 0 || !this.freeDropdownRect) return null;
+    const slot = this.freeSlots()[this.activeDropdownSlot];
+    if (!slot?.show || !slot.results?.length) return null;
+    return { slot, rect: this.freeDropdownRect };
+  }
+
   private saveTimers: Record<number, any> = {};
   private searchTimers: Record<number, any> = {};
 
@@ -255,7 +266,13 @@ export class StudyResultsComponent implements OnInit {
   }
 
   // ─── Free Elective Search ──────────────────────────────────
-  onFreeSearch(idx: number, query: string) {
+  onFreeSearch(idx: number, query: string, event?: Event) {
+    if (event) {
+      const el = event.target as HTMLElement;
+      const rect = el.getBoundingClientRect();
+      this.freeDropdownRect = { top: rect.bottom + 4, left: rect.left, width: Math.max(rect.width, 360) };
+      this.activeDropdownSlot = idx;
+    }
     this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, query } : s));
     clearTimeout(this.searchTimers[idx]);
     if (query.length < 2) {
@@ -302,6 +319,10 @@ export class StudyResultsComponent implements OnInit {
   closeFreeDropdown(idx: number) {
     setTimeout(() => {
       this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, show: false } : s));
+      if (this.activeDropdownSlot === idx) {
+        this.activeDropdownSlot = -1;
+        this.freeDropdownRect = null;
+      }
     }, 200);
   }
 

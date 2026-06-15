@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-certification',
@@ -27,14 +28,17 @@ export class CertificationComponent implements OnInit {
   @ViewChild('fileInput')
   fileInput!: ElementRef;
 
- private cdr = inject(ChangeDetectorRef);
- private http = inject(HttpClient);
+  private cdr       = inject(ChangeDetectorRef);
+  private http      = inject(HttpClient);
+  private sanitizer = inject(DomSanitizer);
 
   certificates: any[] = [];
-
   totalCertificates = 0;
-
   showModal = false;
+
+  // View modal
+  showViewModal = false;
+  viewingCert: any = null;
 
   showSuccessPopup = false;
 
@@ -319,4 +323,18 @@ deleteCertificate() {
 
   }
 
+  openViewModal(item: any) { this.viewingCert = item; this.showViewModal = true; this.cdr.detectChanges(); }
+  closeViewModal() { this.showViewModal = false; this.viewingCert = null; this.cdr.detectChanges(); }
+
+  isPdf(url: string): boolean { return !!url?.toLowerCase().includes('.pdf'); }
+  isImgUrl(url: string): boolean { return /\.(jpg|jpeg|png|gif|webp)$/i.test(url ?? ''); }
+
+  certFileUrl(url: string): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `http://localhost:8080/api/${url}`;
+  }
+
+  safeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.certFileUrl(url));
+  }
 }
