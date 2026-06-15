@@ -67,9 +67,9 @@ export class StudyResultsComponent implements OnInit {
   readonly gradeOptionsAF = ['', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'W'];
   readonly gradeOptionsSU = ['', 'S', 'U'];
 
-  freeSlots = signal<{ query: string; results: any[]; show: boolean; course: any | null }[]>([
-    { query: '', results: [], show: false, course: null },
-    { query: '', results: [], show: false, course: null },
+  freeSlots = signal<{ query: string; results: any[]; show: boolean; course: any | null; conflicted: boolean }[]>([
+    { query: '', results: [], show: false, course: null, conflicted: false },
+    { query: '', results: [], show: false, course: null, conflicted: false },
   ]);
 
   private saveTimers: Record<number, any> = {};
@@ -174,15 +174,15 @@ export class StudyResultsComponent implements OnInit {
                   this.freeSlots.set([0, 1].map(i => {
                     const c = courses.find((x: any) => +x.course_id === freeIds[i]);
                     return c
-                      ? { query: `${c.course_code} – ${c.course_name}`, results: [], show: false, course: c }
-                      : { query: '', results: [], show: false, course: null };
+                      ? { query: `${c.course_code} – ${c.course_name}`, results: [], show: false, course: c, conflicted: false }
+                      : { query: '', results: [], show: false, course: null, conflicted: false };
                   }));
                 }
               });
             } else {
               this.freeSlots.set([
-                { query: '', results: [], show: false, course: null },
-                { query: '', results: [], show: false, course: null },
+                { query: '', results: [], show: false, course: null, conflicted: false },
+                { query: '', results: [], show: false, course: null, conflicted: false },
               ]);
             }
 
@@ -217,6 +217,43 @@ export class StudyResultsComponent implements OnInit {
 
   isModCollapsed(modId: number) { return this.collapsedMods().has(modId); }
 
+  // ─── Category Progress ────────────────────────────────────
+  catCreditsDone(cat: any): number {
+    if (!cat.modules || cat.modules.length === 0) {
+      let done = 0;
+      this.freeSlots().forEach(slot => {
+        if (slot.course && !slot.conflicted) {
+          const entry = this.passedMap()[slot.course.course_id];
+          if (entry?.grade && !['F','U','W'].includes(entry.grade)) {
+            done += +(slot.course.credit);
+          }
+        }
+      });
+      return done;
+    }
+    let done = 0;
+    (cat.modules ?? []).forEach((m: any) => {
+      (m.courses ?? []).forEach((c: any) => {
+        const entry = this.passedMap()[+c.course_id];
+        if (entry?.grade && !['F','U','W'].includes(entry.grade)) {
+          done += +(c.credit);
+        }
+      });
+    });
+    return done;
+  }
+
+  isCurriculumCourse(courseId: number): boolean {
+    for (const cat of this.curriculum()) {
+      for (const mod of (cat.modules ?? [])) {
+        for (const c of (mod.courses ?? [])) {
+          if (+c.course_id === +courseId) return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // ─── Free Elective Search ──────────────────────────────────
   onFreeSearch(idx: number, query: string) {
     this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, query } : s));
@@ -235,17 +272,21 @@ export class StudyResultsComponent implements OnInit {
   }
 
   selectFreeCourse(idx: number, course: any) {
+    const inCurriculum = this.isCurriculumCourse(+course.course_id);
+    const inOtherSlot  = this.freeSlots().some((s, i) => i !== idx && +s.course?.course_id === +course.course_id);
+    const conflicted   = inCurriculum || inOtherSlot;
+
     this.freeSlots.set(this.freeSlots().map((s, i) =>
-      i === idx ? { ...s, query: `${course.course_code} – ${course.course_name}`, results: [], show: false, course } : s
+      i === idx ? { ...s, query: `${course.course_code} – ${course.course_name}`, results: [], show: false, course, conflicted } : s
     ));
-    if (!this.passedMap()[course.course_id]) {
+    if (!conflicted && !this.passedMap()[course.course_id]) {
       this.passedMap.set({ ...this.passedMap(), [course.course_id]: { grade: '', semester: 1, year: 2566 } });
     }
   }
 
   clearFreeSlot(idx: number) {
     const slot = this.freeSlots()[idx];
-    if (slot.course) {
+    if (slot.course && !slot.conflicted) {
       this.http.post(`${this.apiUrl}/save_student_course_check.php`, {
         student_id: this.studentId(), course_id: slot.course.course_id, is_checked: false
       }).subscribe();
@@ -254,12 +295,11 @@ export class StudyResultsComponent implements OnInit {
       this.passedMap.set(map);
     }
     this.freeSlots.set(this.freeSlots().map((s, i) =>
-      i === idx ? { query: '', results: [], show: false, course: null } : s
+      i === idx ? { query: '', results: [], show: false, course: null, conflicted: false } : s
     ));
   }
 
   closeFreeDropdown(idx: number) {
-    // delay 200ms ให้ click บน dropdown item ทำงานก่อน
     setTimeout(() => {
       this.freeSlots.set(this.freeSlots().map((s, i) => i === idx ? { ...s, show: false } : s));
     }, 200);
