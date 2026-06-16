@@ -18,7 +18,6 @@ export class LoginComponent {
   private cdr = inject(ChangeDetectorRef);
   isStudentPage: boolean = false;
 
-  // ควบคุมหน้าจอ: select (หน้าแรก) -> student (หน้านักศึกษา) -> teacher (หน้าอาจารย์)
   loginStep: 'select' | 'student' | 'teacher' = 'select';
   hidePassword = true;
 
@@ -31,11 +30,10 @@ export class LoginComponent {
   showErrorModal = false;
   errorMessage = '';
 
-  // ฟังก์ชันเปลี่ยนหน้าจอ
   setStep(step: 'select' | 'student' | 'teacher') {
     this.loginStep = step;
     this.isStudentPage = (step === 'student');
-    this.loginForm.reset(); // ล้างฟอร์มเวลาสลับหน้า
+    this.loginForm.reset(); 
     this.cdr.detectChanges();
   }
 
@@ -54,50 +52,36 @@ export class LoginComponent {
     this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    console.log('1. กำลังส่งข้อมูลไป API...', { email, login_type: this.isStudentPage ? 'student' : 'staff' });
-
     this.http.post(`${environment.apiUrl}/login.php`, { email, password, login_type: this.isStudentPage ? 'student' : 'staff' }).subscribe({
       next: (res: any) => {
-        console.log('2. API ตอบกลับมาว่า:', res);
-
         if (res.success) {
           const role = res.role?.toLowerCase().trim();
-          console.log('3. ล็อกอินสำเร็จ Role คือ:', role);
-
           const tokenToSave = res.token ? res.token : 'fake-token-for-test';
           
-          // ⭐️ เก็บข้อมูลสิทธิ์ (Permissions) จาก API (ถ้ามี)
-          const permissions = res.permissions || [];
+          // ⭐️ รับข้อมูลสิทธิ์ (Permissions) จาก API (ตอนนี้เป็น String แล้ว)
+          const permsString = res.perms || '';
 
-          // 1. เก็บข้อมูลลง LocalStorage ของ 4200 ด้วย
+          // 1. เก็บข้อมูลลง LocalStorage ของฝั่ง 4200
           localStorage.setItem('token', tokenToSave);
           localStorage.setItem('role', role);
           localStorage.setItem('full_name', res.full_name || '');
           localStorage.setItem('img_profile', res.img_profile || '');
           localStorage.setItem('user_id', res.user_id);
-          localStorage.setItem('permissions', JSON.stringify(permissions)); // เซฟสิทธิ์ลงเครื่อง
-
-          // 🔥 [จุดที่เพิ่มแก้ไข] เซฟรหัสนักศึกษาลงเครื่องเพื่อให้หน้า Header และหน้าผลการเรียนนำไปใช้แบบไม่สลับคน
+          localStorage.setItem('permissions', permsString); // เซฟสิทธิ์ลงเครื่อง
           localStorage.setItem('student_code', res.student_code || '');
-
-          console.log('4. เซฟลง LocalStorage เสร็จแล้ว กำลังจะเปลี่ยนหน้า...');
 
           // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
           if (role === 'student') {
-            console.log('5. ไปหน้านักศึกษา...');
             this.router.navigate(['/personal-data']);
           } else {
-            console.log('5. เตะไปหาพอร์ต 4201...');
-            
-            // ⭐️ แปลง Array ของสิทธิ์ให้เป็นข้อความยาวๆ เพื่อแนบไปกับ URL
-            const permsString = encodeURIComponent(JSON.stringify(permissions));
+            // ⭐️ เข้ารหัสข้อความสิทธิ์ก่อนแนบไปกับ URL ป้องกัน Error
+            const encodedPerms = encodeURIComponent(permsString);
             
             // ส่งไปพอร์ต 4201 พร้อมแนบสิทธิ์ (&perms=...) ไปด้วย
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${permsString}&student_code=${res.student_code || ''}`;
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}`;
           }
 
         } else {
-          console.log('❌ ล็อกอินไม่ผ่าน:', res.message);
           this.errorMessage = res.message;
           this.showErrorModal = true;
         }
