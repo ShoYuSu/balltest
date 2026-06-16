@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 interface EvalYLO {
   ylo_id: number;
   sub_plo_id: number | null;
+  plo_id?: number; // เพิ่ม plo_id เข้ามาเพื่อเชื่อมสำหรับหลักสูตรอาหาร
   ylo_name: string;
   description: string;
   status: 'passed' | 'failed' | null;
@@ -25,6 +26,7 @@ interface EvalPLO {
   plo_name: string;
   description: string;
   sub_plos: EvalSubPLO[];
+  direct_ylos?: EvalYLO[]; // 🎯 เพิ่ม Array สำหรับรองรับ YLO ที่ต่อตรงกับ PLO (หลักสูตรอาหาร)
 }
 
 interface StudentAssessment {
@@ -71,7 +73,6 @@ export class PloAssessmentComponent implements OnInit {
     this.loadData();
   }
 
-  // 🎯 จุดที่ 1: แก้โหลดข้อมูล ให้ดักจับคำสั่งทางลัด
   loadData() {
     this.http
       .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
@@ -92,14 +93,11 @@ export class PloAssessmentComponent implements OnInit {
 
           this.students.set(formattedData);
 
-          // 🚀 [ทางลัด] เช็คว่ามีการส่งคำสั่งมาจากหน้าผลการเรียนหรือไม่
           const state = history.state;
           if (state && state.autoOpenEval && state.targetStudentId) {
-            // หาตัวนักศึกษาที่ตรงกับรหัสที่ส่งมา
             const target = formattedData.find((s) => s.studentId === state.targetStudentId);
             if (target) {
-              this.openEvalPage(target); // สั่งเปิดหน้าประเมินเด็กคนนี้ทันที!
-              // ล้างค่า State ทิ้ง ป้องกันไม่ให้มันเด้งเปิดเองอีกเวลาผู้ใช้กด Refresh หน้าเว็บ (F5)
+              this.openEvalPage(target);
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }
@@ -111,7 +109,6 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  // 🎯 จุดที่ 2: เพิ่ม ? หลัง event เพื่อให้ฟังก์ชันนี้ทำงานได้แม้ไม่มีการคลิกเมาส์
   openEvalPage(student: StudentAssessment, event?: Event) {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -123,7 +120,6 @@ export class PloAssessmentComponent implements OnInit {
       );
     }, 50);
 
-    // ถ้ามีการคลิกเมาส์มา (event) ค่อยให้ทำงาน
     if (event) {
       event.stopPropagation();
     }
@@ -131,7 +127,6 @@ export class PloAssessmentComponent implements OnInit {
     this.selectedStudent.set(student);
     this.showEvalPage.set(true);
     this.isLoadingEval.set(true);
-
     this.evalPLOs.set([]);
 
     this.http
@@ -144,22 +139,39 @@ export class PloAssessmentComponent implements OnInit {
           const rawYLOs = data.ylos || [];
 
           const structuredPLOs = rawPLOs.map((plo: any) => {
+            // 1. แยก YLO ที่เป็นของ SubPLO (วิทคอม)
+            const sub_plos = (plo.sub_plos || []).map((sub: any) => {
+              return {
+                ...sub,
+                ylos: rawYLOs
+                  .filter((y: any) => y.sub_plo_id === sub.sub_plo_id)
+                  .map((y: any) => ({
+                    ylo_id: y.ylo_id,
+                    sub_plo_id: y.sub_plo_id,
+                    plo_id: y.plo_id,
+                    ylo_name: y.ylo_name,
+                    description: y.description,
+                    status: y.status,
+                  })),
+              };
+            });
+
+            // 2. แยก YLO ที่ต่อตรงกับ PLO โดยไม่มี SubPLO (หลักสูตรอาหาร)
+            const direct_ylos = rawYLOs
+              .filter((y: any) => y.plo_id === plo.plo_id && (!y.sub_plo_id || y.sub_plo_id == 0))
+              .map((y: any) => ({
+                ylo_id: y.ylo_id,
+                sub_plo_id: null,
+                plo_id: y.plo_id,
+                ylo_name: y.ylo_name,
+                description: y.description,
+                status: y.status,
+              }));
+
             return {
               ...plo,
-              sub_plos: (plo.sub_plos || []).map((sub: any) => {
-                return {
-                  ...sub,
-                  ylos: rawYLOs
-                    .filter((y: any) => y.sub_plo_id === sub.sub_plo_id)
-                    .map((y: any) => ({
-                      ylo_id: y.ylo_id,
-                      sub_plo_id: y.sub_plo_id,
-                      ylo_name: y.ylo_name,
-                      description: y.description,
-                      status: y.status,
-                    })),
-                };
-              }),
+              sub_plos: sub_plos,
+              direct_ylos: direct_ylos, // ยัดใส่ Array แยกไว้
             };
           });
 
@@ -176,47 +188,54 @@ export class PloAssessmentComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  setYLOStatus(pIndex: number, sIndex: number, yIndex: number, status: 'passed' | 'failed') {
+  // 🎯 สร้างฟังก์ชันใหม่สำหรับ Toggle สถานะ โดยอิงจาก "ชื่อ YLO" แทน Index เพื่อความครอบคลุม
+  toggleYloStatus(
+    targetYloName: string,
+    currentStatus: string | null,
+    newStatusToSet: 'passed' | 'failed',
+  ) {
+    const newStatus = currentStatus === newStatusToSet ? null : newStatusToSet;
     const plos = [...this.evalPLOs()];
-    const targetYLO = plos[pIndex].sub_plos[sIndex].ylos[yIndex];
-    const newStatus = targetYLO.status === status ? null : status;
-    const targetYloName = targetYLO.ylo_name;
 
-    // อัปเดต YLO ที่ชื่อตรงกันทั้งหมด
     plos.forEach((plo) => {
+      // อัปเดตในกลุ่มที่มี SubPLO (วิทคอม)
       plo.sub_plos?.forEach((sub) => {
         sub.ylos?.forEach((ylo) => {
-          if (ylo.ylo_name === targetYloName) {
-            ylo.status = newStatus;
-          }
+          if (ylo.ylo_name === targetYloName) ylo.status = newStatus;
         });
+      });
+      // อัปเดตในกลุ่มที่ไม่มี SubPLO (หลักสูตรอาหาร)
+      plo.direct_ylos?.forEach((ylo) => {
+        if (ylo.ylo_name === targetYloName) ylo.status = newStatus;
       });
     });
 
     this.evalPLOs.set(plos);
   }
 
-  // 🎯 ความคืบหน้าของ SubPLO = (จำนวน YLO ที่ผ่าน / YLO ทั้งหมดใน SubPLO นั้น)
   calculateSubPLOProgress(sub: EvalSubPLO): number {
     if (!sub.ylos || sub.ylos.length === 0) return 0;
     const passed = sub.ylos.filter((y) => y.status === 'passed').length;
     return Math.round((passed / sub.ylos.length) * 100);
   }
 
-  // 🎯 อัปเดตโลจิกใหม่: ความคืบหน้าของ PLO = (เอาเปอร์เซ็นต์ของทุก SubPLO มาบวกกัน / จำนวน SubPLO)
   calculatePLOProgress(plo: EvalPLO): number {
-    // ถ้าไม่มี SubPLO เลย ให้ได้ 0%
-    if (!plo.sub_plos || plo.sub_plos.length === 0) return 0;
+    // 🎯 กรณีที่ 1: หลักสูตรที่มี Sub-PLO (วิทคอม)
+    if (plo.sub_plos && plo.sub_plos.length > 0) {
+      let totalSubScore = 0;
+      plo.sub_plos.forEach((sub) => {
+        totalSubScore += this.calculateSubPLOProgress(sub);
+      });
+      return Math.round(totalSubScore / plo.sub_plos.length);
+    }
 
-    let totalSubScore = 0;
+    // 🎯 กรณีที่ 2: หลักสูตรที่ไม่มี Sub-PLO ใช้ YLO ตรงๆ (อาหาร)
+    if (plo.direct_ylos && plo.direct_ylos.length > 0) {
+      const passed = plo.direct_ylos.filter((y) => y.status === 'passed').length;
+      return Math.round((passed / plo.direct_ylos.length) * 100);
+    }
 
-    // คำนวณเปอร์เซ็นต์ของแต่ละ SubPLO แล้วเอามารวมกัน
-    plo.sub_plos.forEach((sub) => {
-      totalSubScore += this.calculateSubPLOProgress(sub);
-    });
-
-    // หารด้วยจำนวน SubPLO ทั้งหมด เพื่อหาค่าเฉลี่ย
-    return Math.round(totalSubScore / plo.sub_plos.length);
+    return 0; // Fallback
   }
 
   saveEvaluation() {
@@ -226,20 +245,24 @@ export class PloAssessmentComponent implements OnInit {
 
     const evaluatedPLOs = this.evalPLOs().map((p) => ({
       code: p.plo_name,
-      score: this.calculatePLOProgress(p), // ค่าใหม่ที่คำนวณจาก SubPLO จะถูกส่งไปเซฟด้วย
+      score: this.calculatePLOProgress(p),
     }));
 
     const evaluatedYLOs: any[] = [];
     this.evalPLOs().forEach((p) => {
+      // เซฟ YLO ในวิทคอม
       p.sub_plos?.forEach((s) => {
         s.ylos?.forEach((y) => {
           if (y.status !== null) {
-            evaluatedYLOs.push({
-              id: y.ylo_id,
-              is_passed: y.status === 'passed' ? 1 : 0,
-            });
+            evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
           }
         });
+      });
+      // เซฟ YLO ในหลักสูตรอาหาร
+      p.direct_ylos?.forEach((y) => {
+        if (y.status !== null) {
+          evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
+        }
       });
     });
 
