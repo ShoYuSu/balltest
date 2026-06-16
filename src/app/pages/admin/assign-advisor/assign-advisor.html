@@ -215,7 +215,44 @@
         }
       </div>
 
-      <div class="shrink-0 pt-6 mt-2 border-t border-slate-100">
+      <div class="shrink-0 pt-6 mt-2 border-t border-slate-100 space-y-3">
+        <div class="relative">
+          <label class="text-sm font-semibold mb-2 block text-slate-700">เทอมการศึกษา</label>
+          <button
+            type="button"
+            (click)="toggleSemesterDropdown()"
+            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <span>เทอม {{ selectedSemester }}</span>
+            <span
+              class="material-symbols-rounded text-slate-400 text-lg transition-transform"
+              [class.rotate-180]="isSemesterDropdownOpen"
+            >
+              expand_more
+            </span>
+          </button>
+
+          @if (isSemesterDropdownOpen) {
+            <div class="absolute bottom-14 left-0 z-20 w-full mb-2 bg-white border border-slate-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
+              <ul class="p-2 text-sm text-slate-700 font-medium">
+                @for (sem of [1, 2]; track sem) {
+                  <li>
+                    <button
+                      type="button"
+                      (click)="selectSemester(sem)"
+                      class="flex items-center w-full p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors text-left"
+                      [class.bg-indigo-50]="selectedSemester === sem"
+                      [class.text-indigo-600]="selectedSemester === sem"
+                    >
+                      เทอม {{ sem }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+
         <button (click)="saveAssignments()"
                 [disabled]="selectedAdvisors.length === 0 || selectedStudents.length === 0"
                 class="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"

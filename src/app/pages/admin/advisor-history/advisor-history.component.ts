@@ -1,33 +1,36 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; 
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; 
-import { FormsModule } from '@angular/forms'; 
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { TableColumnModel } from '../../../shared/components/stat-cards/models/table-option';
 
 @Component({
   selector: 'app-advisor-history',
   standalone: true,
-  imports: [StatCardsComponent, CommonModule, HttpClientModule, FormsModule], 
+  imports: [StatCardsComponent, CommonModule, HttpClientModule, FormsModule],
   templateUrl: './advisor-history.html',
   styleUrl: './advisor-history.css',
 })
 export class AdvisorHistoryComponent implements OnInit {
   isModalOpen = false;
   selectedStudent: any = null;
-  
+
   public students: any[] = [];
-  public filteredStudents: any[] = []; 
-  
+  public filteredStudents: any[] = [];
+
   // 1. ตัวแปรสำหรับการค้นหาและคัดกรองข้อมูล
-  public searchText: string = '';       
-  public selectedMajor: string = '';    // เก็บค่าชื่อหลักสูตรที่เลือก (ถ้าว่างแปลว่าทั้งหมด)
+  public searchText: string = '';
+  public selectedMajor: string = ''; // เก็บค่าชื่อหลักสูตรที่เลือก (ถ้าว่างแปลว่าทั้งหมด)
   public selectedYear: number | string = ''; // เก็บชั้นปีที่เลือก 1, 2, 3, 4 (ถ้าว่างแปลว่าทุกชั้นปี)
 
   // 2. ตัวแปรสำหรับควบคุมการแสดงผลของ Custom Dropdown
   public isMajorDropdownOpen: boolean = false;
   public isYearDropdownOpen: boolean = false;
-  public uniqueMajors: string[] = [];  // เก็บรายชื่อวิชาเอก/ภาควิชาที่ไม่ซ้ำกันที่ดึงจากหลังบ้าน
+  public uniqueMajors: string[] = []; // เก็บรายชื่อวิชาเอก/ภาควิชาที่ไม่ซ้ำกันที่ดึงจากหลังบ้าน
+
+  public currentPage: number = 1;
+  public pageSize: number = 5;
 
   public myStats = [
     {
@@ -88,7 +91,7 @@ export class AdvisorHistoryComponent implements OnInit {
       align: 'center',
       display: true,
       width: 'medium',
-      cell: (el) => el.department || el.major || '-', 
+      cell: (el) => el.department || el.major || '-',
     },
     {
       columnDef: 'advisor',
@@ -110,7 +113,10 @@ export class AdvisorHistoryComponent implements OnInit {
     },
   ];
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.loadAllStudents();
@@ -122,15 +128,16 @@ export class AdvisorHistoryComponent implements OnInit {
         this.students = data;
 
         // 3. ดึงรายชื่อภาควิชา/หลักสูตรที่มีในฐานข้อมูลแบบไม่ซ้ำกันมาใส่ในเมนูอัตโนมัติ
-        const rawMajors = data.map(s => s.department || s.major);
-        this.uniqueMajors = [...new Set(rawMajors)].filter(m => m != null && m !== '');
+        const rawMajors = data.map((s) => s.department || s.major);
+        this.uniqueMajors = [...new Set(rawMajors)].filter((m) => m != null && m !== '');
 
-        this.calculateStats(); 
-        this.filterStudents(); 
+        this.currentPage = 1;
+        this.calculateStats();
+        this.filterStudents();
       },
       error: (err) => {
         console.error('เกิดข้อผิดพลาดในการดึงข้อมูลนักศึกษา:', err);
-      }
+      },
     });
   }
 
@@ -149,11 +156,13 @@ export class AdvisorHistoryComponent implements OnInit {
   selectMajor(major: string) {
     this.selectedMajor = major;
     this.isMajorDropdownOpen = false; // เลือกเสร็จให้หุบเมนูขึ้นไป
+    this.currentPage = 1; // รีเซ็ตกลับไปหน้า 1 เสมอเมื่อมีการเปลี่ยนเงื่อนไขการกรอง
     this.filterStudents(); // สั่งรีเฟรชข้อมูลตารางตามเงื่อนไขใหม่
   }
 
   selectYear(year: number | string) {
     this.selectedYear = year;
+    this.currentPage = 1; // รีเซ็ตกลับไปหน้า 1 เสมอเมื่อมีการเปลี่ยนเงื่อนไขการกรอง
     this.isYearDropdownOpen = false; // เลือกเสร็จให้หุบเมนูขึ้นไป
     this.filterStudents(); // สั่งรีเฟรชข้อมูลตารางตามเงื่อนไขใหม่
   }
@@ -165,37 +174,84 @@ export class AdvisorHistoryComponent implements OnInit {
     // เงื่อนไขที่ 1: กรองคำค้นหา
     if (this.searchText.trim()) {
       const txt = this.searchText.toLowerCase();
-      result = result.filter(s => 
-        (s.full_name && s.full_name.toLowerCase().includes(txt)) ||
-        (s.student_code && s.student_code.includes(txt)) ||
-        (s.department && s.department.toLowerCase().includes(txt)) ||
-        (s.major && s.major.toLowerCase().includes(txt))
+      result = result.filter(
+        (s) =>
+          (s.full_name && s.full_name.toLowerCase().includes(txt)) ||
+          (s.student_code && s.student_code.includes(txt)) ||
+          (s.department && s.department.toLowerCase().includes(txt)) ||
+          (s.major && s.major.toLowerCase().includes(txt)),
       );
     }
 
     // เงื่อนไขที่ 2: กรอง Custom Dropdown หลักสูตร
     if (this.selectedMajor) {
-      result = result.filter(s => (s.department === this.selectedMajor || s.major === this.selectedMajor));
+      result = result.filter(
+        (s) => s.department === this.selectedMajor || s.major === this.selectedMajor,
+      );
     }
 
     // เงื่อนไขที่ 3: กรอง Custom Dropdown ชั้นปี
     if (this.selectedYear) {
-      result = result.filter(s => {
+      result = result.filter((s) => {
         const targetYearStr = String(this.selectedYear); // แปลงเลข 1, 2, 3, 4 เป็นสตริงไว้เทียบเคียง
-        return (s.displayYear && s.displayYear.includes(targetYearStr)) ||
-               (s.student_code && s.student_code.startsWith(targetYearStr)) || 
-               (s.year && String(s.year).includes(targetYearStr));
+        return (
+          (s.displayYear && s.displayYear.includes(targetYearStr)) ||
+          (s.student_code && s.student_code.startsWith(targetYearStr)) ||
+          (s.year && String(s.year).includes(targetYearStr))
+        );
       });
     }
 
-    this.filteredStudents = result;
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    this.filteredStudents = result.slice(startIndex, startIndex + this.pageSize);
     this.cdr.detectChanges(); // สั่งวาด UI ตารางอัปเดตข้อมูลใหม่แบบทันที
+  }
+  get totalPages(): number {
+    let result = [...this.students];
+
+    if (this.searchText.trim()) {
+      const txt = this.searchText.toLowerCase();
+      result = result.filter(
+        (s) =>
+          (s.full_name && s.full_name.toLowerCase().includes(txt)) ||
+          (s.student_code && s.student_code.includes(txt)),
+      );
+    }
+    if (this.selectedMajor) {
+      result = result.filter(
+        (s) => s.department === this.selectedMajor || s.major === this.selectedMajor,
+      );
+    }
+    if (this.selectedYear) {
+      result = result.filter((s) => {
+        const targetYearStr = String(this.selectedYear);
+        return (
+          (s.displayYear && s.displayYear.includes(targetYearStr)) ||
+          (s.student_code && s.student_code.startsWith(targetYearStr)) ||
+          (s.year && String(s.year).includes(targetYearStr))
+        );
+      });
+    }
+
+    return Math.ceil(result.length / this.pageSize) || 1;
+  }
+
+  // 💡 [เพิ่มใหม่] ฟังก์ชันสำหรับจังหวะกดเปลี่ยนหน้า
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.filterStudents(); // สั่งตัดข้อมูลชุดใหม่ตามหน้าปัจจุบัน
+    }
   }
 
   calculateStats() {
     const total = this.students.length;
-    const csDept = this.students.filter(s => (s.department || s.major) === 'วิทยาการข้อมูลและคอมพิวเตอร์').length;
-    const foodDept = this.students.filter(s => (s.department || s.major) === 'เทคโนโลยีการอาหาร').length;
+    const csDept = this.students.filter(
+      (s) => (s.department || s.major) === 'วิทยาการข้อมูลและคอมพิวเตอร์',
+    ).length;
+    const foodDept = this.students.filter(
+      (s) => (s.department || s.major) === 'เทคโนโลยีการอาหาร',
+    ).length;
 
     this.myStats[0].value = total;
     this.myStats[1].value = csDept;
@@ -203,32 +259,36 @@ export class AdvisorHistoryComponent implements OnInit {
   }
 
   openHistory(student: any) {
-    this.selectedStudent = student;
+    // 1. ล้างประวัติเก่าออกก่อนป้องกันข้อมูลปนกัน และเปิด Modal มารอทันที
+    this.selectedStudent = { ...student, history: [] };
+    this.isModalOpen = true;
+    this.cdr.detectChanges(); // สั่งให้รีเรนเดอร์เปิดหน้าต่าง Modal มารอ (อาจจะขึ้น Loading สวยๆ ไว้)
 
-    this.http.get<any[]>(`http://localhost:8080/api/get_advisor_history.php?student_id=${student.student_id}`).subscribe({
-      next: (historyData) => {
-        const colorPresets = [
-          { bg: 'bg-[#E8F5E9]', text: 'text-[#4CAF50]' },
-          { bg: 'bg-[#E3F2FD]', text: 'text-[#2196F3]' },
-          { bg: 'bg-[#F3E5F5]', text: 'text-[#9C27B0]' }
-        ];
+    this.http
+      .get<any[]>(`http://localhost:8080/api/get_advisor_history.php?student_id=${student.student_id}`)
+      .subscribe({
+        next: (historyData) => {
+          const colorPresets = [
+            { bg: 'bg-[#E8F5E9]', text: 'text-[#4CAF50]' },
+            { bg: 'bg-[#E3F2FD]', text: 'text-[#2196F3]' },
+            { bg: 'bg-[#F3E5F5]', text: 'text-[#9C27B0]' },
+          ];
 
-        this.selectedStudent.history = historyData.map((item, index) => ({
-          ...item,
-          color: colorPresets[index % colorPresets.length].bg,
-          textColor: colorPresets[index % colorPresets.length].text
-        }));
+          // 2. เมื่อข้อมูลมาถึง ค่อยยัด history ใส่เข้าไป
+          this.selectedStudent.history = historyData.map((item, index) => ({
+            ...item,
+            color: colorPresets[index % colorPresets.length].bg,
+            textColor: colorPresets[index % colorPresets.length].text,
+          }));
 
-        this.isModalOpen = true; 
-        this.cdr.detectChanges(); 
-      },
-      error: (err) => {
-        console.error('เกิดข้อผิดพลาดในการดึงประวัติอาจารย์ที่ปรึกษา:', err);
-        this.selectedStudent.history = []; 
-        this.isModalOpen = true;
-        this.cdr.detectChanges();
-      }
-    });
+          this.cdr.detectChanges(); // อัปเดตข้อมูลประวัติลงใน Modal ทันที
+        },
+        error: (err) => {
+          console.error('เกิดข้อผิดพลาดในการดึงประวัติอาจารย์ที่ปรึกษา:', err);
+          this.selectedStudent.history = [];
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   closeModal() {

@@ -14,6 +14,9 @@ import { TableColumnModel } from '../../../shared/components/stat-cards/models/t
 import { environment } from '../../../../environments/environment';
 import { CurriculumManagementComponent } from '../../curriculum-management/curriculum-management.component';
 
+// 🌟 Import SweetAlert2 เข้ามาใช้งาน
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-students',
   standalone: true,
@@ -30,7 +33,6 @@ import { CurriculumManagementComponent } from '../../curriculum-management/curri
   styleUrl: './students.css',
 })
 export class StudentsComponent implements OnInit {
-  // 1. ปรับการ Map Column ให้แม่นยำตาม Database
   public columns: TableColumnModel[] = [
     {
       columnDef: 'profile',
@@ -172,7 +174,6 @@ export class StudentsComponent implements OnInit {
   newMajorName: string = '';
   isCurriculumModalOpen = false;
 
-  // 💡 [เพิ่มใหม่] ตัวแปรสำหรับคุมระบบแบ่งหน้า (Pagination) หน้าละ 5 คน
   currentPage: number = 1;
   pageSize: number = 5;
 
@@ -185,6 +186,7 @@ export class StudentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentPage = 1;
     this.loadStudents();
     this.loadMajors();
   }
@@ -207,7 +209,6 @@ export class StudentsComponent implements OnInit {
       next: (res) => {
         this.students = [...res];
         this.updateStats();
-        this.currentPage = 1; // 💡 รีเซ็ตกลับไปหน้า 1 เสมอเมื่อโหลดข้อมูลใหม่
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Fetch error:', err),
@@ -228,7 +229,13 @@ export class StudentsComponent implements OnInit {
               this.selectMajor(trimmedMajor);
               this.newMajorName = '';
             } else {
-              alert(res.message);
+              // 🌟 จุดแก้ไขที่ 1: เปลี่ยนแจ้งเตือนสาขาผิดพลาด
+              Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: res.message,
+                confirmButtonColor: '#3085d6'
+              });
             }
           },
         });
@@ -262,17 +269,36 @@ export class StudentsComponent implements OnInit {
     this.http.post(`${environment.apiUrl}/add_student.php`, studentData).subscribe({
       next: (response: any) => {
         if (response && (response.status === 'success' || response.success)) {
-          alert('บันทึกข้อมูลสำเร็จ!');
+          // 🌟 จุดแก้ไขที่ 2: แจ้งเตือนเมื่อบันทึกข้อมูลสำเร็จ (ใช้ Toast เล็กๆ สวยงามไม่ต้องคอยกดตกลง)
+          Swal.fire({
+            icon: 'success',
+            title: 'สำเร็จ!',
+            text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+            timer: 2000,
+            showConfirmButton: false
+          });
           this.loadStudents();
           this.closeModal();
         } else {
-          alert('ผิดพลาด: ' + (response?.message || 'ข้อมูลไม่ถูกต้อง'));
+          // 🌟 จุดแก้ไขที่ 3: แจ้งเตือนเมื่อข้อมูลไม่ถูกต้อง
+          Swal.fire({
+            icon: 'warning',
+            title: 'ไม่สามารถบันทึกได้',
+            text: response?.message || 'ข้อมูลไม่ถูกต้อง',
+            confirmButtonColor: '#3085d6'
+          });
         }
         this.isSaving = false;
       },
       error: (err) => {
         console.error('HTTP Error:', err);
-        alert('ติดต่อเซิร์ฟเวอร์ไม่ได้');
+        // 🌟 จุดแก้ไขที่ 4: แจ้งเตือนเมื่อเชื่อมต่อ Server ไม่ได้
+        Swal.fire({
+          icon: 'error',
+          title: 'การเชื่อมต่อล้มเหลว',
+          text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้',
+          confirmButtonColor: '#d33'
+        });
         this.isSaving = false;
       },
     });
@@ -290,11 +316,8 @@ export class StudentsComponent implements OnInit {
     this.studentStats[2].value = studentsWithoutAdvisor;
   }
 
-  // 💡 [จุดแก้ไขหลัก] ฟังก์ชันค้นหาและกรองข้อมูลแบบแบ่งหน้าละ 5 คน
   get filteredStudents() {
     const search = this.searchText.toLowerCase();
-
-    // 1. ทำการกรองค้นหาตามคำค้นหา/สาขา/ชั้นปีให้เสร็จก่อน
     const filtered = this.students.filter((s) => {
       const matchesSearch =
         (s.full_name || '').toLowerCase().includes(search) ||
@@ -305,12 +328,10 @@ export class StudentsComponent implements OnInit {
       return matchesSearch && matchesMajor && matchesYear;
     });
 
-    // 2. คำนวณตัดแบ่งข้อมูลส่งออกไปแสดงผลบนตารางแค่ 5 คนเฉพาะของหน้านั้น ๆ
     const startIndex = (this.currentPage - 1) * this.pageSize;
     return filtered.slice(startIndex, startIndex + this.pageSize);
   }
 
-  // 💡 [เพิ่มใหม่] ฟังก์ชันสำหรับคำนวณจำนวนหน้าทั้งหมดที่มี (เพื่อให้ฝั่ง HTML ทำปุ่ม กดเปลี่ยนหน้า)
   get totalPages(): number {
     const search = this.searchText.toLowerCase();
     const filteredCount = this.students.filter((s) => {
@@ -323,7 +344,6 @@ export class StudentsComponent implements OnInit {
     return Math.ceil(filteredCount / this.pageSize) || 1;
   }
 
-  // 💡 [เพิ่มใหม่] ฟังก์ชันจังหวะกดเปลี่ยนหน้า
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -412,14 +432,26 @@ export class StudentsComponent implements OnInit {
             this.updateStats();
             this.cdr.detectChanges();
 
-            alert(
-              newStatus === 'inactive'
+            // 🌟 จุดแก้ไขหลัก (จากในรูปภาพ): เปลี่ยนปุ่มกดยืนยันสถานะสไตล์โมเดิร์น
+            Swal.fire({
+              icon: 'success',
+              title: 'อัปเดตสถานะสำเร็จ',
+              text: newStatus === 'inactive'
                 ? 'เปลี่ยนสถานะนักศึกษาเป็นศิษย์เก่าเรียบร้อย'
-                : 'เปิดการมองเห็นนักศึกษาเรียบร้อย'
-            );
+                : 'เปิดการมองเห็นนักศึกษาเรียบร้อย',
+              confirmButtonText: 'ตกลง',
+              confirmButtonColor: '#3085d6'
+            });
           }
         },
-        error: () => alert('เกิดข้อผิดพลาด'),
+        error: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'ผิดพลาด',
+            text: 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ',
+            confirmButtonColor: '#d33'
+          });
+        },
       });
   }
 
@@ -534,13 +566,13 @@ export class StudentsComponent implements OnInit {
   selectYear(year: any) {
     this.selectedYear = year;
     this.isYearDropdownOpen = false;
-    this.currentPage = 1; // 💡 รีเซ็ตหน้ากลับมาหน้า 1 เสมอเมื่อเปลี่ยนตัวกรอง
+    this.currentPage = 1;
   }
 
   selectMajor(major: string) {
     this.selectedMajor = major;
     this.isMajorDropdownOpen = false;
-    this.currentPage = 1; // 💡 รีเซ็ตหน้ากลับมาหน้า 1 เสมอเมื่อเปลี่ยนตัวกรอง
+    this.currentPage = 1;
   }
 
   toggleFormMajorDropdown() {

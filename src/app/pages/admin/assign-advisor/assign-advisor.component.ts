@@ -34,6 +34,8 @@ export class AssignAdvisorComponent implements OnInit {
   isBranchDropdownOpen = false;
   showDeleteModal = false;
   targetToDelete: any = null;
+  selectedSemester: number = 1;
+  isSemesterDropdownOpen = false;
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -129,6 +131,21 @@ export class AssignAdvisorComponent implements OnInit {
     this.cdr.detectChanges(); 
   }
 
+  // ================= 3.5 ระบบจัดการเทอม =================
+  toggleSemesterDropdown() {
+    this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
+    if (this.isSemesterDropdownOpen) {
+      this.isDeptDropdownOpen = false;
+      this.isBranchDropdownOpen = false;
+    }
+  }
+
+  selectSemester(sem: number) {
+    this.selectedSemester = sem;
+    this.isSemesterDropdownOpen = false;
+    this.cdr.detectChanges();
+  }
+
   // ================= 4. ระบบจัดการอาจารย์ =================
   toggleAdvisor(advisor: any) {
     const targetId = Number(advisor.id);
@@ -207,7 +224,8 @@ export class AssignAdvisorComponent implements OnInit {
 
     const payload = {
       advisor_ids: this.selectedAdvisors.map(a => a.id),
-      student_ids: this.selectedStudents
+      student_ids: this.selectedStudents,
+      semester: this.selectedSemester
     };
 
     this.http.post<any>(`${environment.apiUrl}/assign_advisor.php`, payload).subscribe({
