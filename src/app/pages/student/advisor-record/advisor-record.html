@@ -48,12 +48,13 @@
           <div class="record-list" *ngIf="filteredAppointments.length > 0">
             <div
               class="record-card"
-              [ngClass]="getCardAccent(a.type)"
+              [class.card-consulted]="a.is_consulted"
+              [class.card-pending]="!a.is_consulted"
               *ngFor="let a of filteredAppointments"
               (click)="openDetail(a)">
 
               <!-- LEFT: date block -->
-              <div class="date-block">
+              <div class="date-block" [class.date-consulted]="a.is_consulted" [class.date-pending]="!a.is_consulted">
                 <span class="date-day">{{ a.appointment_date | date:'d' }}</span>
                 <span class="date-month">{{ a.appointment_date | date:'MMM' }}</span>
               </div>
@@ -65,9 +66,6 @@
                   <h3 class="record-title">{{ a.title }}</h3>
                   <div class="badge-group">
                     <span class="type-badge" [ngClass]="getTypeColor(a.type)">{{ a.type }}</span>
-                    <span class="status-badge" [ngClass]="getStatusColor(a.status)">
-                      {{ a.status || 'ไม่ระบุ' }}
-                    </span>
                   </div>
                 </div>
 
@@ -83,16 +81,19 @@
                     <span class="material-symbols-outlined">person</span>
                     {{ a.advisor_name }}
                   </span>
-                  <span class="meta-item">
-                    <span class="material-symbols-outlined">call</span>
-                    {{ (a.advisor_phone && a.advisor_phone !== '-') ? a.advisor_phone : '-' }}
-                  </span>
-                  <span class="meta-item" *ngIf="a.is_consulted">
-                    <span class="material-symbols-outlined text-green-500">check_circle</span>
-                    ปรึกษาแล้ว
-                  </span>
                 </div>
 
+              </div>
+
+              <!-- CONSULT STATUS CHIP -->
+              <div class="consult-chip" [class.chip-done]="a.is_consulted" [class.chip-wait]="!a.is_consulted">
+                @if (a.is_consulted) {
+                  <span class="material-symbols-outlined chip-icon">check_circle</span>
+                  <span>ปรึกษาแล้ว</span>
+                } @else {
+                  <span class="chip-dot"></span>
+                  <span>รอปรึกษา</span>
+                }
               </div>
 
               <!-- ADVISOR AVATAR -->

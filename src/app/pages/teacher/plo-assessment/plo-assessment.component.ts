@@ -71,6 +71,7 @@ export class PloAssessmentComponent implements OnInit {
     this.loadData();
   }
 
+  // 🎯 จุดที่ 1: แก้โหลดข้อมูล ให้ดักจับคำสั่งทางลัด
   loadData() {
     this.http
       .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=14&t=${Date.now()}`)
@@ -88,7 +89,20 @@ export class PloAssessmentComponent implements OnInit {
               ? `${environment.apiUrl}/${s.img}`
               : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name || 'User')}&background=fff7ed&color=ea580c`,
           }));
+
           this.students.set(formattedData);
+
+          // 🚀 [ทางลัด] เช็คว่ามีการส่งคำสั่งมาจากหน้าผลการเรียนหรือไม่
+          const state = history.state;
+          if (state && state.autoOpenEval && state.targetStudentId) {
+            // หาตัวนักศึกษาที่ตรงกับรหัสที่ส่งมา
+            const target = formattedData.find((s) => s.studentId === state.targetStudentId);
+            if (target) {
+              this.openEvalPage(target); // สั่งเปิดหน้าประเมินเด็กคนนี้ทันที!
+              // ล้างค่า State ทิ้ง ป้องกันไม่ให้มันเด้งเปิดเองอีกเวลาผู้ใช้กด Refresh หน้าเว็บ (F5)
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          }
         },
         error: (err) => {
           console.error('Failed to load data:', err);
@@ -97,7 +111,8 @@ export class PloAssessmentComponent implements OnInit {
       });
   }
 
-  openEvalPage(student: StudentAssessment, event: Event) {
+  // 🎯 จุดที่ 2: เพิ่ม ? หลัง event เพื่อให้ฟังก์ชันนี้ทำงานได้แม้ไม่มีการคลิกเมาส์
+  openEvalPage(student: StudentAssessment, event?: Event) {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       const scrollContainers = document.querySelectorAll(
@@ -107,7 +122,12 @@ export class PloAssessmentComponent implements OnInit {
         container.scrollTo({ top: 0, left: 0, behavior: 'smooth' }),
       );
     }, 50);
-    event.stopPropagation();
+
+    // ถ้ามีการคลิกเมาส์มา (event) ค่อยให้ทำงาน
+    if (event) {
+      event.stopPropagation();
+    }
+
     this.selectedStudent.set(student);
     this.showEvalPage.set(true);
     this.isLoadingEval.set(true);

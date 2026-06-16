@@ -132,19 +132,39 @@
       </div>
 
       <div class="px-4">
-        <div class="flex justify-between items-end mb-8">
+        <div class="flex justify-between items-end mb-8 relative z-20">
           <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
             <span class="material-symbols-outlined text-orange-500">timeline</span> ไทม์ไลน์การปรึกษา
           </h2>
-          <select [(ngModel)]="sortOrder"
-                  class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 focus:ring-2 focus:ring-orange-500/20 outline-none cursor-pointer shadow-sm">
-            <option value="desc">ใหม่สุด - เก่าสุด</option>
-            <option value="asc">เก่าสุด - ใหม่สุด</option>
-          </select>
+
+          <div class="relative">
+            <button (click)="toggleSortDropdown($event)"
+                    class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:border-orange-500 hover:text-orange-600 transition-colors shadow-sm focus:outline-none">
+              {{ sortOrder() === 'desc' ? 'ใหม่สุด - เก่าสุด' : 'เก่าสุด - ใหม่สุด' }}
+              <span class="material-symbols-outlined text-[18px] transition-transform duration-200" [class.rotate-180]="isSortDropdownOpen()">expand_more</span>
+            </button>
+
+            @if (isSortDropdownOpen()) {
+              <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-fadeIn origin-top-right">
+                <button (click)="setSortOrder('desc')"
+                        class="w-full text-left px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-colors"
+                        [ngClass]="sortOrder() === 'desc' ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:bg-gray-50'">
+                  <span class="material-symbols-outlined text-[18px]" [class.invisible]="sortOrder() !== 'desc'">check</span>
+                  ใหม่สุด - เก่าสุด
+                </button>
+                <button (click)="setSortOrder('asc')"
+                        class="w-full text-left px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-colors"
+                        [ngClass]="sortOrder() === 'asc' ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:bg-gray-50'">
+                  <span class="material-symbols-outlined text-[18px]" [class.invisible]="sortOrder() !== 'asc'">check</span>
+                  เก่าสุด - ใหม่สุด
+                </button>
+              </div>
+            }
+          </div>
         </div>
 
         @if (studentLogs().length > 0) {
-          <div class="relative border-l-2 border-gray-200 ml-4 md:ml-6 space-y-8 pb-4">
+          <div class="relative border-l-2 border-gray-200 ml-4 md:ml-6 space-y-8 pb-4 z-10">
 
             @for (log of sortedLogs(); track log.appointment_id; let isFirst = $first) {
               <div class="relative pl-8 md:pl-12 group">
@@ -175,7 +195,7 @@
                     }
                   </div>
 
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 pr-8">
+                  <div class="flex flex-col flex-wrap sm:flex-row sm:items-center gap-3 mb-4 pr-8">
                     <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                       <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
                       <span class="text-sm font-bold text-gray-700">{{ formatThaiDate(log.date) }}</span>
@@ -185,6 +205,18 @@
                       <span class="text-sm font-bold text-gray-700">{{ log.time }} น.</span>
                     </div>
                     <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ log.type }}</span>
+
+                    @if (log.isGroup) {
+                      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-extrabold rounded-lg border border-purple-100" title="ให้คำปรึกษาแบบกลุ่ม">
+                        <span class="material-symbols-outlined text-[14px]">groups</span>
+                        รายกลุ่ม ({{ log.memberCount }} คน)
+                      </div>
+                    } @else {
+                      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-extrabold rounded-lg border border-blue-100" title="ให้คำปรึกษาแบบเดี่ยว">
+                        <span class="material-symbols-outlined text-[14px]">person</span>
+                        รายบุคคล
+                      </div>
+                    }
                   </div>
 
                   <h3 class="text-xl font-bold text-gray-800 mb-3">{{ log.title }}</h3>

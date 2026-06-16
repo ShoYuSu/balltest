@@ -77,6 +77,9 @@ export class LoginComponent {
           localStorage.setItem('user_id', res.user_id);
           localStorage.setItem('permissions', JSON.stringify(permissions)); // เซฟสิทธิ์ลงเครื่อง
 
+          // 🔥 [จุดที่เพิ่มแก้ไข] เซฟรหัสนักศึกษาลงเครื่องเพื่อให้หน้า Header และหน้าผลการเรียนนำไปใช้แบบไม่สลับคน
+          localStorage.setItem('student_code', res.student_code || '');
+
           console.log('4. เซฟลง LocalStorage เสร็จแล้ว กำลังจะเปลี่ยนหน้า...');
 
           // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
@@ -90,7 +93,7 @@ export class LoginComponent {
             const permsString = encodeURIComponent(JSON.stringify(permissions));
             
             // ส่งไปพอร์ต 4201 พร้อมแนบสิทธิ์ (&perms=...) ไปด้วย
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${permsString}`;
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${permsString}&student_code=${res.student_code || ''}`;
           }
 
         } else {

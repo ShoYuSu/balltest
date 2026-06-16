@@ -15,11 +15,9 @@ export class IndividualRecord implements OnInit {
   private http = inject(HttpClient);
   apiUrl = environment.apiUrl;
 
-  // --- State สำหรับหน้าหลัก (รายชื่อนักศึกษา) ---
   students = signal<any[]>([]);
   searchQuery = signal('');
 
-  // Pagination State
   currentPage = signal(1);
   pageSize = signal(5);
 
@@ -41,17 +39,18 @@ export class IndividualRecord implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.pageSize()));
 
-  // --- State สำหรับหน้าประวัติ (รายบุคคล) ---
   selectedStudent = signal<any>(null);
   studentLogs = signal<any[]>([]);
   sortOrder = signal<'desc' | 'asc'>('desc');
 
-  // --- State สำหรับเมนูและ Modal ---
   activeDropdownId = signal<string | null>(null);
   isEditModalOpen = signal(false);
   isConfirmRevertModalOpen = signal(false);
   editingLog: any = null;
   revertingLogId: string | null = null;
+
+  // 🎯 เพิ่ม State สำหรับคุมการเปิด/ปิด Dropdown เรียงลำดับ
+  isSortDropdownOpen = signal(false);
 
   sortedLogs = computed(() => {
     let logs = [...this.studentLogs()];
@@ -104,14 +103,28 @@ export class IndividualRecord implements OnInit {
     this.loadStudentsSummary();
   }
 
-  // ==================== ฟังก์ชันจัดการ Dropdown และ Modal ====================
+  // 🎯 ปรับปรุงการกดปิด Dropdown นอกพื้นที่
+  closeDropdowns() {
+    this.activeDropdownId.set(null);
+    this.isSortDropdownOpen.set(false);
+  }
+
   toggleDropdown(id: string, e: Event) {
     e.stopPropagation();
+    this.isSortDropdownOpen.set(false); // ปิดอันอื่น
     this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
   }
 
-  closeDropdowns() {
-    this.activeDropdownId.set(null);
+  // 🎯 ฟังก์ชันสำหรับ Dropdown เรียงลำดับ (Custom)
+  toggleSortDropdown(e: Event) {
+    e.stopPropagation();
+    this.activeDropdownId.set(null); // ปิดอันอื่น
+    this.isSortDropdownOpen.set(!this.isSortDropdownOpen());
+  }
+
+  setSortOrder(order: 'desc' | 'asc') {
+    this.sortOrder.set(order);
+    this.isSortDropdownOpen.set(false);
   }
 
   openEditLogModal(log: any, e: Event) {
@@ -135,7 +148,6 @@ export class IndividualRecord implements OnInit {
     this.revertingLogId = null;
   }
 
-  // ==================== API Calls ====================
   submitEditLog() {
     if (!this.editingLog || !this.editingLog.note) return alert('กรุณากรอกรายละเอียด');
     this.http
@@ -172,7 +184,6 @@ export class IndividualRecord implements OnInit {
       });
   }
 
-  // Helpers
   clearSearch() {
     this.searchQuery.set('');
     this.currentPage.set(1);
@@ -230,9 +241,10 @@ export class IndividualRecord implements OnInit {
     const data = this.sortedLogs();
     const student = this.selectedStudent();
     if (!data.length) return alert('ไม่มีข้อมูล');
-    const headers = ['วันที่', 'เวลา', 'ประเภท', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
+    const headers = ['วันที่', 'เวลา', 'ประเภท', 'รูปแบบ', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
     const csvRows = data.map(
-      (l) => `"${this.formatThaiDate(l.date)}","${l.time}","${l.type}","${l.title}","${l.note}"`,
+      (l) =>
+        `"${this.formatThaiDate(l.date)}","${l.time}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`,
     );
     this.downloadCSV(headers, csvRows, `ประวัติการปรึกษา_${student.student_code}.csv`);
   }

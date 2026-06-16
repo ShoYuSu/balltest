@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 
 interface ActivityFile { file_id: number; file_url: string; file_type: string; }
@@ -19,9 +20,10 @@ interface FilePreview { file: File; previewUrl: string | null; name: string; }
   styleUrl: './activity.css',
 })
 export class Activity implements OnInit {
-  private http = inject(HttpClient);
-  private cdr = inject(ChangeDetectorRef);
-  private base = environment.apiUrl;
+  private http      = inject(HttpClient);
+  private cdr       = inject(ChangeDetectorRef);
+  private sanitizer = inject(DomSanitizer);
+  private base      = environment.apiUrl;
 
   activities: ActivityItem[] = [];
 
@@ -44,6 +46,7 @@ export class Activity implements OnInit {
   // Detail modal
   selected: ActivityItem | null = null;
   isDetailClosing = false;
+  viewFileIdx = 0;
 
   // Edit modal
   showEditModal = false;
@@ -170,7 +173,7 @@ export class Activity implements OnInit {
     });
   }
 
-  openDetail(a: ActivityItem) { this.isDetailClosing = false; this.selected = a; this.cdr.detectChanges(); }
+  openDetail(a: ActivityItem) { this.isDetailClosing = false; this.selected = a; this.viewFileIdx = 0; this.cdr.detectChanges(); }
 
   closeDetail() {
     this.isDetailClosing = true; this.cdr.detectChanges();
@@ -185,6 +188,16 @@ export class Activity implements OnInit {
   fileUrl(url: string): string { return `${this.base}/${url}`; }
 
   isImage(f: ActivityFile): boolean { return f.file_type?.startsWith('image/') ?? false; }
+
+  isPdf(f: ActivityFile): boolean {
+    return f.file_type === 'application/pdf' || f.file_url?.toLowerCase().endsWith('.pdf');
+  }
+
+  safeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.fileUrl(url));
+  }
+
+  selectViewFile(i: number) { this.viewFileIdx = i; this.cdr.detectChanges(); }
 
   // --- EDIT ---
   get editDisplayDate(): string {

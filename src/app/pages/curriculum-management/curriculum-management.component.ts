@@ -25,7 +25,7 @@ import { environment } from '../../../environments/environment';
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './curriculum-management.html',
 })
-export class CurriculumManagementComponent implements OnInit, OnChanges {
+export class CurriculumManagementComponent implements OnInit {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
 
@@ -69,15 +69,16 @@ export class CurriculumManagementComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.isOpen) {
-      this.loadMajors();
-    }
-  }
+  // 1. ดึงรายชื่อสาขามาใส่ Dropdown (ถ้ามี)
+  this.loadMajors(); 
+  
+  // 2. ⭐️ เพิ่มการเรียกฟังก์ชันดึงข้อมูลโครงสร้างหลักสูตรของสาขาเริ่มต้นทันที
+  this.loadCurriculumData(); 
+}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
-      this.loadMajors(); // ดึงรายชื่อสาขาและข้อมูลหลักสูตรทุกครั้งที่กดเปิดหน้าต่าง
-    }
+    // ปล่อยฟังก์ชันนี้ให้ว่างไว้ หรือจะลบออกไปเลยก็ได้ครับ 
+    // เพราะเราใช้ *ngIf ควบคุมที่หน้าหลักอยู่แล้ว ไม่จำเป็นต้องดักจับการเปลี่ยนแปลงซ้ำซ้อน
   }
 
   initForms() {

@@ -20,77 +20,54 @@
           CERTIFICATE LIST
   ========================= -->
 
-  <div
-    class="certificate-grid"
-    *ngIf="certificates && certificates.length > 0">
+  <div class="certificate-grid" *ngIf="certificates && certificates.length > 0">
 
-    <div
-      class="certificate-card"
-      *ngFor="let item of certificates">
+    <div class="certificate-card" *ngFor="let item of certificates" (click)="openViewModal(item)">
 
-      <div class="certificate-content">
+      <!-- Amber accent bar ด้านบน -->
+      <div class="cert-top-bar"></div>
 
-        <div class="certificate-badge">
-
-          <span class="material-symbols-outlined">
-            verified
-          </span>
-
-          Certification
-
+      <!-- Icon + Badge row -->
+      <div class="cert-header">
+        <div class="cert-icon-box">
+          <span class="material-symbols-outlined">workspace_premium</span>
         </div>
+        <div class="certificate-badge">
+          <span class="material-symbols-outlined">verified</span>
+          Certification
+        </div>
+      </div>
 
-        <h3 class="certificate-title">
-          {{ item.title }}
-        </h3>
+      <!-- Body -->
+      <div class="cert-body">
+        <h3 class="certificate-title">{{ item.title }}</h3>
 
         <div class="certificate-date">
-
-          <span class="material-symbols-outlined">
-            calendar_month
-          </span>
-
+          <span class="material-symbols-outlined">calendar_month</span>
           {{ item.issue_date }}
-
         </div>
 
-        <div class="certificate-file-box">
-
-          <span class="material-symbols-outlined">
-            description
-          </span>
-
+        <div class="cert-file-chip">
+          <span class="material-symbols-outlined">picture_as_pdf</span>
+          ไฟล์ PDF แนบแล้ว
         </div>
+      </div>
 
-        <div class="certificate-actions">
-
-          <a
-            class="download-btn"
-            [href]="item.file_url"
-            target="_blank">
-
-            ดาวน์โหลด
-
-          </a>
-
-          <button
-            class="edit-btn"
-            (click)="openEditModal(item)">
-
-            ✏️
-
-          </button>
-
-          <button
-            class="delete-btn"
-            (click)="openDeleteConfirm(item)">
-
-            🗑️
-
-          </button>
-
-        </div>
-
+      <!-- Footer actions -->
+      <div class="cert-footer">
+        <a class="cert-download-btn" [href]="item.file_url" target="_blank"
+          (click)="$event.stopPropagation()">
+          <span class="material-symbols-outlined">download</span>
+          ดาวน์โหลด
+        </a>
+        <button class="cert-icon-btn cert-edit-btn"
+          (click)="$event.stopPropagation(); openEditModal(item)">
+          <span class="material-symbols-outlined">edit</span>
+        </button>
+        <button class="cert-icon-btn cert-delete-btn"
+          (click)="$event.stopPropagation(); openDeleteConfirm(item)">
+          <span class="material-symbols-outlined">delete</span>
+        </button>
       </div>
 
     </div>
@@ -295,6 +272,109 @@
   </div>
 
 </div>
+<!-- ===== CERTIFICATE VIEWER MODAL ===== -->
+<div class="viewer-backdrop" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="viewer-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="viewer-head">
+      <div class="viewer-head-left">
+        <div class="viewer-head-icon">
+          <span class="material-symbols-outlined">workspace_premium</span>
+        </div>
+        <div>
+          <h2 class="viewer-head-title">{{ viewingCert?.title }}</h2>
+          <p class="viewer-head-sub">ใบรับรอง</p>
+        </div>
+      </div>
+      <button class="viewer-close-btn" (click)="closeViewModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="viewer-body" *ngIf="viewingCert">
+      <!-- Left: File viewer -->
+      <div class="viewer-left">
+        <div class="viewer-canvas">
+          <ng-container *ngIf="viewingCert.file_url">
+            <iframe *ngIf="isPdf(viewingCert.file_url)"
+              [src]="safeUrl(viewingCert.file_url)"
+              class="viewer-iframe" frameborder="0"></iframe>
+            <img *ngIf="isImgUrl(viewingCert.file_url)"
+              [src]="certFileUrl(viewingCert.file_url)"
+              class="viewer-img" />
+            <div *ngIf="!isPdf(viewingCert.file_url) && !isImgUrl(viewingCert.file_url)"
+              class="viewer-doc-placeholder">
+              <span class="material-symbols-outlined">description</span>
+              <a [href]="certFileUrl(viewingCert.file_url)" target="_blank" class="viewer-dl-link">
+                <span class="material-symbols-outlined">download</span>ดาวน์โหลดไฟล์
+              </a>
+            </div>
+          </ng-container>
+          <div *ngIf="!viewingCert.file_url" class="viewer-empty">
+            <span class="material-symbols-outlined">image_not_supported</span>
+            <p>ไม่มีไฟล์แนบ</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Details -->
+      <div class="viewer-right">
+        <div class="viewer-detail-row">
+          <div class="viewer-detail-icon-box">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div>
+            <p class="viewer-detail-label">ชื่อใบรับรอง</p>
+            <p class="viewer-detail-val" style="font-size:15px;font-weight:700">{{ viewingCert.title }}</p>
+          </div>
+        </div>
+
+        <div class="viewer-detail-row">
+          <div class="viewer-detail-icon-box">
+            <span class="material-symbols-outlined">calendar_month</span>
+          </div>
+          <div>
+            <p class="viewer-detail-label">วันที่ได้รับ</p>
+            <p class="viewer-detail-val">{{ viewingCert.issue_date }}</p>
+          </div>
+        </div>
+
+        <div class="viewer-detail-row" *ngIf="viewingCert.file_url">
+          <div class="viewer-detail-icon-box">
+            <span class="material-symbols-outlined">attach_file</span>
+          </div>
+          <div>
+            <p class="viewer-detail-label">ไฟล์เอกสาร</p>
+            <p class="viewer-detail-val">
+              {{ isPdf(viewingCert.file_url) ? 'PDF' : 'รูปภาพ' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="viewer-actions">
+          <a class="viewer-btn-download"
+            [href]="certFileUrl(viewingCert.file_url)" target="_blank"
+            (click)="$event.stopPropagation()">
+            <span class="material-symbols-outlined">download</span>ดาวน์โหลด
+          </a>
+        </div>
+
+        <div class="viewer-actions">
+          <button class="viewer-btn-edit" (click)="closeViewModal(); openEditModal(viewingCert)">
+            <span class="material-symbols-outlined">edit</span>แก้ไข
+          </button>
+          <button class="viewer-btn-del" (click)="closeViewModal(); openDeleteConfirm(viewingCert)">
+            <span class="material-symbols-outlined">delete</span>ลบ
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div
   class="modal-backdrop"
   *ngIf="showDeletePopup">

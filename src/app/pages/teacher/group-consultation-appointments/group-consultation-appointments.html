@@ -117,7 +117,7 @@
 </div>
 
 @if (isCreateModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
@@ -126,7 +126,7 @@
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
       </div>
 
-      <div class="p-6 overflow-y-auto space-y-5 grow">
+      <div class="p-6 overflow-y-auto space-y-5 grow overscroll-contain">
         <div>
           <label class="block text-sm font-bold text-gray-800 mb-3">รูปแบบการเลือกนักศึกษา</label>
           <div class="flex gap-4 mb-4">
@@ -144,7 +144,7 @@
 
           @if (selectionMode() === 'group') {
             <label class="block text-sm font-bold text-gray-800 mb-2">เลือกนักศึกษา (เลือกอย่างน้อย 2 คน)</label>
-            <div class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto p-1 space-y-1">
+            <div class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto p-1 space-y-1 overscroll-contain">
               @for (std of myStudents(); track std.student_id) {
                 <div class="flex items-center gap-4 p-3 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors" (click)="toggleStudentSelection(std.student_id)">
                   <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
@@ -209,7 +209,7 @@
 }
 
 @if (isEditModalOpen() && editingApp) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
@@ -218,7 +218,7 @@
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
       </div>
 
-      <div class="p-6 overflow-y-auto space-y-5 grow">
+      <div class="p-6 overflow-y-auto space-y-5 grow overscroll-contain">
         <div>
           <label class="block text-sm font-bold text-gray-800 mb-3">รูปแบบการเลือกนักศึกษา</label>
           <div class="flex gap-4 mb-4">
@@ -236,7 +236,7 @@
 
           @if (selectionMode() === 'group') {
             <label class="block text-sm font-bold text-gray-800 mb-2">เลือกนักศึกษา (เลือกอย่างน้อย 2 คน)</label>
-            <div class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto p-1 space-y-1">
+            <div class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto p-1 space-y-1 overscroll-contain">
               @for (std of myStudents(); track std.student_id) {
                 <div class="flex items-center gap-4 p-3 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors" (click)="toggleStudentSelection(std.student_id)">
                   <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
@@ -301,7 +301,7 @@
 }
 
 @if (isLogModalOpen() && editingApp) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
@@ -309,7 +309,7 @@
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600 transition-colors">close</button>
       </div>
-      <div class="p-6 overflow-y-auto space-y-4 grow">
+      <div class="p-6 overflow-y-auto space-y-4 grow overscroll-contain">
         <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
           <span class="material-symbols-outlined text-orange-500">info</span>
           <p class="text-xs text-orange-800 leading-relaxed">
@@ -344,7 +344,7 @@
 }
 
 @if (isConfirmCancelModalOpen()) {
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl overflow-hidden p-6 text-center">
       <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="material-symbols-outlined text-4xl">warning</span>
