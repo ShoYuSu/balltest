@@ -70,24 +70,28 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   loadMyStudents() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const processed = (data || []).map((s) => ({
-          ...s,
-          student_id: String(s.student_id), // บังคับให้ ID เป็น String ชัวร์ๆ
-          imgUrl:
-            s.image && s.image.trim() !== ''
-              ? `${environment.apiUrl}/${s.image}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
-        }));
-        this.myStudents.set(processed);
-      },
-      error: (err) => console.error('ดึงรายชื่อนักศึกษาล้มเหลว:', err),
-    });
+    const advisorId = localStorage.getItem('user_id');
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
+      .subscribe({
+        next: (data) => {
+          const processed = (data || []).map((s) => ({
+            ...s,
+            student_id: String(s.student_id), // บังคับให้ ID เป็น String ชัวร์ๆ
+            imgUrl:
+              s.image && s.image.trim() !== ''
+                ? `${environment.apiUrl}/${s.image}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
+          }));
+          this.myStudents.set(processed);
+        },
+        error: (err) => console.error('ดึงรายชื่อนักศึกษาล้มเหลว:', err),
+      });
   }
 
   loadAppointments() {
-    const url = `${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`;
+    const advisorId = localStorage.getItem('user_id');
+    const url = `${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${new Date().getTime()}`;
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
         const groupApps = (data || []).filter(
@@ -156,12 +160,13 @@ export class GroupConsultationAppointments implements OnInit {
   // ==========================================
 
   submitCreateAppointment() {
+    const advisorId = localStorage.getItem('user_id');
     if (this.selectedStudentIds().length < 2 || !this.newApp.topic || !this.newApp.date) {
       alert('กรุณากรอกข้อมูลให้ครบและเลือกนักศึกษาอย่างน้อย 2 คน (สำหรับการนัดกลุ่ม)');
       return;
     }
     const payload = {
-      advisor_id: 14,
+      advisor_id: parseInt(advisorId || '0'),
       title: this.newApp.topic,
       description: this.newApp.details,
       date: this.newApp.date,

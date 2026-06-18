@@ -78,8 +78,12 @@ export class AllStudentsComponent implements OnInit {
   }
 
   // --- 8. ดึงข้อมูลจริงจาก Database ---
-  ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
+
+    ngOnInit() {
+      const advisorId = localStorage.getItem('user_id');
+      if (!advisorId) return;
+
+      this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`).subscribe({
       next: (data) => {
         const formattedStudents = data.map((student: any) => ({
           id: student.student_code,

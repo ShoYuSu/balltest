@@ -67,9 +67,8 @@ export class IndividualRecord implements OnInit {
   }
 
   loadStudentsSummary() {
-    this.http
-      .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=14`)
-      .subscribe({
+    const advisorId = localStorage.getItem('user_id');
+    this.http.get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=${advisorId}`).subscribe({
         next: (data) => {
           const processed = data.map((s) => ({
             ...s,
@@ -87,11 +86,8 @@ export class IndividualRecord implements OnInit {
 
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
-    this.http
-      .get<
-        any[]
-      >(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=14&student_id=${student.student_id}`)
-      .subscribe({
+    const advisorId = localStorage.getItem('user_id');
+    this.http.get<any[]>(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=${advisorId}&student_id=${student.student_id}`).subscribe({
         next: (data) => this.studentLogs.set(data || []),
         error: () => this.studentLogs.set([]),
       });

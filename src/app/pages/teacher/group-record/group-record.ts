@@ -68,7 +68,8 @@ export class GroupRecord implements OnInit {
   }
 
   loadGroupRecords() {
-    const url = `${this.apiUrl}/get_appointments.php?advisor_id=14&t=${new Date().getTime()}`;
+    const advisorId = localStorage.getItem('user_id');
+    const url = `${this.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${new Date().getTime()}`;
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
         // กรองเอาเฉพาะ "แบบกลุ่ม" และ "ดำเนินการแล้ว"

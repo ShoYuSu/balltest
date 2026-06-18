@@ -88,56 +88,62 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   loadMyStudents() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const processed = (data || []).map((s) => ({
-          ...s,
-          imgUrl:
-            s.image && s.image.trim() !== ''
-              ? `${environment.apiUrl}/${s.image}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
-        }));
-        this.myStudents.set(processed);
-      },
-      error: () => this.myStudents.set([]),
-    });
+    const advisorId = localStorage.getItem('user_id');
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
+      .subscribe({
+        next: (data) => {
+          const processed = (data || []).map((s) => ({
+            ...s,
+            imgUrl:
+              s.image && s.image.trim() !== ''
+                ? `${environment.apiUrl}/${s.image}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fed7aa&color=c2410c`,
+          }));
+          this.myStudents.set(processed);
+        },
+        error: () => this.myStudents.set([]),
+      });
   }
 
   loadAppointments() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14`).subscribe({
-      next: (data) => {
-        const typesFromDb = [
-          ...new Set(data.map((item) => item.type).filter((t) => t && t.trim() !== '')),
-        ] as string[];
+    const advisorId = localStorage.getItem('user_id');
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}`)
+      .subscribe({
+        next: (data) => {
+          const typesFromDb = [
+            ...new Set(data.map((item) => item.type).filter((t) => t && t.trim() !== '')),
+          ] as string[];
 
-        const existing = this.availableTypes();
-        const merged = [...new Set([...typesFromDb, ...existing])];
-        this.availableTypes.set(merged);
+          const existing = this.availableTypes();
+          const merged = [...new Set([...typesFromDb, ...existing])];
+          this.availableTypes.set(merged);
 
-        const formattedApps = data
-          // 👉 ตรงนี้แหละครับที่เพิ่มเข้ามา: && a.status !== 'ดำเนินการแล้ว'
-          .filter((a) => a.students?.length === 1 && a.status !== 'ดำเนินการแล้ว')
-          .map((app) => ({
-            id: app.appointment_id.toString(),
-            topic: app.title,
-            type: app.type ?? '',
-            status: app.status ?? '',
-            date: this.formatThaiDate(app.appointment_date),
-            rawDate: app.appointment_date,
-            time: this.formatTime(app.start_time),
-            rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
-            details: app.description ?? '',
-            note: app.note ?? '', // ดึง note มาจาก DB ด้วย
-            studentName: app.students[0].name,
-            studentId: app.students[0].id,
-            img: app.students[0].img
-              ? `${environment.apiUrl}/${app.students[0].img}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.students[0].name)}&background=fed7aa&color=c2410c`,
-          }));
-        this.appointments.set(formattedApps);
-      },
-      error: () => this.appointments.set([]),
-    });
+          const formattedApps = data
+            // 👉 ตรงนี้แหละครับที่เพิ่มเข้ามา: && a.status !== 'ดำเนินการแล้ว'
+            .filter((a) => a.students?.length === 1 && a.status !== 'ดำเนินการแล้ว')
+            .map((app) => ({
+              id: app.appointment_id.toString(),
+              topic: app.title,
+              type: app.type ?? '',
+              status: app.status ?? '',
+              date: this.formatThaiDate(app.appointment_date),
+              rawDate: app.appointment_date,
+              time: this.formatTime(app.start_time),
+              rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
+              details: app.description ?? '',
+              note: app.note ?? '', // ดึง note มาจาก DB ด้วย
+              studentName: app.students[0].name,
+              studentId: app.students[0].id,
+              img: app.students[0].img
+                ? `${environment.apiUrl}/${app.students[0].img}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.students[0].name)}&background=fed7aa&color=c2410c`,
+            }));
+          this.appointments.set(formattedApps);
+        },
+        error: () => this.appointments.set([]),
+      });
   }
 
   // ตัวกันตายถ้ารูปโหลดไม่ขึ้น
@@ -151,12 +157,13 @@ export class IndividualConsultationAppointments implements OnInit {
   // =============================================
 
   submitCreateAppointment() {
+    const advisorId = localStorage.getItem('user_id');
     if (!this.newApp.studentId || !this.newApp.topic || !this.newApp.date || !this.newApp.type) {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
     const payload = {
-      advisor_id: 14,
+      advisor_id: parseInt(advisorId || '0'),
       title: this.newApp.topic,
       description: this.newApp.details,
       date: this.newApp.date,

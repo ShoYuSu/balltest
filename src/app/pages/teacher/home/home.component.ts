@@ -74,8 +74,12 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ก่อน
+    const advisorId = localStorage.getItem('user_id');
+    if (!advisorId) return;
     this.http
-      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=14&t=${Date.now()}`)
+      .get<
+        any[]
+      >(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           const formattedStudents = data.map((student: any) => ({
@@ -101,7 +105,9 @@ export class HomeComponent implements OnInit {
 
           // 2. ดึงข้อมูลนัดหมายมาคำนวณ (ทำต่อเมื่อมีข้อมูลเด็ก 16 คนแล้ว)
           this.http
-            .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=14&t=${Date.now()}`)
+            .get<
+              any[]
+            >(`${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${Date.now()}`)
             .subscribe({
               next: (appData) => {
                 const allApps = appData || [];
