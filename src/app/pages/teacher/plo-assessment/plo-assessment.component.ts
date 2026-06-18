@@ -75,28 +75,38 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   loadData() {
-    // 🎯 1. ดึง ID ของอาจารย์คนที่ล็อคอินอยู่
+    // 1. ดึง ID ของอาจารย์คนที่ล็อคอินอยู่
     const advisorId = localStorage.getItem('user_id');
     if (!advisorId) return;
 
     this.http
-      // 🎯 2. เปลี่ยนจาก advisor_id=14 เป็น advisor_id=${advisorId}
-      .get<any>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=${advisorId}&t=${Date.now()}`)
+      .get<any[]>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=${advisorId}&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           if (!data || !Array.isArray(data)) {
             this.students.set([]);
             return;
           }
-          const formattedData = data.map((s) => ({
-            ...s,
-            name: s.name || 'ไม่ระบุชื่อ',
-            studentId: s.studentId || '-',
-            year: s.year || '-', // 🎯 ดึงชั้นปีจาก API มาเก็บไว้
-            img: s.img
-              ? `${environment.apiUrl}/${s.img}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name || 'User')}&background=fff7ed&color=ea580c`,
-          }));
+
+          // 🟢 1. FILTER: กรองป้องกันบรรทัดข้อมูลที่เป็น null หลุดมาจนทำระบบพัง
+          const validData = data.filter(s => s && (s.studentId || s.student_code || s.id));
+
+          const formattedData = validData.map((s) => {
+            const studentCode = s.studentId || s.student_code || '-';
+            const stdName = s.name || s.full_name || 'ไม่ระบุชื่อ';
+            const stdImg = s.img || s.image || s.img_profile || '';
+
+            return {
+              ...s,
+              id: s.id || s.student_id,
+              name: stdName,
+              studentId: studentCode,
+              year: s.year || '-', 
+              img: stdImg !== ''
+                ? `${environment.apiUrl}/${stdImg}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(stdName)}&background=fff7ed&color=ea580c`,
+            };
+          });
 
           this.students.set(formattedData);
 
@@ -241,6 +251,14 @@ export class PloAssessmentComponent implements OnInit {
   saveEvaluation() {
     const student = this.selectedStudent();
     if (!student) return;
+
+    // 🟢 2. แก้บั๊ก: ดึงค่าล็อคอินจาก LocalStorage มาใช้งานจริงๆ ป้องกันปัญหาการบันทึกข้ามฝั่งไอดีอาจารย์
+    const advisorId = localStorage.getItem('user_id');
+    if (!advisorId) {
+      alert('ไม่พบข้อมูลผู้ล็อกอิน กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+      return;
+    }
+
     this.isSaving.set(true);
 
     const evaluatedPLOs = this.evalPLOs().map((p) => ({
@@ -266,7 +284,7 @@ export class PloAssessmentComponent implements OnInit {
 
     const payload = {
       student_id: student.id,
-      advisor_id: 14,
+      advisor_id: parseInt(advisorId), // 🟢 เปลี่ยนจาก 14 เป็นไอดีอาจารย์คนที่กำลังล็อกอินอยู่จริง
       plos: evaluatedPLOs,
       ylos: evaluatedYLOs,
     };
@@ -276,10 +294,15 @@ export class PloAssessmentComponent implements OnInit {
         if (res.status === 'success') {
           this.closeEvalPage();
           this.loadData();
+        } else {
+          alert('เกิดข้อผิดพลาดในการบันทึก: ' + (res.message || 'กรุณาลองใหม่อีกครั้ง'));
         }
         this.isSaving.set(false);
       },
-      error: () => this.isSaving.set(false),
+      error: () => {
+        alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์เพื่อบันทึกข้อมูลได้');
+        this.isSaving.set(false);
+      },
     });
   }
 
