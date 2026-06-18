@@ -100,7 +100,7 @@ export class AdvisorHistoryComponent implements OnInit {
       align: 'center',
       display: true,
       width: 'large',
-      cell: (el) => el.advisor || 'ยังไม่มีที่ปรึกษา',
+      cell: (el) => el.advisor_name || 'ยังไม่มีที่ปรึกษา',
     },
     {
       columnDef: 'view',
