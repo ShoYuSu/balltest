@@ -37,60 +37,77 @@ export class AssignAdvisorComponent implements OnInit {
   selectedSemester: number = 1;
   isSemesterDropdownOpen = false;
 
+  // 💡 เพิ่มตัวแปรสำหรับควบคุม "ตารางดูประวัติ" และ "Modal เปลี่ยนอาจารย์"
+  assignedList: any[] = [];             // รายชื่อนักศึกษาที่จัดสรรอาจารย์แล้วทั้งหมด
+  filteredAssignedList: any[] = [];     // รายชื่อนักศึกษาที่จัดสรรแล้วหลังจากผ่านตัวกรองค้นหา
+  searchAssignedText: string = '';      // ข้อความค้นหาในตารางจัดสรรแล้ว
+  showChangeModal: boolean = false;     // ควบคุมการเปิด/ปิด Modal เปลี่ยนอาจารย์รายบุคคล
+  targetStudentToChange: any = null;    // เก็บข้อมูลนักศึกษาแถวที่เลือกมาเปลี่ยนอาจารย์
+  newSelectedAdvisorIds: number[] = []; // เก็บ ID อาจารย์ชุดใหม่ที่เลือกใน Modal
+
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadDataFromDatabase();
   }
+  private processImageData(item: any, isAdvisor: boolean = true): any {
+  // สร้างฟังก์ชันช่วยจัดการ URL
+  const getUrl = (path: string | null) => {
+    if (!path || path === 'null' || path === '') return null;
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8080/api/${path.startsWith('/') ? path.substring(1) : path}`;
+  };
 
-  // ================= 1. โหลดข้อมูลจาก API (💡 จุดที่แก้ไขการรับค่าใหม่) =================
-  loadDataFromDatabase() {
-    this.http.get<any>(`${environment.apiUrl}/assign_advisor.php`).subscribe({
-      next: (res) => {
-        if (res.success) {
-          // 💡 1. ดึงข้อมูลรายชื่อภาควิชาของฝั่งอาจารย์ไปใส่ในช่องตัวกรองอาจารย์
-          this.departments = res.staff_departments || [];
-          
-          // 💡 2. ดึงข้อมูลรายชื่อสาขาวิชาของนักศึกษาไปใส่ในช่องตัวกรองนักศึกษา
-          this.major = ['ทุกสาขา', ...(res.student_majors || []).filter((d: any) => d != null)];
-          
-          this.advisors = res.advisors || [];
-          this.students = res.students || [];
-          
-          // ทำการกรองสเตตัสเริ่มต้นให้กับทั้งสองฝั่งหลังจากได้ข้อมูลครบแล้ว
-          this.filterAdvisors();
-          this.filterStudents();
-          
-          this.cdr.detectChanges();
-        } else {
-          console.error('API Error:', res.message);
-        }
-      },
-      error: (err) => console.error('Connection Error:', err)
-    });
-  }
+  return {
+    ...item,
+    image: getUrl(item.image) // แปลงรูปให้เป็น URL ที่ถูกต้อง
+  };
+}
+
+  // ================= 1. โหลดข้อมูลจาก API =================
+ loadDataFromDatabase() {
+  this.http.get<any>(`${environment.apiUrl}/assign_advisor.php`).subscribe({
+    next: (res) => {
+      if (res.success) {
+        // Map ข้อมูลผ่าน processImageData
+        this.advisors = (res.advisors || []).map((a: any) => this.processImageData(a));
+        this.students = (res.students || []).map((s: any) => ({ ...s, image: null })); // ถ้า นศ. ไม่มีรูป
+        this.assignedList = (res.assigned_data || []).map((row: any) => ({
+          ...row,
+          advisors: row.advisors.map((a: any) => this.processImageData(a))
+        }));
+        
+        this.departments = res.staff_departments || [];
+        this.major = ['ทุกสาขา', ...(res.student_majors || []).filter((d: any) => d != null)];
+        
+        this.filterAdvisors();
+        this.filterStudents();
+        this.filterAssignedList();
+        this.cdr.detectChanges();
+      }
+    }
+  });
+}
 
   // ================= 2. ระบบจัดการ/กรองข้อมูลฝั่งอาจารย์ =================
   toggleDeptDropdown() {
     this.isDeptDropdownOpen = !this.isDeptDropdownOpen;
-    if (this.isDeptDropdownOpen) this.isBranchDropdownOpen = false; // ปิด dropdown ฝั่งนศ. ถ้าฝั่งอาจารย์เปิด
+    if (this.isDeptDropdownOpen) this.isBranchDropdownOpen = false;
   }
 
   selectDept(dept: string) {
     this.selectedDept = dept;
     this.isDeptDropdownOpen = false;
-    this.filterAdvisors(); // สั่งกรองข้อมูลอาจารย์ใหม่ทันทีเมื่อมีการเปลี่ยนภาควิชา
+    this.filterAdvisors();
   }
 
   filterAdvisors() {
     let result = this.advisors;
 
-    // 1. กรองตามภาควิชาที่เลือก
     if (this.selectedDept !== 'ทุกภาควิชา') {
       result = result.filter(a => a.dept === this.selectedDept);
     }
 
-    // 2. กรองตามข้อความที่ใช้ค้นหา (ชื่อ หรือ รหัสอาจารย์)
     if (this.searchAdvisorText.trim() !== '') {
       const txt = this.searchAdvisorText.toLowerCase().trim();
       result = result.filter(a => 
@@ -100,13 +117,13 @@ export class AssignAdvisorComponent implements OnInit {
     }
 
     this.filteredAdvisors = result;
-    this.cdr.detectChanges(); // บังคับให้หน้าจออัปเดตรายชื่ออาจารย์ชุดใหม่ตามฟิลเตอร์
+    this.cdr.detectChanges();
   }
 
-  // ================= 3. ระบบกรองนักศึกษา (คงเดิม) =================
+  // ================= 3. ระบบกรองนักศึกษา =================
   toggleBranchDropdown() {
     this.isBranchDropdownOpen = !this.isBranchDropdownOpen;
-    if (this.isBranchDropdownOpen) this.isDeptDropdownOpen = false; // ปิด dropdown ฝั่งอาจารย์ ถ้าฝั่งนศ.เปิด
+    if (this.isBranchDropdownOpen) this.isDeptDropdownOpen = false;
   }
 
   selectBranch(branch: string) {
@@ -188,7 +205,7 @@ export class AssignAdvisorComponent implements OnInit {
     return this.selectedAdvisors.some(a => a.id === advisorId);
   }
 
-  // ================= 5. ระบบจัดการนักศึกษา (คงเดิม) =================
+  // ================= 5. ระบบจัดการนักศึกษา =================
   toggleStudent(studentId: number) {
     const index = this.selectedStudents.indexOf(studentId);
     if (index !== -1) {
@@ -216,7 +233,7 @@ export class AssignAdvisorComponent implements OnInit {
     return this.filteredStudents.every(s => this.selectedStudents.includes(s.id));
   }
 
-  // ================= 6. บันทึกข้อมูล =================
+  // ================= 6. บันทึกข้อมูลแบบกลุ่ม (เดิม) =================
   saveAssignments() {
     if (this.selectedAdvisors.length === 0 || this.selectedStudents.length === 0) {
       return;
@@ -270,5 +287,101 @@ export class AssignAdvisorComponent implements OnInit {
 
   executeDelete() {
     this.showDeleteModal = false;
+  }
+
+  // ================= 💡 7. ระบบจัดการตารางดูและเปลี่ยนอาจารย์ที่ปรึกษา (เพิ่มเติม) =================
+  
+  // ระบบกรองและค้นหาข้อมูลในตารางผู้ที่จัดสรรที่ปรึกษาแล้ว
+  filterAssignedList() {
+    if (this.searchAssignedText.trim() === '') {
+      this.filteredAssignedList = this.assignedList;
+    } else {
+      const txt = this.searchAssignedText.toLowerCase().trim();
+      this.filteredAssignedList = this.assignedList.filter(row => {
+        const matchStudent = (row.student_name && row.student_name.toLowerCase().includes(txt)) || 
+                             (row.student_code && row.student_code.includes(txt)) ||
+                             (row.major && row.major.toLowerCase().includes(txt));
+        const matchAdvisor = row.advisors && row.advisors.some((a: any) => a.name.toLowerCase().includes(txt));
+        return matchStudent || matchAdvisor;
+      });
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ฟังก์ชันคลิกปุ่มเพื่อเปิด Modal เปลี่ยนแปลงข้อมูลอาจารย์รายบุคคล
+  openChangeAdvisorModal(row: any) {
+    this.targetStudentToChange = row;
+    // เอา ID อาจารย์ชุดเดิมในปัจจุบันของนศ.คนนี้มาติ๊กถูกเลือกใน Modal ไว้รอ
+    this.newSelectedAdvisorIds = row.advisors ? row.advisors.map((a: any) => Number(a.id)) : [];
+    this.showChangeModal = true;
+    this.cdr.detectChanges();
+  }
+
+  // จัดการติ๊กเลือกเข้า/ออก ของรายชื่ออาจารย์ชุดใหม่ในหน้าต่าง Modal
+  toggleNewAdvisorSelection(advisorId: number) {
+    const idx = this.newSelectedAdvisorIds.indexOf(advisorId);
+    if (idx !== -1) {
+      this.newSelectedAdvisorIds.splice(idx, 1);
+    } else {
+      if (this.newSelectedAdvisorIds.length >= 2) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'เกินกำหนดตัวเลือก',
+          text: 'คุณสามารถเลือกอาจารย์ที่ปรึกษาใหม่ได้สูงสุด 2 ท่านเท่านั้นครับ',
+          confirmButtonColor: '#6366f1',
+          customClass: { popup: 'rounded-3xl' }
+        });
+        return;
+      }
+      this.newSelectedAdvisorIds.push(advisorId);
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ส่งข้อมูล Payload ไปที่ PHP เพื่อทำการอัปเดตเปลี่ยนแปลงอาจารย์ที่ปรึกษาใหม่
+  submitChangeAdvisor() {
+    if (!this.targetStudentToChange || this.newSelectedAdvisorIds.length === 0) return;
+
+    const payload = {
+      action: 'change_advisor', // คีย์สำหรับส่งไปบอกหลังบ้านแยกแยะงาน
+      student_id: this.targetStudentToChange.student_id,
+      academic_year: this.targetStudentToChange.academic_year,
+      semester: this.targetStudentToChange.semester,
+      new_advisor_ids: this.newSelectedAdvisorIds
+    };
+
+    this.http.post<any>(`${environment.apiUrl}/assign_advisor.php`, payload).subscribe({
+      next: (res) => {
+        if (res.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'เปลี่ยนอาจารย์สำเร็จ!',
+            text: res.message || 'ระบบได้บันทึกการเปลี่ยนอาจารย์ที่ปรึกษาท่านใหม่เรียบร้อย',
+            confirmButtonColor: '#6366f1',
+            timer: 2000,
+            customClass: { popup: 'rounded-3xl' }
+          });
+          this.showChangeModal = false;
+          this.loadDataFromDatabase(); // สั่งรีโหลดอัปเดตข้อมูลขึ้นหน้าจอใหม่ทั้งหมด
+        } else {
+          Swal.fire({ 
+            icon: 'error', 
+            title: 'เกิดข้อผิดพลาด', 
+            text: res.message, 
+            confirmButtonColor: '#ef4444',
+            customClass: { popup: 'rounded-3xl' }
+          });
+        }
+      },
+      error: (err) => {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'เครือข่ายขัดข้อง', 
+          text: 'ไม่สามารถปรับปรุงข้อมูลได้', 
+          confirmButtonColor: '#ef4444',
+          customClass: { popup: 'rounded-3xl' }
+        });
+      }
+    });
   }
 }

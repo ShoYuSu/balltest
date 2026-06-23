@@ -59,14 +59,14 @@ export class PloComponent implements OnInit {
   hasYearLevel = true;
 
   public columns: TableColumnModel[] = [
-    {
-      columnDef: 'curriculum_id',
-      header: 'ID',
-      tag: 'text',
-      display: true,
-      width: 'small',
-      cell: (el) => el.curriculum_id,
-    },
+    // {
+    //   columnDef: 'curriculum_id',
+    //   header: 'ID',
+    //   tag: 'text',
+    //   display: true,
+    //   width: 'small',
+    //   cell: (el) => el.curriculum_id,
+    // },
     {
       columnDef: 'name',
       header: 'ชื่อหลักสูตร',
@@ -152,7 +152,7 @@ export class PloComponent implements OnInit {
 
   initForms() {
     this.courseForm = this.fb.group({
-       curriculum_id: [null], 
+      curriculum_id: [null], 
       curriculum_name: ['', Validators.required],
       dept_id: [1, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],

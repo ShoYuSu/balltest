@@ -1,287 +1,328 @@
-<div class="p-6 bg-slate-50 min-h-screen">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="p-6 bg-slate-50 min-h-screen font-sans">
+  <div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+    <div class="flex items-center gap-4">
+      <div class="p-3.5 bg-indigo-50 text-indigo-600 rounded-2xl shadow-inner">
+        <span class="material-symbols-rounded text-2xl">supervisor_account</span>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">ระบบจัดการและจัดสรรอาจารย์ที่ปรึกษา</h1>
+        <p class="text-slate-400 text-sm mt-0.5">จับคู่อาจารย์ที่ปรึกษาแบบกลุ่ม และบริหารจัดการข้อมูลรายบุคคล</p>
+      </div>
+    </div>
     
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col h-[85vh]">
-      <div class="flex items-center gap-4 mb-6 shrink-0">
-        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-          <span class="material-symbols-rounded">person_add</span>
+    <div class="relative min-w-[160px]">
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">ภาคเรียนปัจจุบัน</label>
+      <button type="button" (click)="toggleSemesterDropdown()"
+        class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-100 transition-all">
+        <span>ภาคเรียนที่ {{ selectedSemester }}</span>
+        <span class="material-symbols-rounded text-slate-400 transition-transform" [ngClass]="{'rotate-180': isSemesterDropdownOpen}">keyboard_arrow_down</span>
+      </button>
+      @if (isSemesterDropdownOpen) {
+        <div class="absolute right-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl z-50 p-1.5 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <button (click)="selectSemester(1)" class="w-full text-left px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors">ภาคเรียนที่ 1</button>
+          <button (click)="selectSemester(2)" class="w-full text-left px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors">ภาคเรียนที่ 2</button>
         </div>
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">เลือกอาจารย์ที่ปรึกษา</h2>
-          <p class="text-slate-400 text-sm">สามารถเลือกอาจารย์ได้สูงสุด 2 ท่าน</p>
-        </div>
-      </div>
+      }
+    </div>
+  </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4 shrink-0">
-        <div class="relative">
-          <label class="text-sm font-semibold mb-2 block text-slate-700">ภาควิชา</label>
-          <button
-            type="button"
-            (click)="toggleDeptDropdown()"
-            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <span>{{ selectedDept }}</span>
-            <span
-              class="material-symbols-rounded text-slate-400 text-lg transition-transform"
-              [class.rotate-180]="isDeptDropdownOpen"
-            >
-              expand_more
-            </span>
-          </button>
-
-          @if (isDeptDropdownOpen) {
-            <div class="absolute left-0 z-20 w-full mt-2 bg-white border border-slate-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
-              <ul class="p-2 text-sm text-slate-700 font-medium max-h-60 overflow-y-auto">
-                <li>
-                  <button
-                    type="button"
-                    (click)="selectDept('ทุกภาควิชา')"
-                    class="flex items-center w-full p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors text-left"
-                    [class.bg-indigo-50]="selectedDept === 'ทุกภาควิชา'"
-                    [class.text-indigo-600]="selectedDept === 'ทุกภาควิชา'"
-                  >
-                    ทุกภาควิชา
-                  </button>
-                </li>
-                @for (dept of departments; track dept) {
-                  <li>
-                    <button
-                      type="button"
-                      (click)="selectDept(dept)"
-                      class="flex items-center w-full p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors text-left"
-                      [class.bg-indigo-50]="selectedDept === dept"
-                      [class.text-indigo-600]="selectedDept === dept"
-                    >
-                      {{ dept }}
-                    </button>
-                  </li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
-
-        <div>
-          <label class="text-sm font-semibold mb-2 block text-slate-700">ค้นหาชื่อ/รหัสอาจารย์</label>
-          <input 
-            type="text" 
-            [(ngModel)]="searchAdvisorText" 
-            (input)="filterAdvisors()" 
-            placeholder="ค้นหาอาจารย์..." 
-            class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 text-sm"
-          >
-        </div>
-      </div>
-
-      <div class="space-y-3 overflow-y-auto pr-2 flex-1 pb-4 border-t border-slate-100 pt-4">
-        @if (filteredAdvisors.length > 0) {
-          @for (item of filteredAdvisors; track item.id) {
-            <div (click)="toggleAdvisor(item)"
-                 [class.border-indigo-500]="isAdvisorSelected(item.id)"
-                 [class.bg-indigo-50]="isAdvisorSelected(item.id)"
-                 class="flex items-center justify-between p-4 border border-slate-200 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 hover:border-indigo-300">
-              <div class="flex items-center gap-4">
-                
-                <div class="relative shrink-0 w-12 h-12">
-                  @if (item.image) {
-                    <img 
-                      [src]="'http://localhost:8080/api/' + item.image"
-                      alt="advisor profile"
-                      class="w-12 h-12 rounded-full object-cover border transition-all shadow-sm"
-                      [ngClass]="isAdvisorSelected(item.id) ? 'border-indigo-500 scale-105 ring-4 ring-indigo-100' : 'border-slate-100'"
-                    />
-                  } @else {
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all shadow-sm"
-                         [ngClass]="isAdvisorSelected(item.id) ? 'bg-indigo-600 text-white scale-105' : 'bg-indigo-100 text-indigo-600'">
-                      @if (isAdvisorSelected(item.id)) {
-                        <span class="material-symbols-rounded">check</span>
-                      } @else {
-                        {{ item.name[0] }}
-                      }
-                    </div>
-                  }
-                  
-                  @if (isAdvisorSelected(item.id) && item.image) {
-                    <div class="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-md border border-white animate-in zoom-in duration-100">
-                      <span class="material-symbols-rounded text-[13px] font-bold">check</span>
-                    </div>
-                  }
-                </div>
-
-                <div>
-                  <p class="font-bold text-slate-700" [class.text-indigo-700]="isAdvisorSelected(item.id)">{{ item.name }}</p>
-                  <p class="text-xs text-slate-400">{{ item.dept }}</p>
-                </div>
-              </div>
-              @if(item.code) { <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">{{ item.code }}</span> }
-            </div>
-          }
-        } @else {
-          <div class="text-center py-20 flex flex-col items-center justify-center">
-            <span class="material-symbols-rounded text-6xl text-slate-200 mb-4">person_search</span>
-            <p class="text-slate-400 font-medium">ไม่พบรายชื่ออาจารย์</p>
-            <p class="text-slate-400 text-sm mt-1">กรุณาลองเปลี่ยนภาควิชา หรือล้างคำค้นหา</p>
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-[68vh] transition-all hover:shadow-md">
+      <div class="flex items-center justify-between mb-5 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+            <span class="material-symbols-rounded">person_add</span>
           </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">1. เลือกอาจารย์ที่ปรึกษา</h2>
+            <p class="text-slate-400 text-xs">เลือกได้สูงสุด 2 ท่านต่อกลุ่ม</p>
+          </div>
+        </div>
+        <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold">
+          เลือกแล้ว {{ selectedAdvisors.length }}/2 ท่าน
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 shrink-0">
+        <div class="relative">
+          <button type="button" (click)="toggleDeptDropdown()"
+            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-all">
+            <span class="truncate">{{ selectedDept }}</span>
+            <span class="material-symbols-rounded text-slate-400">filter_list</span>
+          </button>
+          @if (isDeptDropdownOpen) {
+            <div class="absolute left-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto p-1">
+              <button (click)="selectDept('ทุกภาควิชา')" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-slate-50 transition-colors">ทุกภาควิชา</button>
+              @for (dept of departments; track dept) {
+                <button (click)="selectDept(dept)" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-slate-50 transition-colors">{{ dept }}</button>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="relative">
+          <span class="material-symbols-rounded absolute left-4 top-3.5 text-slate-400 text-xl">search</span>
+          <input type="text" [(ngModel)]="searchAdvisorText" (input)="filterAdvisors()" placeholder="ค้นหาชื่อ หรือ รหัสอาจารย์..."
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
+        @for (advisor of filteredAdvisors; track advisor.id) {
+          <div (click)="toggleAdvisor(advisor)" 
+            [ngClass]="isAdvisorSelected(advisor.id) ? 'border-indigo-500 bg-indigo-50/40' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50/50'"
+            class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all duration-200 group">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-xl bg-slate-100 overflow-hidden shadow-sm shrink-0 border border-white">
+  @if (advisor.image) {
+    <img [src]="advisor.image" alt="profile" class="w-full h-full object-cover" (error)="advisor.image = null">
+  } @else {
+    <div class="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-600 font-bold text-sm">
+      {{ advisor.name[0] }}
+    </div>
+  }
+</div>
+              <div>
+                <h4 class="text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ advisor.name }}</h4>
+                <p class="text-xs text-slate-400 mt-0.5">รหัส: {{ advisor.code }} • {{ advisor.dept }}</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-lg border flex items-center justify-center transition-all"
+              [ngClass]="isAdvisorSelected(advisor.id) ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100' : 'border-slate-200 bg-white'">
+              @if (isAdvisorSelected(advisor.id)) { <span class="material-symbols-rounded text-sm font-bold">check</span> }
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-12 text-slate-400 text-sm">ไม่พบข้อมูลรายชื่ออาจารย์</div>
         }
       </div>
     </div>
 
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col h-[85vh]">
-      <div class="flex items-center gap-4 mb-6 shrink-0">
-        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-          <span class="material-symbols-rounded">groups</span>
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col h-[68vh] transition-all hover:shadow-md">
+      <div class="flex items-center justify-between mb-5 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+            <span class="material-symbols-rounded">school</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">2. เลือกกลุ่มนักศึกษา</h2>
+            <p class="text-slate-400 text-xs">เลือกนักศึกษาที่ต้องการมอบหมาย</p>
+          </div>
         </div>
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">เลือกนักศึกษา</h2>
-          <p class="text-slate-400 text-sm">กรองนักศึกษาตามสาขาเพื่อกำหนดที่ปรึกษา</p>
-        </div>
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold">
+          เลือกแล้ว {{ selectedStudents.length }} คน
+        </span>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4 shrink-0">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 shrink-0">
         <div class="relative">
-          <label class="text-sm font-semibold mb-2 block text-slate-700">สาขา/หลักสูตร</label>
-          <button
-            type="button"
-            (click)="toggleBranchDropdown()"
-            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <span>{{ selectedBranch }}</span>
-            <span
-              class="material-symbols-rounded text-slate-400 text-lg transition-transform"
-              [class.rotate-180]="isBranchDropdownOpen"
-            >
-              expand_more
-            </span>
+          <button type="button" (click)="toggleBranchDropdown()"
+            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-all">
+            <span class="truncate">{{ selectedBranch }}</span>
+            <span class="material-symbols-rounded text-slate-400">filter_list</span>
           </button>
-
           @if (isBranchDropdownOpen) {
-            <div class="absolute left-0 z-20 w-full mt-2 bg-white border border-slate-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
-              <ul class="p-2 text-sm text-slate-700 font-medium max-h-60 overflow-y-auto">
-                @for (maj of major; track maj) {
-                  <li>
-                    <button
-                      type="button"
-                      (click)="selectBranch(maj)"
-                      class="flex items-center w-full p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors text-left"
-                      [class.bg-indigo-50]="selectedBranch === maj"
-                      [class.text-indigo-600]="selectedBranch === maj"
-                    >
-                      {{ maj }}
-                    </button>
-                  </li>
-                }
-              </ul>
+            <div class="absolute left-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto p-1">
+              @for (b of major; track b) {
+                <button (click)="selectBranch(b)" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-slate-50 transition-colors">{{ b }}</button>
+              }
             </div>
           }
         </div>
 
-        <div>
-          <label class="text-sm font-semibold mb-2 block text-slate-700">ค้นหาชื่อ/รหัส</label>
-          <input type="text" [(ngModel)]="searchStudentText" (input)="filterStudents()" placeholder="ค้นหานักศึกษา..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 text-sm">
+        <div class="relative">
+          <span class="material-symbols-rounded absolute left-4 top-3.5 text-slate-400 text-xl">search</span>
+          <input type="text" [(ngModel)]="searchStudentText" (input)="filterStudents()" placeholder="ค้นหาชื่อ หรือ รหัสนักศึกษา..."
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
         </div>
       </div>
 
-      <div class="space-y-3 overflow-y-auto pr-2 flex-1 border-t border-slate-100 pt-4">
-        @if (filteredStudents.length > 0) {
-          <label class="flex items-center gap-3 p-3 bg-slate-100/70 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-200 transition-colors mb-4">
-            <input type="checkbox" (change)="toggleAllStudents($event)" [checked]="isAllStudentsSelected()" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
-            <span class="font-bold text-slate-700 text-sm">เลือกนักศึกษาทั้งหมดในหน้านี้ ({{ filteredStudents.length }} คน)</span>
-          </label>
+      <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl mb-2 text-xs font-bold text-slate-500 shrink-0 px-4">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" [checked]="isAllStudentsSelected()" (change)="toggleAllStudents($event)"
+            class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+          <span>เลือกทั้งหมดที่กรอง</span>
+        </div>
+        <span>ข้อมูลนักศึกษา</span>
+      </div>
 
-          @for (student of filteredStudents; track student.id) {
-            <label class="flex items-center justify-between p-4 border border-slate-100 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 hover:border-indigo-200"
-                   [class.border-indigo-400]="selectedStudents.includes(student.id)"
-                   [class.bg-indigo-50]="selectedStudents.includes(student.id)">
-              <div class="flex items-center gap-4">
-                <input type="checkbox" 
-                       [checked]="selectedStudents.includes(student.id)"
-                       (change)="toggleStudent(student.id)"
-                       class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer border-slate-300">
-                <div>
-                  <p class="font-bold text-slate-700" [class.text-indigo-700]="selectedStudents.includes(student.id)">
-                    {{ student.code }} : {{ student.name }}
-                  </p>
-                  <p class="text-xs text-slate-400">{{ student.major }}</p>
-                </div>
+      <div class="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+        @for (student of filteredStudents; track student.id) {
+          <div (click)="toggleStudent(student.id)"
+            [ngClass]="selectedStudents.includes(student.id) ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50/50'"
+            class="flex items-center gap-3.5 p-3 border rounded-xl cursor-pointer transition-all">
+            <input type="checkbox" [checked]="selectedStudents.includes(student.id)" (click)="$event.stopPropagation(); toggleStudent(student.id)"
+              class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-baseline justify-between gap-2">
+                <h4 class="text-sm font-semibold text-slate-800 truncate">{{ student.name }}</h4>
+                <span class="text-[11px] text-slate-400 shrink-0 font-medium">รหัส: {{ student.code }}</span>
               </div>
-            </label>
-          }
-        } @else {
-          <div class="text-center py-20 flex flex-col items-center justify-center">
-            <span class="material-symbols-rounded text-6xl text-slate-200 mb-4">person_search</span>
-            <p class="text-slate-400 font-medium">ไม่พบรายชื่อนักศึกษา</p>
-            <p class="text-slate-400 text-sm mt-1">กรุณาลองเปลี่ยนสาขา หรือล้างคำค้นหา</p>
+              <div class="flex items-center justify-between mt-0.5">
+                <p class="text-xs text-slate-400 truncate">{{ student.major }}</p>
+                @if (student.advisor_name) {
+                  <span class="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md font-medium max-w-[180px] truncate">
+                    อ.เดิม: {{ student.advisor_name }}
+                  </span>
+                } @else {
+                  <span class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md font-medium">ยังไม่มีที่ปรึกษา</span>
+                }
+              </div>
+            </div>
           </div>
+        } @empty {
+          <div class="text-center py-12 text-slate-400 text-sm">ไม่พบข้อมูลรายชื่อนักศึกษา</div>
         }
       </div>
 
-      <div class="shrink-0 pt-6 mt-2 border-t border-slate-100 space-y-3">
-        <div class="relative">
-          <label class="text-sm font-semibold mb-2 block text-slate-700">เทอมการศึกษา</label>
-          <button
-            type="button"
-            (click)="toggleSemesterDropdown()"
-            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 font-medium shadow-sm hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <span>เทอม {{ selectedSemester }}</span>
-            <span
-              class="material-symbols-rounded text-slate-400 text-lg transition-transform"
-              [class.rotate-180]="isSemesterDropdownOpen"
-            >
-              expand_more
-            </span>
-          </button>
-
-          @if (isSemesterDropdownOpen) {
-            <div class="absolute bottom-14 left-0 z-20 w-full mb-2 bg-white border border-slate-100 rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
-              <ul class="p-2 text-sm text-slate-700 font-medium">
-                @for (sem of [1, 2]; track sem) {
-                  <li>
-                    <button
-                      type="button"
-                      (click)="selectSemester(sem)"
-                      class="flex items-center w-full p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors text-left"
-                      [class.bg-indigo-50]="selectedSemester === sem"
-                      [class.text-indigo-600]="selectedSemester === sem"
-                    >
-                      เทอม {{ sem }}
-                    </button>
-                  </li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
-
-        <button (click)="saveAssignments()"
-                [disabled]="selectedAdvisors.length === 0 || selectedStudents.length === 0"
-                class="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
-                [ngClass]="(selectedAdvisors.length > 0 && selectedStudents.length > 0) ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700' : 'bg-slate-100 text-slate-400 cursor-not-allowed'">
-          กำหนดที่ปรึกษา (อ.{{ selectedAdvisors.length }} ท่าน, นศ.{{ selectedStudents.length }} คน) 
-          <span class="material-symbols-rounded ml-2">arrow_forward</span>
+      <div class="pt-4 mt-2 border-t border-slate-100 shrink-0">
+        <button type="button" (click)="saveAssignments()"
+          [disabled]="selectedAdvisors.length === 0 || selectedStudents.length === 0"
+          class="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+          [ngClass]="(selectedAdvisors.length > 0 && selectedStudents.length > 0) ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100 hover:bg-indigo-700 active:scale-[0.99]' : 'bg-slate-100 text-slate-400 cursor-not-allowed'">
+          <span>ยืนยันจับคู่กำหนดอาจารย์ที่ปรึกษา</span>
+          <span class="material-symbols-rounded text-lg">arrow_forward</span>
         </button>
       </div>
     </div>
 
   </div>
-</div>
 
-@if (showDeleteModal) {
-<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200]">
-  <div class="bg-white rounded-[2rem] p-10 w-full max-w-lg shadow-2xl">
-    <h2 class="text-2xl font-bold text-slate-800 mb-4">ยืนยันการลบ</h2>
-    <p class="text-slate-500 mb-10">คุณต้องการลบข้อมูลนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
-    
-    <div class="flex gap-4">
-      <button (click)="showDeleteModal = false" 
-              class="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all">
-        ยกเลิก
-      </button>
-      <button (click)="executeDelete()" 
-              class="flex-1 py-4 bg-red-500 text-white rounded-2xl font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all">
-        ลบข้อมูล
-      </button>
+  <div class="max-w-7xl mx-auto bg-white rounded-3xl p-6 shadow-sm border border-slate-100 transition-all hover:shadow-md">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+          <span class="material-symbols-rounded">table_view</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">รายชื่อนักศึกษาที่จัดสรรที่ปรึกษาแล้ว</h2>
+          <p class="text-slate-400 text-xs">ข้อมูลการจัดสรรที่เป็นสเตตัสปัจจุบัน สามารถค้นหาและสั่งสลับเปลี่ยนอาจารย์รายบุคคลได้</p>
+        </div>
+      </div>
+      
+      <div class="relative min-w-[280px]">
+        <span class="material-symbols-rounded absolute left-4 top-2.5 text-slate-400 text-xl">search</span>
+        <input type="text" [(ngModel)]="searchAssignedText" (input)="filterAssignedList()" placeholder="ค้นหา รหัสนศ., ชื่อ, หรืออาจารย์..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-slate-100">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+            <th class="px-6 py-4">รหัสนักศึกษา</th>
+            <th class="px-6 py-4">ชื่อ-นามสกุล</th>
+            <th class="px-6 py-4">สาขาวิชา</th>
+            <th class="px-6 py-4">เทอม/ปีการศึกษา</th>
+            <th class="px-6 py-4">อาจารย์ที่ปรึกษาปัจจุบัน</th>
+            <th class="px-6 py-4 text-center">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+          @for (row of filteredAssignedList; track row.student_id) {
+            <tr class="hover:bg-slate-50/60 transition-colors">
+              <td class="px-6 py-4 font-semibold text-slate-600">{{ row.student_code }}</td>
+              <td class="px-6 py-4 font-medium text-slate-800">{{ row.student_name }}</td>
+              <td class="px-6 py-4 text-slate-500">{{ row.major }}</td>
+              <td class="px-6 py-4 text-slate-500">
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-xs font-medium">
+                  {{ row.semester }}/{{ row.academic_year }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-wrap gap-1.5">
+                  @for (adv of row.advisors; track adv.id) {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-semibold">
+                      <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                      {{ adv.name }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <button type="button" (click)="openChangeAdvisorModal(row)"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold shadow-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all group">
+                  <span class="material-symbols-rounded text-sm group-hover:rotate-180 transition-transform duration-300">sync</span>
+                  <span>เปลี่ยนอาจารย์</span>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-12 text-slate-400">ไม่พบประวัติการจัดสรรที่ตรงตามเงื่อนไขค้นหา</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+
+@if (showChangeModal) {
+  <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[150] p-4 animate-in fade-in duration-200">
+    <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+      
+      <div class="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+            <span class="material-symbols-rounded">published_with_changes</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">ปรับปรุงอาจารย์ที่ปรึกษาใหม่</h3>
+            <p class="text-slate-400 text-xs mt-0.5">ของนักศึกษา: {{ targetStudentToChange?.student_name }}</p>
+          </div>
+        </div>
+        <button (click)="showChangeModal = false" class="w-8 h-8 rounded-full bg-slate-200/60 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-colors">
+          <span class="material-symbols-rounded text-sm">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 space-y-2 custom-scrollbar">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">เลือกอาจารย์ท่านใหม่แทนที่คนเดิม (เลือกได้ 1-2 ท่าน):</p>
+        
+        @for (adv of advisors; track adv.id) {
+          <div (click)="toggleNewAdvisorSelection(adv.id)"
+            [ngClass]="newSelectedAdvisorIds.includes(adv.id) ? 'border-indigo-600 bg-indigo-50/40' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50/60'"
+            class="flex items-center justify-between p-3 border rounded-2xl cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                <img [src]="adv.image || 'assets/default-avatar.png'" alt="avatar" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h5 class="text-sm font-semibold text-slate-800">{{ adv.name }}</h5>
+                <p class="text-[11px] text-slate-400">{{ adv.dept }} • รหัส: {{ adv.code }}</p>
+              </div>
+            </div>
+            
+            <div class="w-5 h-5 rounded-md border flex items-center justify-center transition-all"
+              [ngClass]="newSelectedAdvisorIds.includes(adv.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'">
+              @if (newSelectedAdvisorIds.includes(adv.id)) { <span class="material-symbols-rounded text-xs font-bold">check</span> }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="p-5 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end">
+        <button type="button" (click)="showChangeModal = false"
+          class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 bg-white hover:bg-slate-100 transition-colors">
+          ยกเลิก
+        </button>
+        <button type="button" (click)="submitChangeAdvisor()"
+          [disabled]="newSelectedAdvisorIds.length === 0"
+          class="px-5 py-2.5 rounded-xl text-sm font-bold text-white shadow-sm transition-all"
+          [ngClass]="newSelectedAdvisorIds.length > 0 ? 'bg-indigo-600 hover:bg-indigo-700 active:scale-95' : 'bg-slate-300 text-slate-400 cursor-not-allowed'">
+          บันทึกการเปลี่ยนแปลง
+        </button>
+      </div>
+    </div>
+  </div>
 }
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>

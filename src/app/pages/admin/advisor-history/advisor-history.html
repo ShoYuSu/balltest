@@ -229,91 +229,91 @@
   </div>
 
   <div
-    *ngIf="isModalOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-  >
-    <div class="bg-white w-full max-w-2xl rounded-[40px] p-10 shadow-2xl relative animate-in fade-in zoom-in duration-200">
-      <button
-        (click)="closeModal()"
-        class="absolute right-8 top-8 text-gray-300 hover:text-gray-500 transition-colors"
-      >
-        <span class="material-symbols-outlined text-3xl">close</span>
-      </button>
+  *ngIf="isModalOpen"
+  class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/40 backdrop-blur-sm"
+>
+  <div class="bg-white w-full max-w-2xl rounded-[40px] p-10 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+    <button
+      (click)="closeModal()"
+      class="absolute right-8 top-8 text-gray-300 hover:text-gray-500 transition-colors"
+    >
+      <span class="material-symbols-outlined text-3xl">close</span>
+    </button>
 
-      <h2 class="text-2xl font-bold text-gray-800 mb-8">ประวัติที่ปรึกษา</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-8">ประวัติที่ปรึกษา</h2>
 
-      <div class="bg-[#FFF8F8] rounded-3xl p-8 flex items-center gap-8 mb-8">
-        <img
-          [src]="
-            selectedStudent?.image
-              ? 'http://localhost:8080/api/' + selectedStudent.image
-              : 'https://ui-avatars.com/api/?name=' +
-                (selectedStudent?.full_name || 'User') +
-                '&background=random'
-          "
-          class="w-32 h-32 rounded-full border-4 border-white shadow-sm object-cover"
-        />
-        <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ selectedStudent?.full_name }}</h3>
-          <p class="text-gray-500 text-sm mb-1">รหัส: {{ selectedStudent?.student_code }}</p>
-          <p class="text-gray-500 text-sm mb-1">
-            ภาควิชา: {{ selectedStudent?.department || selectedStudent?.major || 'ไม่ระบุ' }}
-          </p>
-          <p class="text-blue-600 text-sm font-semibold bg-blue-50 px-2.5 py-1 rounded-md inline-block mt-1">
-            {{ selectedStudent?.displayYear || 'ไม่ระบุชั้นปี' }}
-          </p>
-        </div>
-      </div>
-
+    <div class="bg-[#FFF8F8] rounded-3xl p-8 flex items-center gap-8 mb-8">
+      <img
+        [src]="
+          selectedStudent?.image
+            ? 'http://localhost:8080/api/' + selectedStudent.image
+            : 'https://ui-avatars.com/api/?name=' +
+              (selectedStudent?.full_name || 'User') +
+              '&background=random'
+        "
+        class="w-32 h-32 rounded-full border-4 border-white shadow-sm object-cover"
+      />
       <div>
-        <p class="font-bold text-gray-800 mb-6">ลำดับการมอบหมายอาจารย์ที่ปรึกษา</p>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ selectedStudent?.full_name }}</h3>
+        <p class="text-gray-500 text-sm mb-1">รหัส: {{ selectedStudent?.student_code }}</p>
+        <p class="text-gray-500 text-sm mb-1">
+          ภาควิชา: {{ selectedStudent?.department || selectedStudent?.major || 'ไม่ระบุ' }}
+        </p>
+        <p class="text-blue-600 text-sm font-semibold bg-blue-50 px-2.5 py-1 rounded-md inline-block mt-1">
+          {{ selectedStudent?.displayYear || 'ไม่ระบุชั้นปี' }}
+        </p>
+      </div>
+    </div>
 
-        <div class="space-y-0">
-          <div
-            *ngFor="let h of selectedStudent?.history; let last = last"
-            class="relative flex gap-5"
-          >
-            <div class="flex flex-col items-center">
-              <span
-                [class]="h.textColor"
-                class="w-3 h-3 rounded-full bg-current ring-4 ring-white shadow-sm shrink-0 mt-1.5"
-              ></span>
-              <span *ngIf="!last" class="w-px flex-1 bg-gray-200 my-1"></span>
-            </div>
+    <div>
+      <p class="font-bold text-gray-800 mb-6">ลำดับการมอบหมายอาจารย์ที่ปรึกษา</p>
 
-            <div class="flex-1 pb-7">
-              <div class="flex items-center gap-2 flex-wrap mb-2">
-                <span
-                  [class]="h.color + ' ' + h.textColor"
-                  class="text-xs font-bold px-3 py-1 rounded-full"
-                >
-                  ปี พ.ศ. {{ h.year }} · เทอม {{ h.semester }}
-                </span>
-
-                <span
-                  *ngIf="h.is_current == 1"
-                  class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold"
-                >
-                  ที่ปรึกษาปัจจุบัน
-                </span>
-              </div>
-
-              <p class="text-gray-800 font-semibold">{{ h.advisor_name }}</p>
-
-              <p *ngIf="h.created_at" class="text-gray-400 text-xs mt-1">
-                วันที่เริ่มมอบหมาย: {{ h.created_at | date: 'dd MMM yyyy HH:mm' }} น.
-              </p>
-            </div>
+      <div class="space-y-0 max-h-[50vh] overflow-y-auto pr-2">
+        <div
+          *ngFor="let h of selectedStudent?.history; let last = last"
+          class="relative flex gap-5"
+        >
+          <div class="flex flex-col items-center">
+            <span
+              [class]="h.textColor"
+              class="w-3 h-3 rounded-full bg-current ring-4 ring-white shadow-sm shrink-0 mt-1.5"
+            ></span>
+            <span *ngIf="!last" class="w-px flex-1 bg-gray-200 my-1"></span>
           </div>
 
-          <p
-            *ngIf="!selectedStudent?.history?.length"
-            class="text-gray-400 italic text-center py-4"
-          >
-            ไม่มีข้อมูลประวัติย้อนหลังในระบบ
-          </p>
+          <div class="flex-1 pb-7">
+            <div class="flex items-center gap-2 flex-wrap mb-2">
+              <span
+                [class]="h.color + ' ' + h.textColor"
+                class="text-xs font-bold px-3 py-1 rounded-full"
+              >
+                ปี พ.ศ. {{ h.year }} · เทอม {{ h.semester }}
+              </span>
+
+              <span
+                *ngIf="h.is_current == 1"
+                class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold"
+              >
+                ที่ปรึกษาปัจจุบัน
+              </span>
+            </div>
+
+            <p class="text-gray-800 font-semibold">{{ h.advisor_name }}</p>
+
+            <p *ngIf="h.created_at" class="text-gray-400 text-xs mt-1">
+              วันที่เริ่มมอบหมาย: {{ h.created_at | date: 'dd MMM yyyy HH:mm' }} น.
+            </p>
+          </div>
         </div>
+
+        <p
+          *ngIf="!selectedStudent?.history?.length"
+          class="text-gray-400 italic text-center py-4"
+        >
+          ไม่มีข้อมูลประวัติย้อนหลังในระบบ
+        </p>
       </div>
     </div>
   </div>
+</div>
 </div>
