@@ -71,7 +71,7 @@ export class AssignAdvisorComponent implements OnInit {
       if (res.success) {
         // Map ข้อมูลผ่าน processImageData
         this.advisors = (res.advisors || []).map((a: any) => this.processImageData(a));
-        this.students = (res.students || []).map((s: any) => ({ ...s, image: null })); // ถ้า นศ. ไม่มีรูป
+        this.students = (res.students || []).map((s: any) => this.processImageData(s)); // ถ้า นศ. ไม่มีรูป
         this.assignedList = (res.assigned_data || []).map((row: any) => ({
           ...row,
           advisors: row.advisors.map((a: any) => this.processImageData(a))
