@@ -330,6 +330,35 @@ export class AssignAdvisorComponent implements OnInit {
       }
     });
   }
+  // เพิ่มในคลาส AssignAdvisorComponent
+deleteAssignment(row: any) {
+  Swal.fire({
+    title: 'ยืนยันการลบ?',
+    text: `คุณต้องการลบข้อมูลการจัดสรรอาจารย์ของ ${row.student_name} ใช่หรือไม่?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'ลบข้อมูล',
+    cancelButtonText: 'ยกเลิก',
+    customClass: { popup: 'rounded-3xl' }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // ส่ง Action 'delete_assignment' ไปที่ PHP
+      this.http.post<any>(`${environment.apiUrl}/assign_advisor.php`, {
+        action: 'delete_assignment',
+        student_id: row.student_id
+      }).subscribe({
+        next: (res) => {
+          if (res.success) {
+            Swal.fire({ icon: 'success', title: 'ลบสำเร็จ', text: 'ข้อมูลถูกลบเรียบร้อยแล้ว', timer: 1500, confirmButtonColor: '#6366f1' });
+            this.loadDataFromDatabase(); // โหลดข้อมูลใหม่
+          }
+        }
+      });
+    }
+  });
+}
 
   executeDelete() {
     this.showDeleteModal = false;
