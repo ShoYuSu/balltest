@@ -58,27 +58,25 @@ export class LoginComponent {
           const role = res.role?.toLowerCase().trim();
           const tokenToSave = res.token ? res.token : 'fake-token-for-test';
           
-          // ⭐️ รับข้อมูลสิทธิ์ (Permissions) จาก API (ตอนนี้เป็น String แล้ว)
           const permsString = res.perms || '';
+          const isAdvisorFlag = res.is_advisor || false; // 🌟 รับสถานะที่ปรึกษาจาก Backend
 
-          // 1. เก็บข้อมูลลง LocalStorage ของฝั่ง 4200
           localStorage.setItem('token', tokenToSave);
           localStorage.setItem('role', role);
           localStorage.setItem('full_name', res.full_name || '');
           localStorage.setItem('img_profile', res.img_profile || '');
           localStorage.setItem('user_id', res.user_id);
-          localStorage.setItem('permissions', permsString); // เซฟสิทธิ์ลงเครื่อง
+          localStorage.setItem('permissions', permsString); 
           localStorage.setItem('student_code', res.student_code || '');
+          localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false'); // 🌟 บันทึกลง Local Storage
 
-          // 2. ตรวจสอบเงื่อนไขการไปหน้าต่างๆ
           if (role === 'student') {
             this.router.navigate(['/personal-data']);
           } else {
-            // ⭐️ เข้ารหัสข้อความสิทธิ์ก่อนแนบไปกับ URL ป้องกัน Error
             const encodedPerms = encodeURIComponent(permsString);
             
-            // ส่งไปพอร์ต 4201 พร้อมแนบสิทธิ์ (&perms=...) ไปด้วย
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}`;
+            // 🌟 แนบ &is_advisor=... ไปกับ URL เพื่อให้ Layout (พอร์ต 4201) กางเมนูได้
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}`;
           }
 
         } else {
