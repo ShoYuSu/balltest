@@ -69,7 +69,7 @@ export class IndividualRecord implements OnInit {
   }
 
   loadStudentsSummary() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (!advisorId) return;
 
     this.http
@@ -104,7 +104,7 @@ export class IndividualRecord implements OnInit {
 
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     this.http
       .get<
         any[]

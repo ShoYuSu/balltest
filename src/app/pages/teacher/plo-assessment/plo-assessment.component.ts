@@ -76,11 +76,13 @@ export class PloAssessmentComponent implements OnInit {
 
   loadData() {
     // 1. ดึง ID ของอาจารย์คนที่ล็อคอินอยู่
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (!advisorId) return;
 
     this.http
-      .get<any[]>(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=${advisorId}&t=${Date.now()}`)
+      .get<
+        any[]
+      >(`${environment.apiUrl}/get_plo_assessments.php?advisor_id=${advisorId}&t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           if (!data || !Array.isArray(data)) {
@@ -89,7 +91,7 @@ export class PloAssessmentComponent implements OnInit {
           }
 
           // 🟢 1. FILTER: กรองป้องกันบรรทัดข้อมูลที่เป็น null หลุดมาจนทำระบบพัง
-          const validData = data.filter(s => s && (s.studentId || s.student_code || s.id));
+          const validData = data.filter((s) => s && (s.studentId || s.student_code || s.id));
 
           const formattedData = validData.map((s) => {
             const studentCode = s.studentId || s.student_code || '-';
@@ -102,9 +104,10 @@ export class PloAssessmentComponent implements OnInit {
               name: stdName,
               studentId: studentCode,
               year: s.year || '-',
-              img: stdImg !== ''
-                ? `${environment.apiUrl}/${stdImg}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(stdName)}&background=fff7ed&color=ea580c`,
+              img:
+                stdImg !== ''
+                  ? `${environment.apiUrl}/${stdImg}`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(stdName)}&background=fff7ed&color=ea580c`,
             };
           });
 
@@ -253,7 +256,7 @@ export class PloAssessmentComponent implements OnInit {
     if (!student) return;
 
     // 🟢 2. แก้บั๊ก: ดึงค่าล็อคอินจาก LocalStorage มาใช้งานจริงๆ ป้องกันปัญหาการบันทึกข้ามฝั่งไอดีอาจารย์
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (!advisorId) {
       alert('ไม่พบข้อมูลผู้ล็อกอิน กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
       return;

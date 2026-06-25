@@ -88,7 +88,7 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   loadMyStudents() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
       .subscribe({
@@ -107,7 +107,7 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   loadAppointments() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     this.http
       .get<any[]>(`${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}`)
       .subscribe({
@@ -157,7 +157,7 @@ export class IndividualConsultationAppointments implements OnInit {
   // =============================================
 
   submitCreateAppointment() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (!this.newApp.studentId || !this.newApp.topic || !this.newApp.date || !this.newApp.type) {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;

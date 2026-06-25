@@ -74,7 +74,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ก่อน
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (!advisorId) return;
     this.http
       .get<

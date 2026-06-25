@@ -68,7 +68,7 @@ export class GroupRecord implements OnInit {
   }
 
   loadGroupRecords() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     const url = `${this.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${new Date().getTime()}`;
     this.http.get<any[]>(url).subscribe({
       next: (data) => {

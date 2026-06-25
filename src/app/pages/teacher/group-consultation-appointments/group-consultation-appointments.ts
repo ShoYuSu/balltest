@@ -70,7 +70,7 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   loadMyStudents() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
       .subscribe({
@@ -90,7 +90,7 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   loadAppointments() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     const url = `${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${new Date().getTime()}`;
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
@@ -160,7 +160,7 @@ export class GroupConsultationAppointments implements OnInit {
   // ==========================================
 
   submitCreateAppointment() {
-    const advisorId = localStorage.getItem('user_id');
+    const advisorId = localStorage.getItem('advisor_id');
     if (this.selectedStudentIds().length < 2 || !this.newApp.topic || !this.newApp.date) {
       alert('กรุณากรอกข้อมูลให้ครบและเลือกนักศึกษาอย่างน้อย 2 คน (สำหรับการนัดกลุ่ม)');
       return;
