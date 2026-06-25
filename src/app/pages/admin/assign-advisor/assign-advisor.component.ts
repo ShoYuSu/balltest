@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import Swal from 'sweetalert2';
+import { TableColumnModel } from '../../../shared/components/stat-cards/models/table-option';
 
 @Component({
   standalone: true,
@@ -46,6 +47,51 @@ export class AssignAdvisorComponent implements OnInit {
   newSelectedAdvisorIds: number[] = []; // เก็บ ID อาจารย์ชุดใหม่ที่เลือกใน Modal
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  public columns: TableColumnModel[] = [
+  {
+    columnDef: 'student_code',
+    header: 'รหัสนักศึกษา',
+    tag: 'text',
+    display: true,
+    cell: (el) => el.student_code,
+  },
+  {
+    columnDef: 'student_name',
+    header: 'ชื่อ-นามสกุล',
+    tag: 'text',
+    display: true,
+    cell: (el) => el.student_name,
+  },
+  {
+    columnDef: 'major',
+    header: 'สาขาวิชา',
+    tag: 'text',
+    display: true,
+    cell: (el) => el.major,
+  },
+  {
+    columnDef: 'term',
+    header: 'เทอม/ปีการศึกษา',
+    tag: 'badge',
+    display: true,
+    cell: (el) => `${el.semester}/${el.academic_year}`,
+  },
+  {
+    columnDef: 'advisors',
+    header: 'อาจารย์ที่ปรึกษาปัจจุบัน',
+    tag: 'advisors',
+    display: true,
+    cell: (el) => el.advisors,
+  },
+  {
+    columnDef: 'actions',
+    header: 'การจัดการ',
+    tag: 'action',
+    display: true,
+    align: 'center',
+    cell: (el) => el,
+  },
+];
 
   ngOnInit() {
     this.loadDataFromDatabase();

@@ -17,6 +17,7 @@ export interface TableColumnModel {
     | "reset"
     | "action"
     | "action-menu"
+    | "advisors"
     | "name";
     
   stickyEnd?: boolean;
