@@ -22,11 +22,14 @@ export class IndividualRecord implements OnInit {
   pageSize = signal(5);
 
   filteredStudents = computed(() => {
-    const query = this.searchQuery().toLowerCase();
+    const query = this.searchQuery().toLowerCase().trim();
     let list = this.students();
     if (query) {
       list = list.filter(
-        (s) => s.full_name.toLowerCase().includes(query) || s.student_code.includes(query),
+        (s) =>
+          // 🎯 ป้องกัน Error กรณีไม่มีข้อมูลชื่อ
+          (s.full_name || '').toLowerCase().includes(query) ||
+          (s.student_code || '').includes(query),
       );
     }
     return list;
@@ -37,7 +40,7 @@ export class IndividualRecord implements OnInit {
     return this.filteredStudents().slice(start, start + this.pageSize());
   });
 
-  totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.pageSize()));
+  totalPages = computed(() => Math.ceil(this.filteredStudents().length / this.pageSize()) || 1);
 
   selectedStudent = signal<any>(null);
   studentLogs = signal<any[]>([]);
@@ -49,7 +52,6 @@ export class IndividualRecord implements OnInit {
   editingLog: any = null;
   revertingLogId: string | null = null;
 
-  // 🎯 เพิ่ม State สำหรับคุมการเปิด/ปิด Dropdown เรียงลำดับ
   isSortDropdownOpen = signal(false);
 
   sortedLogs = computed(() => {
@@ -68,16 +70,32 @@ export class IndividualRecord implements OnInit {
 
   loadStudentsSummary() {
     const advisorId = localStorage.getItem('user_id');
-    this.http.get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=${advisorId}`).subscribe({
+    if (!advisorId) return;
+
+    this.http
+      .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=${advisorId}`)
+      .subscribe({
         next: (data) => {
-          const processed = data.map((s) => ({
-            ...s,
-            imgUrl:
-              s.image && s.image.trim() !== ''
-                ? `${this.apiUrl}/${s.image}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(s.full_name)}&background=fff7ed&color=ea580c`,
-            formattedLatestDate: s.latest_date ? this.formatThaiDate(s.latest_date) : '-',
-          }));
+          if (!data || !Array.isArray(data)) {
+            this.students.set([]);
+            return;
+          }
+
+          const processed = data.map((s) => {
+            // 🎯 ดักจับชื่อ ป้องกันค่าว่าง
+            const studentName = s.full_name || s.name || s.student_name || 'ไม่ระบุชื่อ';
+
+            return {
+              ...s,
+              full_name: studentName,
+              year: s.year || '-', // 🎯 รับค่าชั้นปี
+              imgUrl:
+                s.image && s.image.trim() !== ''
+                  ? `${this.apiUrl}/${s.image}`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=fff7ed&color=ea580c`,
+              formattedLatestDate: s.latest_date ? this.formatThaiDate(s.latest_date) : '-',
+            };
+          });
           this.students.set(processed);
         },
         error: () => console.error('Failed to load students summary'),
@@ -87,7 +105,11 @@ export class IndividualRecord implements OnInit {
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
     const advisorId = localStorage.getItem('user_id');
-    this.http.get<any[]>(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=${advisorId}&student_id=${student.student_id}`).subscribe({
+    this.http
+      .get<
+        any[]
+      >(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=${advisorId}&student_id=${student.student_id}`)
+      .subscribe({
         next: (data) => this.studentLogs.set(data || []),
         error: () => this.studentLogs.set([]),
       });
@@ -99,7 +121,6 @@ export class IndividualRecord implements OnInit {
     this.loadStudentsSummary();
   }
 
-  // 🎯 ปรับปรุงการกดปิด Dropdown นอกพื้นที่
   closeDropdowns() {
     this.activeDropdownId.set(null);
     this.isSortDropdownOpen.set(false);
@@ -107,14 +128,13 @@ export class IndividualRecord implements OnInit {
 
   toggleDropdown(id: string, e: Event) {
     e.stopPropagation();
-    this.isSortDropdownOpen.set(false); // ปิดอันอื่น
+    this.isSortDropdownOpen.set(false);
     this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
   }
 
-  // 🎯 ฟังก์ชันสำหรับ Dropdown เรียงลำดับ (Custom)
   toggleSortDropdown(e: Event) {
     e.stopPropagation();
-    this.activeDropdownId.set(null); // ปิดอันอื่น
+    this.activeDropdownId.set(null);
     this.isSortDropdownOpen.set(!this.isSortDropdownOpen());
   }
 
@@ -186,8 +206,9 @@ export class IndividualRecord implements OnInit {
   }
 
   onImgError(event: Event, name: string) {
+    const safeName = name || 'User';
     (event.target as HTMLImageElement).src =
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fff7ed&color=ea580c`;
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(safeName)}&background=fff7ed&color=ea580c`;
   }
 
   formatThaiDate(dStr: string) {
@@ -226,9 +247,10 @@ export class IndividualRecord implements OnInit {
   exportMainToExcel() {
     const data = this.filteredStudents();
     if (!data.length) return alert('ไม่มีข้อมูล');
-    const headers = ['รหัสนักศึกษา', 'ชื่อ-สกุล', 'จำนวนรายการที่ปรึกษา', 'ปรึกษาล่าสุด'];
+    const headers = ['รหัสนักศึกษา', 'ชื่อ-สกุล', 'ชั้นปี', 'จำนวนรายการที่ปรึกษา', 'ปรึกษาล่าสุด'];
     const csvRows = data.map(
-      (s) => `"${s.student_code}","${s.full_name}","${s.total_records}","${s.formattedLatestDate}"`,
+      (s) =>
+        `"${s.student_code}","${s.full_name}","${s.year}","${s.total_records}","${s.formattedLatestDate}"`,
     );
     this.downloadCSV(headers, csvRows, 'สรุปประวัติการปรึกษารวม.csv');
   }
