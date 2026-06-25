@@ -101,7 +101,7 @@ export class PloAssessmentComponent implements OnInit {
               id: s.id || s.student_id,
               name: stdName,
               studentId: studentCode,
-              year: s.year || '-', 
+              year: s.year || '-',
               img: stdImg !== ''
                 ? `${environment.apiUrl}/${stdImg}`
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(stdName)}&background=fff7ed&color=ea580c`,

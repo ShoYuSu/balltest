@@ -79,30 +79,33 @@ export class AllStudentsComponent implements OnInit {
 
   // --- 8. ดึงข้อมูลจริงจาก Database ---
 
-    ngOnInit() {
-      const advisorId = localStorage.getItem('user_id');
-      if (!advisorId) return;
+  ngOnInit() {
+    //  เปลี่ยนจาก 'user_id' เป็น 'advisor_id' เพื่อให้มันดึงเลข 1 ออกมาใช้งาน
+    const advisorId = localStorage.getItem('advisor_id');
+    if (!advisorId) return;
 
-      this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`).subscribe({
-      next: (data) => {
-        const formattedStudents = data.map((student: any) => ({
-          id: student.student_code,
-          name: student.full_name,
-          email: student.email ? student.email : 'ไม่มีอีเมล',
-          year: student.year, // ปรับให้ส่งแค่ตัวเลขปี เพื่อให้หน้า result เอาไปโชว์คำว่า "ปีที่ x" ได้สวยๆ
-          gpa: student.gpa,
-          credits: `${student.total_credits}/127`,
-          ploStatus: student.ploStatus.replace('PLO ', ''),
-          img: student.image
-            ? `${environment.apiUrl}/${student.image}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
-        }));
+    this.http
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
+      .subscribe({
+        next: (data) => {
+          const formattedStudents = data.map((student: any) => ({
+            id: student.student_code,
+            name: student.full_name,
+            email: student.email ? student.email : 'ไม่มีอีเมล',
+            year: student.year,
+            gpa: student.gpa,
+            credits: `${student.total_credits}/127`,
+            ploStatus: student.ploStatus.replace('PLO ', ''),
+            img: student.image
+              ? `${environment.apiUrl}/${student.image}`
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
+          }));
 
-        this.studentsInCare.set(formattedStudents);
-      },
-      error: (error) => {
-        console.error('ไม่สามารถดึงข้อมูลนักศึกษาได้:', error.message);
-      },
-    });
+          this.studentsInCare.set(formattedStudents);
+        },
+        error: (error) => {
+          console.error('ไม่สามารถดึงข้อมูลนักศึกษาได้:', error.message);
+        },
+      });
   }
 }

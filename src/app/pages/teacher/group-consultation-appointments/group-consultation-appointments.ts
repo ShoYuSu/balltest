@@ -166,7 +166,7 @@ export class GroupConsultationAppointments implements OnInit {
       return;
     }
     const payload = {
-      advisor_id: parseInt(advisorId || '0'),
+      advisor_id: parseInt(advisorId || '0'), // 👈 เปลี่ยนตรงนี้
       title: this.newApp.topic,
       description: this.newApp.details,
       date: this.newApp.date,

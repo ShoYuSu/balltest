@@ -33,7 +33,7 @@ export class LoginComponent {
   setStep(step: 'select' | 'student' | 'teacher') {
     this.loginStep = step;
     this.isStudentPage = (step === 'student');
-    this.loginForm.reset(); 
+    this.loginForm.reset();
     this.cdr.detectChanges();
   }
 
@@ -57,26 +57,34 @@ export class LoginComponent {
         if (res.success) {
           const role = res.role?.toLowerCase().trim();
           const tokenToSave = res.token ? res.token : 'fake-token-for-test';
-          
+
           const permsString = res.perms || '';
-          const isAdvisorFlag = res.is_advisor || false; // 🌟 รับสถานะที่ปรึกษาจาก Backend
+          const isAdvisorFlag = res.is_advisor || false;
+
+          // 🌟 1. ดึงค่า advisor_id และ staff_id ที่ได้จาก PHP มาเก็บไว้ในตัวแปร
+          const advisorId = res.advisor_id || '';
+          const staffId = res.staff_id || '';
 
           localStorage.setItem('token', tokenToSave);
           localStorage.setItem('role', role);
           localStorage.setItem('full_name', res.full_name || '');
           localStorage.setItem('img_profile', res.img_profile || '');
           localStorage.setItem('user_id', res.user_id);
-          localStorage.setItem('permissions', permsString); 
+          localStorage.setItem('permissions', permsString);
           localStorage.setItem('student_code', res.student_code || '');
-          localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false'); // 🌟 บันทึกลง Local Storage
+          localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false');
+
+          // 🌟 2. บันทึกลง Local Storage ไว้ด้วย (เผื่อได้ใช้ในหน้าฝั่งนี้)
+          localStorage.setItem('advisor_id', advisorId);
+          localStorage.setItem('staff_id', staffId);
 
           if (role === 'student') {
             this.router.navigate(['/personal-data']);
           } else {
             const encodedPerms = encodeURIComponent(permsString);
-            
-            // 🌟 แนบ &is_advisor=... ไปกับ URL เพื่อให้ Layout (พอร์ต 4201) กางเมนูได้
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}`;
+
+            // 🌟 3. แนบ &advisor_id=... และ &staff_id=... ต่อท้าย URL ส่งไปให้ Layout (พอร์ต 4201)
+            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}&advisor_id=${advisorId}&staff_id=${staffId}`;
           }
 
         } else {
