@@ -68,7 +68,7 @@ export class StudentsComponent implements OnInit {
     },
     {
       columnDef: 'faculty_major',
-      header: 'หลักสูตร',
+      header: 'สาขา',
       tag: 'text',
       display: true,
       width: 'large',
