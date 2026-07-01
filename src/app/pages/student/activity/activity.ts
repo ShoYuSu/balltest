@@ -65,6 +65,15 @@ export class Activity implements OnInit {
   // Delete confirm
   showDeleteConfirm = false;
 
+  get totalFiles(): number {
+    return this.activities.reduce((sum, a) => sum + a.files.length, 0);
+  }
+
+  get thisYearCount(): number {
+    const year = new Date().getFullYear();
+    return this.activities.filter(a => new Date(a.activity_date).getFullYear() === year).length;
+  }
+
   get calendarDays(): (number | null)[] {
     const first = new Date(this.calYear, this.calMonth, 1).getDay();
     const total = new Date(this.calYear, this.calMonth + 1, 0).getDate();

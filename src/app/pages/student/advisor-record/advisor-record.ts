@@ -125,6 +125,20 @@ export class AdvisorRecord implements OnInit {
     return 'status-default';
   }
 
+  get consultedThisYear(): number {
+    return this.allAppointments.filter(a => {
+      const d = new Date(a.appointment_date);
+      return d.getFullYear() === this.currentYear && a.is_consulted;
+    }).length;
+  }
+
+  get totalThisYear(): number {
+    return this.allAppointments.filter(a => {
+      const d = new Date(a.appointment_date);
+      return d.getFullYear() === this.currentYear;
+    }).length;
+  }
+
   hasDataInMonth(year: number, month: number): boolean {
     return this.allAppointments.some(a => {
       const d = new Date(a.appointment_date);

@@ -14,7 +14,12 @@
         <!-- YEAR BAR -->
         <div class="year-bar">
           <span class="arrow" (click)="prevYear()">‹</span>
-          <h1>{{ currentYear }}</h1>
+          <div class="text-center">
+            <h1>{{ currentYear }}</h1>
+            <p *ngIf="totalThisYear > 0" class="year-bar-stat">
+              พบอาจารย์แล้ว {{ consultedThisYear }}/{{ totalThisYear }} ครั้ง
+            </p>
+          </div>
           <span class="arrow" (click)="nextYear()">›</span>
         </div>
 
@@ -82,6 +87,13 @@
                     {{ a.advisor_name }}
                   </span>
                 </div>
+
+                @if (a.note) {
+                  <div class="note-preview-row">
+                    <span class="material-symbols-outlined" style="font-size:13px;flex-shrink:0">sticky_note_2</span>
+                    <span class="note-preview-text">{{ a.note }}</span>
+                  </div>
+                }
 
               </div>
 

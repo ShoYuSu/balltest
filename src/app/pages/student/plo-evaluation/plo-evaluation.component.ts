@@ -44,6 +44,14 @@ export class PloEvaluationComponent implements OnInit {
     return `ผ่านแล้ว ${this.passed} จาก ${this.total} ข้อ`;
   }
 
+  get belowThreshold(): number {
+    return this.plos.filter(p => p.status === 'in_progress').length;
+  }
+
+  get notAssessed(): number {
+    return this.plos.filter(p => p.status === 'not_assessed').length;
+  }
+
   get overallStatus(): string {
     if (this.total === 0) return '-';
     if (this.passed === this.total) return 'สถานะโดยรวม: ผ่านทุกข้อ ✓';

@@ -5,6 +5,21 @@
 .page-title  { font-size: 18px; font-weight: 700; color: #111827; }
 .page-subtitle { font-size: 13px; color: #9ca3af; margin-top: 2px; }
 
+/* ===== STATS ROW ===== */
+.act-stats-row {
+  display: flex; align-items: center; gap: 0;
+  background: #fff; border-radius: 16px; padding: 14px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
+}
+.act-stat {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1; gap: 2px;
+}
+.act-stat-value { font-size: 22px; font-weight: 800; color: #F59E0B; }
+.act-stat-label { font-size: 11px; color: #9ca3af; font-weight: 500; }
+.act-stat-divider { width: 1px; height: 32px; background: #e5e7eb; }
+
 .activity-card {
   background: #fff; border-radius: 20px; padding: 24px;
   min-height: 420px;

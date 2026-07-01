@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ interface UpcomingAppointment {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -34,6 +34,7 @@ export class HeaderComponent implements OnInit {
   userImageUrl: string | null = null;
 
   upcomingAppointments: UpcomingAppointment[] = [];
+  private pollInterval: any;
 
   get upcomingCount(): number {
     return this.upcomingAppointments.length;
@@ -58,7 +59,12 @@ export class HeaderComponent implements OnInit {
 
     if (this.userRole === 'student') {
       this.loadUpcoming();
+      this.pollInterval = setInterval(() => this.loadUpcoming(), 45000);
     }
+  }
+
+  ngOnDestroy() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
   loadUpcoming() {

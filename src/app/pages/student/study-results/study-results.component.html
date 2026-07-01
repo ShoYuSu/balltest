@@ -6,12 +6,20 @@
       <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">ผลการเรียน</h1>
       <p class="text-sm text-gray-500 mt-1">สรุปผลการเรียนและตรวจสอบโครงสร้างหน่วยกิตของนักศึกษา</p>
     </div>
-    <button
-      (click)="openModal()"
-      class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-sm hover:opacity-90 transition-all shrink-0">
-      <span class="material-symbols-outlined text-[18px]">edit_note</span>
-      แก้ไขผลการเรียน
-    </button>
+    <div class="flex gap-2 shrink-0">
+      <button
+        (click)="printTranscript()"
+        class="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-600 font-semibold text-sm rounded-2xl shadow-sm border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all">
+        <span class="material-symbols-outlined text-[18px]">print</span>
+        พิมพ์ / PDF
+      </button>
+      <button
+        (click)="openModal()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-2xl shadow-sm hover:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-[18px]">edit_note</span>
+        แก้ไขผลการเรียน
+      </button>
+    </div>
   </div>
 
   <!-- Summary Cards -->
@@ -237,7 +245,7 @@
 
       <!-- Curriculum Content -->
       @if (!modalLoading()) {
-        <div class="overflow-auto" style="max-height: 82vh;">
+        <div class="overflow-auto pb-20" style="max-height: 82vh;">
           <table class="w-full border-collapse text-sm">
 
             <!-- Sticky Header -->
@@ -297,19 +305,25 @@
 
                 @if (!isCatCollapsed(cat.category_id)) {
 
-                <!-- Free Elective: ไม่มี modules → แสดง 2 ช่องค้นหา -->
+                <!-- Free Elective: ไม่มี modules → ช่องค้นหา dynamic -->
                 @if (cat.modules.length === 0) {
                   @for (slot of freeSlots(); track $index; let idx = $index) {
                     <tr class="border-b transition-colors"
                       [class.border-red-200]="slot.conflicted"
                       [class.border-gray-100]="!slot.conflicted"
                       [class.bg-red-50]="slot.conflicted"
-                      [class.bg-white]="!slot.conflicted && idx === 0"
-                      [class.bg-gray-50]="!slot.conflicted && idx === 1">
+                      [class.bg-white]="!slot.conflicted && idx % 2 === 0"
+                      [class.bg-gray-50]="!slot.conflicted && idx % 2 === 1">
 
                       <!-- Search Box (colspan 2: code + name) -->
                       <td colspan="2" class="px-3 py-2 relative">
                         <div class="flex items-center gap-1.5">
+                          <!-- ปุ่มลบ slot -->
+                          <button type="button" (click)="removeFreeSlot(idx)"
+                            title="ลบช่องนี้"
+                            class="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined" style="font-size:14px">delete</span>
+                          </button>
                           <span class="text-[11px] font-bold shrink-0"
                             [class.text-red-400]="slot.conflicted"
                             [class.text-gray-400]="!slot.conflicted">ช่อง {{ idx + 1 }}</span>
@@ -396,6 +410,7 @@
                       }
                     </tr>
                   }
+
                 }
 
                 @for (mod of cat.modules; track mod.module_id) {
@@ -511,9 +526,31 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 bg-white border-t border-gray-100 rounded-b-3xl px-8 py-4 flex justify-end">
+        <div class="sticky bottom-0 bg-white border-t border-gray-100 rounded-b-3xl px-8 py-4 flex items-center justify-between gap-4">
+
+          <!-- วิชาเสรี: credit counter + ปุ่มเพิ่ม -->
+          <div class="flex items-center gap-3">
+            @if (freeCreditsNeed > 0) {
+              <span class="text-[12px] text-gray-500">
+                วิชาเสรี:
+                <span class="font-bold"
+                  [class.text-green-600]="freeCreditsDone >= freeCreditsNeed"
+                  [class.text-amber-600]="freeCreditsDone < freeCreditsNeed">
+                  {{ freeCreditsDone }}/{{ freeCreditsNeed }} นก.
+                </span>
+              </span>
+              @if (freeCreditsDone < freeCreditsNeed) {
+                <button type="button" (click)="addFreeSlot()"
+                  class="flex items-center gap-1 text-[12px] text-primary font-bold px-3 py-1.5 rounded-xl border border-primary/30 hover:bg-primary/10 transition-colors">
+                  <span class="material-symbols-outlined text-[15px]">add</span>
+                  เพิ่มวิชาเสรี
+                </button>
+              }
+            }
+          </div>
+
           <button (click)="closeModal()"
-            class="px-8 py-2.5 bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-all shadow-sm">
+            class="px-8 py-2.5 bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-all shadow-sm shrink-0">
             บันทึกและปิด
           </button>
         </div>

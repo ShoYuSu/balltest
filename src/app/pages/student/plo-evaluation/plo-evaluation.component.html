@@ -30,13 +30,20 @@
     </div>
 
     <!-- summary badges -->
-    <div class="flex gap-3 mt-4">
+    <div class="flex gap-3 mt-4 flex-wrap">
       <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">
         ✓ ผ่านแล้ว {{ passed }} ข้อ
       </span>
-      <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-500 font-medium">
-        ยังไม่ผ่าน {{ total - passed }} ข้อ
-      </span>
+      @if (belowThreshold > 0) {
+        <span class="px-3 py-1 text-xs rounded-full bg-amber-100 text-amber-600 font-medium">
+          ◐ ต่ำกว่าเกณฑ์ {{ belowThreshold }} ข้อ
+        </span>
+      }
+      @if (notAssessed > 0) {
+        <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-500 font-medium">
+          ○ ยังไม่ได้ประเมิน {{ notAssessed }} ข้อ
+        </span>
+      }
     </div>
 
   </div>
@@ -79,6 +86,20 @@
             </div>
           </div>
           <p class="text-xs text-gray-400 text-right mb-3">{{ p.score | number:'1.0-1' }}%</p>
+
+          <!-- hint for non-passing PLOs -->
+          @if (p.status === 'in_progress') {
+            <div class="flex items-start gap-1.5 mt-2 mb-1 bg-amber-50 rounded-xl px-3 py-2">
+              <span class="material-symbols-outlined text-amber-500" style="font-size:14px;margin-top:1px;flex-shrink:0">info</span>
+              <p class="text-[11px] text-amber-700 leading-relaxed">คะแนนยังต่ำกว่าเกณฑ์ ติดต่ออาจารย์ที่ปรึกษาเพื่อขอคำแนะนำเพิ่มเติม</p>
+            </div>
+          }
+          @if (p.status === 'not_assessed') {
+            <div class="flex items-start gap-1.5 mt-2 mb-1 bg-gray-50 rounded-xl px-3 py-2">
+              <span class="material-symbols-outlined text-gray-400" style="font-size:14px;margin-top:1px;flex-shrink:0">pending</span>
+              <p class="text-[11px] text-gray-400 leading-relaxed">ยังไม่มีการประเมิน PLO นี้ อาจารย์จะเป็นผู้ดำเนินการประเมิน</p>
+            </div>
+          }
 
           <!-- footer: advisor + date -->
           <div class="flex justify-between items-center pt-3 border-t border-gray-100">

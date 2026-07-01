@@ -47,9 +47,9 @@
           {{ item.issue_date }}
         </div>
 
-        <div class="cert-file-chip">
-          <span class="material-symbols-outlined">picture_as_pdf</span>
-          ไฟล์ PDF แนบแล้ว
+        <div class="cert-file-chip" *ngIf="item.file_url">
+          <span class="material-symbols-outlined">{{ isPdf(item.file_url) ? 'picture_as_pdf' : 'image' }}</span>
+          {{ isPdf(item.file_url) ? 'ไฟล์ PDF' : 'ไฟล์รูปภาพ' }} แนบแล้ว
         </div>
       </div>
 

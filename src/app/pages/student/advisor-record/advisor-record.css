@@ -24,6 +24,14 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
+.year-bar-stat {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+  margin-top: 3px;
+  letter-spacing: 0.02em;
+}
+
 .arrow {
   width: 38px; height: 38px;
   border-radius: 12px;
@@ -198,6 +206,19 @@
 .record-card:hover .advisor-mini-avatar { transform: scale(1.08); }
 
 .record-arrow { @apply text-gray-300 self-center shrink-0; }
+
+.note-preview-row {
+  @apply flex items-center gap-1 mt-1.5;
+  color: #92400e;
+}
+.note-preview-text {
+  font-size: 11px;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 340px;
+}
 
 /* ===== TYPE BADGE ===== */
 .type-badge { @apply px-2.5 py-0.5 text-xs font-medium rounded-full; }

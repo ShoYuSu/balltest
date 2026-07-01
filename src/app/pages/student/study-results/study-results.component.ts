@@ -124,6 +124,98 @@ export class StudyResultsComponent implements OnInit {
     });
   }
 
+  printTranscript() {
+    const name = localStorage.getItem('full_name') || '';
+    const code = localStorage.getItem('student_code') || '';
+    const subjects = this.allSubjects();
+    const summary = this.creditSummary();
+
+    const termGroups: Record<string, any[]> = {};
+    subjects.forEach((s: any) => {
+      if (!termGroups[s.term]) termGroups[s.term] = [];
+      termGroups[s.term].push(s);
+    });
+
+    const summaryRows = summary.map((c: any) =>
+      `<tr><td>${c.name}</td><td class="c">${c.done}</td><td class="c">${c.need}</td><td class="c" style="color:${c.done >= c.need ? '#16a34a' : '#dc2626'}">${c.done >= c.need ? '✓' : `ขาด ${c.need - c.done}`}</td></tr>`
+    ).join('');
+
+    let termTables = '';
+    Object.entries(termGroups).forEach(([term, subs]) => {
+      const rows = (subs as any[]).map(s =>
+        `<tr><td>${s.code}</td><td>${s.name}</td><td class="c">${s.credit}</td><td class="c g">${s.grade || '-'}</td></tr>`
+      ).join('');
+      termTables += `<h3>${term}</h3><table><thead><tr><th>รหัสวิชา</th><th>ชื่อวิชา</th><th class="c">นก.</th><th class="c">เกรด</th></tr></thead><tbody>${rows}</tbody></table>`;
+    });
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ผลการเรียน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Sarabun,Tahoma,Arial,sans-serif;padding:28px 36px;font-size:13px;color:#111;max-width:800px;margin:0 auto}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.sub{color:#555;font-size:12px;margin-bottom:16px}
+.stats{display:flex;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:20px}
+.stat{flex:1;text-align:center;padding:10px 8px;border-right:1px solid #e5e7eb}
+.stat:last-child{border-right:none}
+.stat-v{font-size:20px;font-weight:800;color:#8B5E3C}
+.stat-l{font-size:10px;color:#9ca3af;margin-top:1px}
+h3{font-size:13px;font-weight:700;color:#8B5E3C;margin:18px 0 6px;padding-bottom:4px;border-bottom:2px solid #fde8c8}
+table{width:100%;border-collapse:collapse;margin-bottom:4px;font-size:12px}
+th,td{border:1px solid #e5e7eb;padding:5px 8px;text-align:left}
+th{background:#f9fafb;font-weight:700;font-size:11px}
+.c{text-align:center}.g{font-weight:700}
+tr{page-break-inside:avoid}
+table{page-break-inside:auto}
+.btn-bar{display:flex;gap:10px;margin-top:28px}
+.btn{padding:9px 22px;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600}
+.btn-print{background:#8B5E3C;color:#fff}
+.btn-pdf{background:#dc2626;color:#fff}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+@media print{.btn-bar{display:none}}
+</style></head><body>
+<div id="content">
+<h1>ผลการเรียน — ${name}</h1>
+<div class="sub">รหัสนักศึกษา: ${code}</div>
+<div class="stats">
+  <div class="stat"><div class="stat-v">${this.gpax()}</div><div class="stat-l">GPAX</div></div>
+  <div class="stat"><div class="stat-v">${this.latestGpa()}</div><div class="stat-l">GPA ล่าสุด</div></div>
+  <div class="stat"><div class="stat-v">${this.creditsDone()}/${this.creditsNeed()}</div><div class="stat-l">หน่วยกิตสะสม</div></div>
+</div>
+<h3>สรุปหน่วยกิตตามหมวดวิชา</h3>
+<table><thead><tr><th>หมวดวิชา</th><th class="c">สะสมแล้ว</th><th class="c">ต้องการ</th><th class="c">สถานะ</th></tr></thead><tbody>${summaryRows}</tbody></table>
+${termTables}
+</div>
+<div class="btn-bar">
+  <button class="btn btn-print" onclick="window.print()">🖨️ พิมพ์</button>
+  <button class="btn btn-pdf" id="dlBtn" onclick="dlPdf()">⬇ ดาวน์โหลด PDF</button>
+</div>
+<script>
+function dlPdf(){
+  var btn=document.getElementById('dlBtn');
+  btn.textContent='กำลังสร้าง...'; btn.disabled=true;
+  function run(){
+    window.html2pdf().set({
+      margin:[10,10,10,10], filename:'ผลการเรียน_${code}.pdf',
+      image:{type:'jpeg',quality:0.97},
+      html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['avoid-all','css','legacy']}
+    }).from(document.getElementById('content')).save()
+    .then(function(){ btn.textContent='⬇ ดาวน์โหลด PDF'; btn.disabled=false; });
+  }
+  if(window.html2pdf){ run(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+  s.onload=run; document.head.appendChild(s);
+}
+</script>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); }
+  }
+
   getGradeColor(grade: string) {
     if (['A', 'B+', 'B'].includes(grade))  return 'bg-green-100 text-green-700 border border-green-200';
     if (['C+', 'C'].includes(grade))        return 'bg-blue-100 text-blue-700 border border-blue-200';
@@ -177,17 +269,21 @@ export class StudyResultsComponent implements OnInit {
                 m.courses?.forEach((c: any) => currIds.add(+c.course_id))
               )
             );
-            const freeIds = passed.filter((p: any) => !currIds.has(+p.course_id)).slice(0, 2).map((p: any) => +p.course_id);
+            const freeIds = passed.filter((p: any) => !currIds.has(+p.course_id)).map((p: any) => +p.course_id);
 
             if (freeIds.length > 0) {
               this.http.get<any[]>(`${this.apiUrl}/search_courses.php?ids=${freeIds.join(',')}`).subscribe({
                 next: courses => {
-                  this.freeSlots.set([0, 1].map(i => {
-                    const c = courses.find((x: any) => +x.course_id === freeIds[i]);
-                    return c
-                      ? { query: `${c.course_code} – ${c.course_name}`, results: [], show: false, course: c, conflicted: false }
-                      : { query: '', results: [], show: false, course: null, conflicted: false };
-                  }));
+                  const slotCount = Math.max(2, freeIds.length);
+                  this.freeSlots.set(
+                    Array.from({ length: slotCount }, (_, i) => {
+                      const id = freeIds[i];
+                      const c = id ? courses.find((x: any) => +x.course_id === id) : null;
+                      return c
+                        ? { query: `${c.course_code} – ${c.course_name}`, results: [], show: false, course: c, conflicted: false }
+                        : { query: '', results: [], show: false, course: null, conflicted: false };
+                    })
+                  );
                 }
               });
             } else {
@@ -314,6 +410,46 @@ export class StudyResultsComponent implements OnInit {
     this.freeSlots.set(this.freeSlots().map((s, i) =>
       i === idx ? { query: '', results: [], show: false, course: null, conflicted: false } : s
     ));
+  }
+
+  addFreeSlot() {
+    this.freeSlots.update(slots => [
+      ...slots,
+      { query: '', results: [], show: false, course: null, conflicted: false }
+    ]);
+  }
+
+  removeFreeSlot(idx: number) {
+    const slot = this.freeSlots()[idx];
+    if (slot.course && !slot.conflicted) {
+      this.http.post(`${this.apiUrl}/save_student_course_check.php`, {
+        student_id: this.studentId(), course_id: slot.course.course_id, is_checked: false
+      }).subscribe();
+      const map = { ...this.passedMap() };
+      delete map[slot.course.course_id];
+      this.passedMap.set(map);
+    }
+    if (this.activeDropdownSlot === idx) {
+      this.activeDropdownSlot = -1;
+      this.freeDropdownRect = null;
+    }
+    this.freeSlots.update(slots => slots.filter((_, i) => i !== idx));
+  }
+
+  get freeCreditsDone(): number {
+    return this.freeSlots().reduce((sum, slot) => {
+      if (!slot.course || slot.conflicted) return sum;
+      const entry = this.passedMap()[slot.course.course_id];
+      if (entry?.grade && !['F', 'U', 'W'].includes(entry.grade)) {
+        return sum + +(slot.course.credit || 0);
+      }
+      return sum;
+    }, 0);
+  }
+
+  get freeCreditsNeed(): number {
+    const elective = this.creditSummary().find((x: any) => x.key === 'elective');
+    return elective ? +(elective.need) : 6;
   }
 
   closeFreeDropdown(idx: number) {

@@ -12,6 +12,26 @@
     </button>
   </div>
 
+  <!-- STATS -->
+  @if (activities.length > 0) {
+    <div class="act-stats-row">
+      <div class="act-stat">
+        <span class="act-stat-value">{{ activities.length }}</span>
+        <span class="act-stat-label">กิจกรรมทั้งหมด</span>
+      </div>
+      <div class="act-stat-divider"></div>
+      <div class="act-stat">
+        <span class="act-stat-value">{{ thisYearCount }}</span>
+        <span class="act-stat-label">ปีนี้</span>
+      </div>
+      <div class="act-stat-divider"></div>
+      <div class="act-stat">
+        <span class="act-stat-value">{{ totalFiles }}</span>
+        <span class="act-stat-label">ไฟล์แนบ</span>
+      </div>
+    </div>
+  }
+
   <!-- CARD -->
   <div class="activity-card">
 

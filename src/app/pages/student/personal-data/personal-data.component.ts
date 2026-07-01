@@ -120,6 +120,12 @@ export class PersonalDataComponent implements OnInit {
     return 'bg-gray-50 text-gray-500';
   }
 
+  formatThaiMonth(dateStr: string): string {
+    if (!dateStr) return '';
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return months[new Date(dateStr).getMonth()] ?? '';
+  }
+
   openModal() {
     this.editForm = {
       full_name: this.student.full_name || '',
