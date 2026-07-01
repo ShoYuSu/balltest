@@ -103,7 +103,7 @@ export class StudyResultsComponent implements OnInit {
   }
 
   loadStudyResults(restoreTerm?: string) {
-    const studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '6504800006';
+    const studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '';
     if (!studentCode) return;
 
     this.http.get<any>(`${this.apiUrl}/get_study_results.php?student_code=${studentCode}&t=${Date.now()}`).subscribe({

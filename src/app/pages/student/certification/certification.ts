@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-certification',
@@ -31,6 +32,7 @@ export class CertificationComponent implements OnInit {
   private cdr       = inject(ChangeDetectorRef);
   private http      = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
+  private apiUrl    = environment.apiUrl;
 
   certificates: any[] = [];
   totalCertificates = 0;
@@ -85,7 +87,7 @@ deleteCertificate() {
   );
 
   this.http.post(
-    'http://localhost:8080/api/delete_certificate.php',
+    `${this.apiUrl}/delete_certificate.php`,
     formData
   ).subscribe({
 
@@ -110,7 +112,7 @@ deleteCertificate() {
       localStorage.getItem('user_id');
 
     this.http.get<any[]>(
-      `http://localhost:8080/api/get_certificates.php?user_id=${userId}`
+      `${this.apiUrl}/get_certificates.php?user_id=${userId}`
     ).subscribe({
 
      next: (res:any) => {
@@ -229,7 +231,7 @@ deleteCertificate() {
 }
 
     this.http.post(
-      'http://localhost:8080/api/update_certificate.php',
+      `${this.apiUrl}/update_certificate.php`,
       formData
     ).subscribe({
 
@@ -292,7 +294,7 @@ deleteCertificate() {
     );
 
     this.http.post(
-      'http://localhost:8080/api/add_certificate.php',
+      `${this.apiUrl}/add_certificate.php`,
       formData
     ).subscribe({
 
@@ -331,7 +333,7 @@ deleteCertificate() {
 
   certFileUrl(url: string): string {
     if (!url) return '';
-    return url.startsWith('http') ? url : `http://localhost:8080/api/${url}`;
+    return url.startsWith('http') ? url : `${this.apiUrl}/${url}`;
   }
 
   safeUrl(url: string): SafeResourceUrl {
