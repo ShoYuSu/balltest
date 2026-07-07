@@ -3,7 +3,6 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -39,68 +38,62 @@ export class LoginComponent {
 
   closeModal() {
     this.showErrorModal = false;
-    this.cdr.detectChanges();
   }
 
+  // 🌟 ใช้ชื่อ onLogin() ให้ตรงกับ HTML ของคุณ
   onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.cdr.detectChanges();
       return;
     }
 
     this.loading = true;
-    const { email, password } = this.loginForm.value;
+    const loginData = {
+      ...this.loginForm.value,
+      login_type: this.loginStep 
+    };
 
-    this.http.post(`${environment.apiUrl}/login.php`, { email, password, login_type: this.isStudentPage ? 'student' : 'staff' }).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          const role = res.role?.toLowerCase().trim();
-          const tokenToSave = res.token ? res.token : 'fake-token-for-test';
+    this.http.post<any>('http://localhost:8080/api/login.php', loginData)
+      .subscribe({
+        next: (res) => {
+          if (res && res.success) {
+            const realToken = res.token; 
+            const role = res.role || (this.isStudentPage ? 'student' : 'teacher');
+            const isAdvisorFlag = res.is_advisor || false;
+            const advisorId = res.advisor_id || '';
+            const staffId = res.staff_id || '';
 
-          const permsString = res.perms || '';
-          const isAdvisorFlag = res.is_advisor || false;
+            localStorage.setItem('token', realToken);
+            localStorage.setItem('role', role);
+            localStorage.setItem('full_name', res.full_name || '');
+            localStorage.setItem('img_profile', res.img_profile || '');
+            localStorage.setItem('student_code', res.student_code || '');
+            localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false');
+            localStorage.setItem('advisor_id', advisorId);
+            localStorage.setItem('staff_id', staffId);
+            localStorage.setItem('user_id', res.user_id); 
 
-          // 🌟 1. ดึงค่า advisor_id และ staff_id ที่ได้จาก PHP มาเก็บไว้ในตัวแปร
-          const advisorId = res.advisor_id || '';
-          const staffId = res.staff_id || '';
+            if (role === 'student') {
+              this.router.navigate(['/personal-data']);
+            } else {
+              // ส่งพารามิเตอร์ทั้งหมดไปหาระบบ 4201 
+              window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${realToken}&user=${encodeURIComponent(res.full_name)}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}&advisor_id=${advisorId}&staff_id=${staffId}&user_id=${res.user_id}`;
+            }
 
-          localStorage.setItem('token', tokenToSave);
-          localStorage.setItem('role', role);
-          localStorage.setItem('full_name', res.full_name || '');
-          localStorage.setItem('img_profile', res.img_profile || '');
-          localStorage.setItem('user_id', res.user_id);
-          localStorage.setItem('permissions', permsString);
-          localStorage.setItem('student_code', res.student_code || '');
-          localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false');
-
-          // 🌟 2. บันทึกลง Local Storage ไว้ด้วย (เผื่อได้ใช้ในหน้าฝั่งนี้)
-          localStorage.setItem('advisor_id', advisorId);
-          localStorage.setItem('staff_id', staffId);
-
-          if (role === 'student') {
-            this.router.navigate(['/personal-data']);
           } else {
-            const encodedPerms = encodeURIComponent(permsString);
-
-            // 🌟 3. แนบ &advisor_id=... และ &staff_id=... ต่อท้าย URL ส่งไปให้ Layout (พอร์ต 4201)
-            window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}&advisor_id=${advisorId}&staff_id=${staffId}`;
+            this.errorMessage = res.message;
+            this.showErrorModal = true;
           }
-
-        } else {
-          this.errorMessage = res.message;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Login Error:', err);
+          this.errorMessage = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ API ได้';
           this.showErrorModal = true;
+          this.loading = false;
+          this.cdr.detectChanges();
         }
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('🚨 API พังหรือเชื่อมต่อไม่ได้:', err);
-        this.errorMessage = 'การเชื่อมต่อผิดพลาด';
-        this.showErrorModal = true;
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+      });
   }
 }
