@@ -106,13 +106,8 @@ export class CurriculumManagementComponent implements OnInit {
   selectMajor(majorName: string) {
     this.selectedMajor = majorName; // เปลี่ยนชื่อสาขาปัจจุบัน
     this.isMajorDropdownOpen = false; // คลิกเลือกเสร็จให้หุบเมนูปิดลงทันที
-    // สั่งรีโหลดวิชาด้านล่างให้เปลี่ยนตามสาขาทันที
-
-    if (this.selectedMajor === 'เทคโนโลยีการอาหาร') {
-      this.selectedYear = '2567'; // ล็อกปีการศึกษาสำหรับสาขาเทคโนโลยีการอาหารเป็น 2567 เสมอ
-    } else if (this.selectedMajor === 'วิทยาการข้อมูลและคอมพิวเตอร์') {
-      this.selectedYear = '2566'; // ล็อกปีการศึกษาสำหรับสาขาวิทยาการคอมพิวเตอร์เป็น 2566
-    }
+    // ⭐️ ลบการ hardcode ปีตามชื่อสาขาออกแล้ว — ปีที่แสดงตอนนี้จะดึงมาจาก
+    // backend จริงๆ ใน loadCurriculumData() (ผ่าน res.curriculum_year)
     this.loadCurriculumData();
   }
   toggleGradeDropdown() {
@@ -125,10 +120,13 @@ export class CurriculumManagementComponent implements OnInit {
 
   // ฟังก์ชันโหลดสาขาสไตล์ Set เคลียร์ค่าซ้ำของคุณ
   loadMajors() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_majors.php`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/get_majors.php`).subscribe({
       next: (res) => {
-        if (Array.isArray(res)) {
-          const dbMajors = res.map((m: any) => m.major_name);
+        // ⭐️ แก้ไข: get_majors.php ส่งกลับเป็น { success: true, majors: [...] }
+        // ไม่ใช่ array ตรงๆ ดังนั้น Array.isArray(res) เดิมจะเป็น false เสมอ
+        // และไม่เคย merge สาขาจาก backend เข้ามาเลยสักครั้ง
+        if (res && res.success && Array.isArray(res.majors)) {
+          const dbMajors: string[] = res.majors;
           this.major = [...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors])];
 
           // ตรวจสอบว่ามีสาขาที่เลือกอยู่ในอาเรย์ไหม ถ้าไม่มีให้ล็อกตัวแรก
@@ -146,13 +144,16 @@ export class CurriculumManagementComponent implements OnInit {
   // ดึงข้อมูลหลักสูตรโดยส่งชื่อสาขา (major_name) ไปฟิลเตอร์หลังบ้าน
   loadCurriculumData() {
     this.http
-      .get(
+      .get<any>(
         `${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(this.selectedMajor)}`,
       )
       .subscribe({
         next: (res: any) => {
+          // ⭐️ get_curriculum.php ตอนนี้ส่งกลับเป็น { categories: [...], curriculum_year: ... }
+          const categories = res?.categories ?? [];
+
           // กางแผง Accordion ออกมาทั้งหมด (true) เพื่อไม่ให้เกิดบั๊กหน้าจอว่างเปล่าตอนเปิดครั้งแรก
-          this.curriculumData = res.map((cat: any) => {
+          this.curriculumData = categories.map((cat: any) => {
             const oldCat = this.curriculumData.find((c) => c.category_id === cat.category_id);
             return {
               ...cat,
@@ -163,6 +164,9 @@ export class CurriculumManagementComponent implements OnInit {
               }),
             };
           });
+
+          // ⭐️ ใช้ปีหลักสูตรจริงจากฐานข้อมูลแทนการ hardcode ตามชื่อสาขา
+          this.selectedYear = res?.curriculum_year ?? '-';
 
           // บังคับให้ Angular เรนเดอร์หน้าจออัปเดตสีสันทันที ไม่ต้องรอคลิกปุ่มอื่น
           this.cdr.detectChanges();

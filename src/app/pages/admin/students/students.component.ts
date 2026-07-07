@@ -175,6 +175,7 @@ export class StudentsComponent implements OnInit {
   isFormYearDropdownOpen = false;
 
   newMajorName: string = '';
+  isAddingNewMajor = false;
   isCurriculumModalOpen = false;
 
   currentPage: number = 1;
@@ -219,6 +220,11 @@ export class StudentsComponent implements OnInit {
     });
   }
 
+  toggleAddNewMajor() {
+    this.isAddingNewMajor = !this.isAddingNewMajor;
+    if (!this.isAddingNewMajor) this.newMajorName = '';
+  }
+
   addNewMajor() {
     const trimmedMajor = this.newMajorName.trim();
     if (trimmedMajor) {
@@ -230,8 +236,15 @@ export class StudentsComponent implements OnInit {
               if (!this.majors.includes(trimmedMajor)) {
                 this.majors.push(trimmedMajor);
               }
-              this.selectMajor(trimmedMajor);
+              Swal.fire({
+                icon: 'success',
+                title: 'เพิ่มสาขาสำเร็จ',
+                text: `เพิ่ม "${trimmedMajor}" เข้าสู่ระบบเรียบร้อยแล้ว`,
+                timer: 1500,
+                showConfirmButton: false,
+              });
               this.newMajorName = '';
+              this.isAddingNewMajor = false;
             } else {
               // 🌟 จุดแก้ไขที่ 1: เปลี่ยนแจ้งเตือนสาขาผิดพลาด
               Swal.fire({
@@ -247,15 +260,18 @@ export class StudentsComponent implements OnInit {
   }
 
   loadMajors() {
-    this.http.get<any[]>(`${environment.apiUrl}/get_majors.php`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/get_majors.php`).subscribe({
       next: (res) => {
-        if (Array.isArray(res)) {
-          const dbMajors = res.map((m: any) => m.major_name);
+        // ⭐️ แก้ไข: get_majors.php ส่งกลับเป็น { success: true, majors: [...] }
+        // ไม่ใช่ array ตรงๆ เหมือนที่โค้ดเดิมคาดไว้ (Array.isArray(res) เดิมเป็น false เสมอ)
+        if (res && res.success && Array.isArray(res.majors)) {
+          const dbMajors: string[] = res.majors;
           this.majors = [
             ...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors]),
           ];
         }
       },
+      error: (err) => console.error('โหลดสาขาล้มเหลว', err),
     });
   }
 
@@ -488,10 +504,11 @@ export class StudentsComponent implements OnInit {
 
     setTimeout(() => {
       this.http
-        .get<any[]>(`${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(student.major)}`)
+        .get<any>(`${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(student.major)}`)
         .subscribe({
           next: (res) => {
-            this.curriculumData = Array.isArray(res) ? [...res] : [];
+            // ⭐️ get_curriculum.php ตอนนี้ส่งกลับเป็น { categories: [...], curriculum_year: ... }
+            this.curriculumData = Array.isArray(res?.categories) ? [...res.categories] : [];
             this.cdr.detectChanges();
             this.loadStudentPassedCourses(student.student_id);
           },
@@ -631,13 +648,32 @@ export class StudentsComponent implements OnInit {
     return c ? `${c.curriculum_name} (มคอ.2 - ${c.year})` : '';
   }
 
-  // 🌟 สาขา (major) เลือกอิสระจากหลักสูตร ไม่ผูกกับ curriculum_id/year อีกต่อไป
+  // ⭐️ หลักสูตรที่กรองแล้วเฉพาะของสาขาที่เลือกอยู่ในฟอร์ม (ใช้แสดงใน dropdown)
+  get filteredCurriculums() {
+    const major = this.studentForm.get('major')?.value;
+    if (!major) return [];
+    return this.curriculums.filter((c) => c.major_name === major);
+  }
+
+  // 🌟 สาขา (major) — ตอนนี้ผูกกับหลักสูตรผ่าน major_name แล้ว
   selectFormMajor(major: string) {
     this.studentForm.patchValue({ major });
     this.isFormMajorDropdownOpen = false;
+
+    // ⭐️ ถ้าสาขานี้มีหลักสูตรเดียว ให้ auto-fill ให้เลย (สะดวก ไม่ต้องกดซ้ำ)
+    // ถ้ามีหลายหลักสูตร (เช่นมีหลักสูตรเก่า/ใหม่) ให้เคลียร์ค่าเดิม บังคับผู้ใช้เลือกเองให้ตรง
+    const matches = this.curriculums.filter((c) => c.major_name === major);
+    if (matches.length === 1) {
+      this.studentForm.patchValue({
+        curriculum_id: matches[0].curriculum_id,
+        curriculum_year: matches[0].year,
+      });
+    } else {
+      this.studentForm.patchValue({ curriculum_id: '', curriculum_year: '' });
+    }
   }
 
-  // 🌟 เลือกหลักสูตรจากรายการที่โหลดมาจากฐานข้อมูล (this.curriculums) แยกจากสาขา
+  // 🌟 เลือกหลักสูตรจากรายการที่กรองตามสาขาแล้ว (filteredCurriculums)
   // set เฉพาะ curriculum_id / curriculum_year เท่านั้น ไม่แตะฟิลด์ major
   selectFormCurriculum(curriculum: any) {
     this.studentForm.patchValue({
