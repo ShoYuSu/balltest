@@ -459,38 +459,52 @@
         </div>
       </div>
 
+      <div class="space-y-1 relative">
+        <label class="text-xs font-semibold text-gray-600 uppercase">หลักสูตร (มคอ.2)</label>
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFormCurriculumDropdown()"
+            class="w-full flex items-center justify-between p-2.5 bg-gray-50 border border-gray-200 rounded-2xl transition-all text-sm font-medium text-gray-700"
+          >
+            <span>{{ selectedCurriculumLabel || 'เลือกหลักสูตร' }}</span>
+            <span
+              class="material-symbols-outlined text-gray-400"
+              [class.rotate-180]="isFormCurriculumDropdownOpen"
+              >expand_more</span
+            >
+          </button>
+
+          <div
+            *ngIf="isFormCurriculumDropdownOpen"
+            class="absolute z-30 w-full mt-2 bg-white border rounded-[20px] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150"
+          >
+            <ul class="p-2 text-sm max-h-48 overflow-y-auto">
+              <li *ngFor="let c of curriculums">
+                <button
+                  type="button"
+                  (click)="selectFormCurriculum(c)"
+                  class="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl transition-colors"
+                >
+                  {{ c.curriculum_name }} <span class="text-gray-400">(มคอ.2 - {{ c.year }})</span>
+                </button>
+              </li>
+              <li *ngIf="!curriculums.length" class="p-2.5 text-gray-400">ไม่พบหลักสูตรในระบบ</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div class="space-y-1">
-        <label class="text-xs font-semibold text-gray-600 uppercase"
-          >ปีหลักสูตร (กำหนดอัตโนมัติตามสาขา)</label
-        >
+        <label class="text-xs font-semibold text-gray-600 uppercase">ปีหลักสูตร</label>
         <div class="relative">
           <input
             type="text"
             formControlName="curriculum_year"
             readonly
-            placeholder="ระบบจะระบุปีหลักสูตรให้อัตโนมัติ"
+            placeholder="เลือกหลักสูตรเพื่อระบุปี"
             class="w-full px-4 py-2.5 bg-gray-100/70 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed"
           />
-          <span
-            class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold"
-            [ngClass]="
-              studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
-                ? 'text-emerald-600'
-                : studentForm.get('major')?.value === 'วิทยาการข้อมูลและคอมพิวเตอร์' ||
-                    studentForm.get('major')?.value === 'วิทยาการคอม'
-                  ? 'text-blue-600'
-                  : 'text-gray-400'
-            "
-          >
-            {{
-              studentForm.get('major')?.value === 'เทคโนโลยีการอาหาร'
-                ? 'มคอ.2 - 67'
-                : studentForm.get('major')?.value === 'วิทยาการข้อมูลและคอมพิวเตอร์' ||
-                    studentForm.get('major')?.value === 'วิทยาการคอม'
-                  ? 'มคอ.2 - 66'
-                  : 'โปรดเลือกสาขา'
-            }}
-          </span>
         </div>
       </div>
 

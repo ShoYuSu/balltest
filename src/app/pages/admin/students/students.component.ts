@@ -165,10 +165,13 @@ export class StudentsComponent implements OnInit {
   } = {};
 
   majors: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'];
+  // 🌟 รายการหลักสูตรที่โหลดจากฐานข้อมูลจริง (curriculum_id, curriculum_name, year) ผ่าน get_courses.php
+  curriculums: any[] = [];
   users: any[] = [];
   isMajorDropdownOpen = false;
   isYearDropdownOpen = false;
   isFormMajorDropdownOpen = false;
+  isFormCurriculumDropdownOpen = false;
   isFormYearDropdownOpen = false;
 
   newMajorName: string = '';
@@ -189,6 +192,7 @@ export class StudentsComponent implements OnInit {
     this.currentPage = 1;
     this.loadStudents();
     this.loadMajors();
+    this.loadCurriculums();
   }
 
   initForm() {
@@ -252,6 +256,19 @@ export class StudentsComponent implements OnInit {
           ];
         }
       },
+    });
+  }
+
+  // 🌟 โหลดรายการหลักสูตรทั้งหมดจากฐานข้อมูล (แทนการ hardcode curriculum_id/year)
+  // ใช้ endpoint get_courses.php ที่มีอยู่แล้ว (ตัวเดียวกับหน้า PLO/YLO) ซึ่งคืน
+  // res.curriculums เป็น array ของ { curriculum_id, curriculum_name, dept_id, year }
+  loadCurriculums() {
+    this.http.get<any>(`${environment.apiUrl}/get_courses.php`).subscribe({
+      next: (res) => {
+        const ok = res && (res.success !== undefined ? res.success : true);
+        this.curriculums = ok && Array.isArray(res.curriculums) ? res.curriculums : [];
+      },
+      error: (err) => console.error('โหลดรายการหลักสูตรไม่สำเร็จ', err),
     });
   }
 
@@ -403,6 +420,13 @@ export class StudentsComponent implements OnInit {
     this.isModalOpen = true;
     this.imagePreview = student.image ? `http://localhost:8080/api/${student.image}` : null;
 
+    // 🌟 หาปีหลักสูตรจากรายการ curriculums (โหลดจาก backend) โดยจับคู่ด้วย curriculum_id ก่อน
+    // ถ้าไม่เจอ (เช่นข้อมูลเก่า) ค่อย fallback ไปใช้ค่า curriculum_year ที่ติดมากับตัวนักศึกษาเอง
+    const matchedCurriculum = this.curriculums.find(
+      (c) => Number(c.curriculum_id) === Number(student.curriculum_id),
+    );
+    const curriculumYear = matchedCurriculum?.year ?? student.curriculum_year ?? '';
+
     this.studentForm.patchValue({
       student_code: student.student_code,
       full_name: student.full_name,
@@ -410,7 +434,7 @@ export class StudentsComponent implements OnInit {
       faculty: student.faculty,
       major: student.major,
       year: student.year,
-      curriculum_year: student.major === 'เทคโนโลยีการอาหาร' ? '2567' : '2566',
+      curriculum_year: curriculumYear,
       curriculum_id: student.curriculum_id
     });
 
@@ -577,48 +601,57 @@ export class StudentsComponent implements OnInit {
 
   toggleFormMajorDropdown() {
     this.isFormMajorDropdownOpen = !this.isFormMajorDropdownOpen;
-    if (this.isFormMajorDropdownOpen) this.isFormYearDropdownOpen = false;
+    if (this.isFormMajorDropdownOpen) {
+      this.isFormYearDropdownOpen = false;
+      this.isFormCurriculumDropdownOpen = false;
+    }
+  }
+
+  toggleFormCurriculumDropdown() {
+    this.isFormCurriculumDropdownOpen = !this.isFormCurriculumDropdownOpen;
+    if (this.isFormCurriculumDropdownOpen) {
+      this.isFormYearDropdownOpen = false;
+      this.isFormMajorDropdownOpen = false;
+    }
   }
 
   toggleFormYearDropdown() {
     this.isFormYearDropdownOpen = !this.isFormYearDropdownOpen;
-    if (this.isFormYearDropdownOpen) this.isFormMajorDropdownOpen = false;
+    if (this.isFormYearDropdownOpen) {
+      this.isFormMajorDropdownOpen = false;
+      this.isFormCurriculumDropdownOpen = false;
+    }
   }
 
-  selectFormMajor(major: string) {
-    let curriculumYear = '';
-    let curriculumId: number | null = null;
-    if (major === 'เทคโนโลยีการอาหาร') {
-      curriculumYear = '2567';
-      curriculumId = 2;
-    } else if (major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || major === 'วิทยาการคอม') {
-      curriculumYear = '2566';
-      curriculumId = 3;
-    }
+  // 🌟 label ของหลักสูตรที่เลือกไว้ในฟอร์ม (ใช้โชว์ในปุ่ม dropdown)
+  get selectedCurriculumLabel(): string {
+    const id = this.studentForm.get('curriculum_id')?.value;
+    if (!id) return '';
+    const c = this.curriculums.find((c) => Number(c.curriculum_id) === Number(id));
+    return c ? `${c.curriculum_name} (มคอ.2 - ${c.year})` : '';
+  }
 
-    this.studentForm.patchValue({ 
-      major: major,
-      curriculum_year: curriculumYear,
-      curriculum_id: curriculumId
-    });
-    
+  // 🌟 สาขา (major) เลือกอิสระจากหลักสูตร ไม่ผูกกับ curriculum_id/year อีกต่อไป
+  selectFormMajor(major: string) {
+    this.studentForm.patchValue({ major });
     this.isFormMajorDropdownOpen = false;
   }
 
+  // 🌟 เลือกหลักสูตรจากรายการที่โหลดมาจากฐานข้อมูล (this.curriculums) แยกจากสาขา
+  // set เฉพาะ curriculum_id / curriculum_year เท่านั้น ไม่แตะฟิลด์ major
+  selectFormCurriculum(curriculum: any) {
+    this.studentForm.patchValue({
+      curriculum_year: curriculum.year,
+      curriculum_id: curriculum.curriculum_id,
+    });
+
+    this.isFormCurriculumDropdownOpen = false;
+  }
+
   prepareStudentData() {
-    const formValue = this.studentForm.value;
-    let detectedYear = formValue.curriculum_year;
-
-    if (formValue.major === 'เทคโนโลยีการอาหาร') {
-      detectedYear = '2567';
-    } else if (formValue.major === 'วิทยาการข้อมูลและคอมพิวเตอร์' || formValue.major === 'วิทยาการคอม') {
-      detectedYear = '2566';
-    }
-
-    return {
-      ...formValue,
-      curriculum_year: detectedYear
-    };
+    // curriculum_id / curriculum_year ถูกกำหนดค่าไว้แล้วตอนเลือกหลักสูตรใน selectFormCurriculum
+    // จึงไม่ต้องเดาซ้ำจากชื่อสาขาอีก
+    return { ...this.studentForm.value };
   }
 
   selectFormYear(year: number) {
