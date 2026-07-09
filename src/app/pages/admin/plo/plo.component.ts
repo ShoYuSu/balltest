@@ -178,17 +178,20 @@ export class PloComponent implements OnInit {
     });
   }
 
-  loadMajors() {
-    this.http.get<any>(`${environment.apiUrl}/get_majors.php`).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.majorsList = res.majors || []; // array ของชื่อสาขาล้วนๆ (string[])
-          this.cdr.detectChanges();
-        }
-      },
-      error: (err) => console.error('Error loading majors:', err),
-    });
-  }
+loadMajors() {
+  this.http.get<any>(`${environment.apiUrl}/get_majors.php`).subscribe({
+    next: (res) => {
+      if (res && res.success) {
+        this.majorsList = res.majors || [];
+        this.cdr.detectChanges();
+      }
+    },
+    error: (err) => {
+      console.error('Error loading majors:', err);
+      // แจ้งผู้ใช้ตรงนี้ เช่น toast/snackbar แทนปล่อยว่างเงียบๆ
+    },
+  });
+}
 
   initForms() {
     this.courseForm = this.fb.group({
