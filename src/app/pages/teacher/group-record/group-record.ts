@@ -68,8 +68,9 @@ export class GroupRecord implements OnInit {
   }
 
   loadGroupRecords() {
-    const advisorId = localStorage.getItem('advisor_id');
-    const url = `${this.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${new Date().getTime()}`;
+    // ✅ ลบการเรียก advisor_id จาก localStorage และ URL ออก ปล่อยให้ Interceptor จัดการ Token
+    const url = `${this.apiUrl}/get_appointments.php?t=${new Date().getTime()}`;
+
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
         // กรองเอาเฉพาะ "แบบกลุ่ม" และ "ดำเนินการแล้ว"
