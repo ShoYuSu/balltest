@@ -63,28 +63,21 @@ export class LoginComponent {
           if (res.success) {
             const role = res.role?.toLowerCase().trim();
             const tokenToSave = res.token ? res.token : 'fake-token-for-test';
-
             const permsString = res.perms || '';
             const isAdvisorFlag = res.is_advisor || false;
 
-            // 🌟 1. เก็บเฉพาะ Token และข้อมูลที่จำเป็นสำหรับแสดงผลหน้า UI เท่านั้น
+            // 🌟 เก็บแค่ Token (และรูป/ชื่อถ้าอยากให้โชว์ไวๆ)
             localStorage.setItem('token', tokenToSave);
-            localStorage.setItem('role', role);
             localStorage.setItem('full_name', res.full_name || '');
-            localStorage.setItem('img_profile', res.img_profile || '');
-            localStorage.setItem('permissions', permsString);
             localStorage.setItem('student_code', res.student_code || '');
-            localStorage.setItem('is_advisor', isAdvisorFlag ? 'true' : 'false');
-
-            // ❌ ลบการเก็บ user_id, advisor_id, staff_id ออกจาก Local Storage ทั้งหมด
+            localStorage.setItem('img_profile', res.img_profile || '');
 
             if (role === 'student') {
+              // 🚀 นักศึกษาไป 4200 ต่อ (เดี๋ยวเมนูจะไปโหลดสิทธิ์เอง)
               this.router.navigate(['/personal-data']);
             } else {
+              // 🚀 อาจารย์/แอดมิน โยนไป 4201
               const encodedPerms = encodeURIComponent(permsString);
-
-              // 🌟 2. ลบ &advisor_id=... และ &staff_id=... ออกจาก URL
-              // ให้ส่งไปแค่ข้อมูลที่ใช้จัดการ UI ฝั่ง Layout (พอร์ต 4201)
               window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}`;
             }
           } else {

@@ -33,7 +33,25 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
+    this.userRole = this.getRoleFromToken();
+  }
+
+  //  ดึง role จาก payload ของ JWT token โดยตรง (ไม่ต้องพึ่ง localStorage.setItem('role', ...))
+  private getRoleFromToken(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) return '';
+
+      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(base64))));
+      return (decoded.role || '').toLowerCase().trim();
+    } catch (e) {
+      console.error(' ถอดรหัส token ไม่สำเร็จ:', e);
+      return '';
+    }
   }
 
   goBack() {
