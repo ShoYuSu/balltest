@@ -21,13 +21,11 @@ export class GroupConsultationAppointments implements OnInit {
   appointments = signal<any[]>([]);
   myStudents = signal<any[]>([]);
 
-  // --- Search & Filter ---
   searchQuery = signal('');
   selectedFilter = signal('ทั้งหมด');
   availableTypes = signal<string[]>(['วิชาการ', 'กิจกรรม', 'ส่วนตัว', 'อาชีพ/ฝึกงาน']);
   filterOptions = computed(() => ['ทั้งหมด', ...this.availableTypes()]);
 
-  // Computed สำหรับกรองข้อมูลแบบ Real-time
   filteredAppointments = computed(() => {
     let list = this.appointments();
     const query = this.searchQuery().toLowerCase();
@@ -46,7 +44,6 @@ export class GroupConsultationAppointments implements OnInit {
     return list;
   });
 
-  // --- Modals State ---
   isCreateModalOpen = signal(false);
   isEditModalOpen = signal(false);
   isLogModalOpen = signal(false);
@@ -55,12 +52,10 @@ export class GroupConsultationAppointments implements OnInit {
   activeDropdownId = signal<string | null>(null);
   isFilterDropdownOpen = signal(false);
 
-  // --- Form Models ---
-  newApp = { date: '', time: '', type: 'วิชาการ', topic: '', details: '' };
+  newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
   editingApp: any = null;
   appointmentToCancelId = signal<string | null>(null);
 
-  // --- Student Selection ---
   selectionMode = signal<'group' | 'all'>('group');
   selectedStudentIds = signal<string[]>([]);
 
@@ -77,7 +72,7 @@ export class GroupConsultationAppointments implements OnInit {
         next: (data) => {
           const processed = (data || []).map((s) => ({
             ...s,
-            student_id: String(s.student_id), // บังคับให้ ID เป็น String ชัวร์ๆ
+            student_id: String(s.student_id),
             imgUrl:
               s.image && s.image.trim() !== ''
                 ? `${environment.apiUrl}/${s.image}`
@@ -114,8 +109,9 @@ export class GroupConsultationAppointments implements OnInit {
           note: app.note || '',
           date: this.formatThaiDate(app.appointment_date),
           rawDate: app.appointment_date,
-          time: this.formatTime(app.start_time),
+          time: this.formatTime(app.start_time, app.end_time),
           rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
+          rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
           details: app.description || '',
           students: (app.students || []).map((s: any) => ({
             id: s.id,
@@ -155,10 +151,6 @@ export class GroupConsultationAppointments implements OnInit {
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fed7aa&color=c2410c`;
   }
 
-  // ==========================================
-  // CRUD API Calls
-  // ==========================================
-
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
     if (this.selectedStudentIds().length < 2 || !this.newApp.topic || !this.newApp.date) {
@@ -166,11 +158,12 @@ export class GroupConsultationAppointments implements OnInit {
       return;
     }
     const payload = {
-      advisor_id: parseInt(advisorId || '0'), // 👈 เปลี่ยนตรงนี้
+      advisor_id: parseInt(advisorId || '0'),
       title: this.newApp.topic,
       description: this.newApp.details,
       date: this.newApp.date,
       time: this.newApp.time,
+      end_time: this.newApp.endTime,
       type: this.newApp.type,
       student_ids: this.selectedStudentIds(),
     };
@@ -196,6 +189,7 @@ export class GroupConsultationAppointments implements OnInit {
       description: this.editingApp.details,
       date: this.editingApp.rawDate,
       time: this.editingApp.rawTime,
+      end_time: this.editingApp.rawEndTime,
       type: this.editingApp.type,
       student_ids: this.selectedStudentIds(),
     };
@@ -248,10 +242,6 @@ export class GroupConsultationAppointments implements OnInit {
     this.closeModals();
   }
 
-  // ==========================================
-  // UI & Helpers
-  // ==========================================
-
   setSelectionMode(mode: 'group' | 'all') {
     this.selectionMode.set(mode);
     if (mode === 'all') {
@@ -262,7 +252,7 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   toggleStudentSelection(studentId: string) {
-    studentId = String(studentId); // กันพลาด เผื่อมาเป็นตัวเลข
+    studentId = String(studentId);
     const current = this.selectedStudentIds();
     if (current.includes(studentId)) {
       this.selectedStudentIds.set(current.filter((id) => id !== studentId));
@@ -281,8 +271,6 @@ export class GroupConsultationAppointments implements OnInit {
     event.stopPropagation();
     this.editingApp = { ...app };
 
-    // 👉 ไฮไลท์การแก้บั๊กอยู่ตรงนี้ครับ!
-    // ค้นหา student_id ฐานข้อมูลจริงๆ มาติ๊กถูก ไม่ว่า API จะส่งรหัสอะไรมา
     const mappedIds = app.students.map((s: any) => {
       const match = this.myStudents().find(
         (std) =>
@@ -311,7 +299,7 @@ export class GroupConsultationAppointments implements OnInit {
     this.isConfirmCancelModalOpen.set(false);
     this.editingApp = null;
     this.appointmentToCancelId.set(null);
-    this.newApp = { date: '', time: '', type: 'วิชาการ', topic: '', details: '' };
+    this.newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
     this.selectedStudentIds.set([]);
   }
 
@@ -335,8 +323,12 @@ export class GroupConsultationAppointments implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  formatTime(timeString: string): string {
-    return timeString ? timeString.substring(0, 5) + ' น.' : '';
+  formatTime(start: string, end?: string): string {
+    let str = start ? start.substring(0, 5) : '';
+    if (end) {
+      str += ' - ' + end.substring(0, 5);
+    }
+    return str ? str + ' น.' : '';
   }
 
   toggleFilterDropdown(event: Event) {

@@ -169,14 +169,19 @@
           }
         </div>
 
+        <div>
+          <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
+          <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
-            <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+            <label class="block text-sm font-bold text-gray-800 mb-1">เวลาเริ่ม</label>
+            <input type="time" [(ngModel)]="newApp.time" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-800 mb-1">เวลา</label>
-            <input type="time" [(ngModel)]="newApp.time" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+            <label class="block text-sm font-bold text-gray-800 mb-1">เวลาสิ้นสุด</label>
+            <input type="time" [(ngModel)]="newApp.endTime" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
           </div>
         </div>
 
@@ -261,14 +266,19 @@
           }
         </div>
 
+        <div>
+          <label class="block text-sm font-bold text-gray-800 mb-1">วันที่นัดหมาย</label>
+          <input type="date" [(ngModel)]="editingApp.rawDate" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-800 mb-1">วันที่นัดหมาย</label>
-            <input type="date" [(ngModel)]="editingApp.rawDate" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+            <label class="block text-sm font-bold text-gray-800 mb-1">เวลาเริ่ม</label>
+            <input type="time" [(ngModel)]="editingApp.rawTime" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-800 mb-1">เวลา</label>
-            <input type="time" [(ngModel)]="editingApp.rawTime" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+            <label class="block text-sm font-bold text-gray-800 mb-1">เวลาสิ้นสุด</label>
+            <input type="time" [(ngModel)]="editingApp.rawEndTime" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
           </div>
         </div>
 
