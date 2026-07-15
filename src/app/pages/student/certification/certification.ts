@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 @Component({
   selector: 'app-certification',
@@ -109,7 +110,7 @@ deleteCertificate() {
   loadCertificates() {
 
     const userId =
-      localStorage.getItem('user_id');
+      getAuthUser().user_id;
 
     this.http.get<any[]>(
       `${this.apiUrl}/get_certificates.php?user_id=${userId}`
@@ -285,7 +286,7 @@ deleteCertificate() {
 
     formData.append(
       'user_id',
-      localStorage.getItem('user_id') || ''
+      getAuthUser().user_id
     );
 
     formData.append(

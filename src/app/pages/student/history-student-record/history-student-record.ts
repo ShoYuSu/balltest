@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 interface StudentInfo {
   student_id: number; student_code: string; faculty: string; major: string;
@@ -40,7 +41,7 @@ export class HistoryStudentRecord implements OnInit {
   }
 
   ngOnInit() {
-    const uid = localStorage.getItem('user_id');
+    const uid = getAuthUser().user_id;
     if (!uid) return;
     this.http.get<any>(`${environment.apiUrl}/get_student_history.php?user_id=${uid}`)
       .subscribe({

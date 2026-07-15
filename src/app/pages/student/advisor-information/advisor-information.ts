@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 interface AdvisorInfo {
   full_name: string; email: string; phone: string;
@@ -28,7 +29,7 @@ export class AdvisorInformation implements OnInit {
   }
 
   ngOnInit() {
-    const uid = localStorage.getItem('user_id');
+    const uid = getAuthUser().user_id;
     if (!uid) return;
     this.http.get<AdvisorInfo[]>(`${environment.apiUrl}/get_advisor_info.php?user_id=${uid}`)
       .subscribe({
