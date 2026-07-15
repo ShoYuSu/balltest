@@ -124,19 +124,29 @@ export class HomeComponent implements OnInit {
                 this.appointments.set(
                   allApps
                     .filter((a) => a.status !== 'ดำเนินการแล้ว')
-                    .map((app) => ({
-                      id: app.appointment_id,
-                      studentCode: app.students?.[0]?.id || '-',
-                      name:
-                        app.students?.[0]?.name + (app.students.length > 1 ? ' (และเพื่อน)' : ''),
-                      topic: app.title,
-                      type: app.type,
-                      date: this.formatDate(app.appointment_date),
-                      time: app.start_time?.substring(0, 5) + ' น.',
-                      isGroup: app.students.length > 1,
-                    })),
+                    .map((app) => {
+                      // 🟢 ดึงข้อมูลเด็กคนแรกออกมาเพื่อทำรูปโปรไฟล์
+                      const mainStudent = app.students?.[0];
+                      const studentName = mainStudent?.name || 'ไม่ระบุชื่อ';
+                      // 🟢 เช็คว่ามีรูปไหม ถ้าไม่มีให้ใช้รูปตัวอักษรสีส้มแทน
+                      const imgUrl = mainStudent?.img
+                        ? `${environment.apiUrl}/${mainStudent.img}`
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=fff7ed&color=ea580c`;
+
+                      return {
+                        id: app.appointment_id,
+                        studentCode: mainStudent?.id || '-',
+                        name: studentName + (app.students.length > 1 ? ' (และเพื่อน)' : ''),
+                        topic: app.title,
+                        type: app.type,
+                        date: this.formatDate(app.appointment_date),
+                        time: app.start_time?.substring(0, 5) + ' น.',
+                        isGroup: app.students.length > 1,
+                        img: imgUrl, // 🟢 เพิ่มตัวแปรนี้เข้าไป รูปก็จะมาแล้ว!
+                      };
+                    }),
                 );
-              },
+              }
             });
         },
       });
