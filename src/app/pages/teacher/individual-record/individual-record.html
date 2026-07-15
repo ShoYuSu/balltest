@@ -40,7 +40,6 @@
                 <div class="flex items-center flex-wrap gap-2 md:gap-3 mb-1">
                   <h3 class="font-bold text-gray-900 text-lg group-hover:text-orange-600 transition-colors">{{ student.full_name }}</h3>
                   <span class="px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-md tracking-wider">{{ student.student_code }}</span>
-                  <!-- 🎯 แสดงชั้นปีที่นี่ -->
                   <span class="px-2.5 py-0.5 bg-orange-50 text-orange-600 text-xs font-bold rounded-md tracking-wider">ชั้นปี {{ student.year }}</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
@@ -118,7 +117,6 @@
             <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">{{ selectedStudent().full_name }}</h1>
             <div class="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
               <span class="px-3 py-1 bg-gray-100 text-gray-600 font-bold rounded-lg tracking-wider border border-gray-200">{{ selectedStudent().student_code }}</span>
-              <!-- 🎯 แสดงชั้นปีในส่วนหัวของประวัติ -->
               <span class="px-3 py-1 bg-orange-50 text-orange-600 font-bold rounded-lg tracking-wider border border-orange-100">ชั้นปีที่ {{ selectedStudent().year }}</span>
               <div class="flex items-center gap-1.5 text-gray-500">
                 <span class="material-symbols-outlined text-lg">history</span>
@@ -203,10 +201,19 @@
                       <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
                       <span class="text-sm font-bold text-gray-700">{{ formatThaiDate(log.date) }}</span>
                     </div>
+
+                    <!-- 🌟 เพิ่มจุดแสดงเวลาสิ้นสุดตรงนี้ครับ -->
                     <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                       <span class="material-symbols-outlined text-gray-400 text-sm">schedule</span>
-                      <span class="text-sm font-bold text-gray-700">{{ log.time }} น.</span>
+                      <span class="text-sm font-bold text-gray-700">
+                        {{ log.time ? log.time.substring(0, 5) : '' }}
+                        @if (log.end_time) {
+                          - {{ log.end_time.substring(0, 5) }}
+                        }
+                        น.
+                      </span>
                     </div>
+
                     <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ log.type }}</span>
 
                     @if (log.isGroup) {
