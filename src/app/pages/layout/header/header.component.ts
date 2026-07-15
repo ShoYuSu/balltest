@@ -57,32 +57,37 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    // ดักจับ Token จาก URL
     this.captureUrlParams();
 
-    // 🌟 1. ดึง Token ออกมาแกะกล่อง!
     const token = localStorage.getItem('token');
 
     if (token) {
       const payload = this.decodeToken(token);
 
       if (payload) {
-        // 🌟 2. ดึงข้อมูลทุกอย่างจาก Token อย่างเดียวเลย
         this.userRole = payload.role?.toLowerCase().trim() || '';
         this.isAdvisor = payload.is_advisor === true;
         this.studentCode = payload.student_code || '';
         this.userName = payload.full_name || 'ผู้ใช้งาน';
-      }
-    }
 
-    // ดึงรูปโปรไฟล์มาแสดง
-    const savedImagePath = localStorage.getItem('img_profile');
-    if (savedImagePath && savedImagePath !== 'null' && savedImagePath !== '') {
-      const cleanPath = savedImagePath.startsWith('/')
-        ? savedImagePath.substring(1)
-        : savedImagePath;
-      this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
+        // 🌟 แก้ไข: ดึง URL รูปภาพจาก Token แทน Local Storage
+        const imgProfile = payload.img_profile || '';
+        if (imgProfile && imgProfile !== 'null') {
+          // ดักกรณีรูปเป็นลิงก์ http อยู่แล้ว
+          if (imgProfile.startsWith('http')) {
+            this.userImageUrl = imgProfile;
+          } else {
+            // ดักกรณีเป็น path ธรรมดา
+            const cleanPath = imgProfile.startsWith('/') ? imgProfile.substring(1) : imgProfile;
+            this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
+          }
+        } else {
+          // ถ้าไม่มีรูป ให้ใช้รูปตัวอักษรจาก ui-avatars ตามเดิม
+          this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
+        }
+      }
     } else {
+      // กรณีไม่มี Token กันพัง
       this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
     }
 
@@ -92,7 +97,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🛡️ ฟังก์ชันสำหรับแกะกล่อง Token หน้าบ้าน
   private decodeToken(token: string): any {
     try {
       const base64Url = token.split('.')[1];
@@ -116,10 +120,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       const params = new URLSearchParams(window.location.search);
 
       if (params.has('token')) {
-        // 🌟 รับมาแค่ Token อย่างเดียว โค้ดขยะบรรทัดอื่นลบทิ้งหมดแล้ว!
         localStorage.setItem('token', params.get('token') || '');
-
-        // ลบ URL ทิ้งเพื่อความสวยงาม
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
