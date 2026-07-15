@@ -68,7 +68,6 @@ export class IndividualRecord implements OnInit {
   }
 
   loadStudentsSummary() {
-    // ✅ ไม่ต้องดึง advisor_id จาก localStorage และลบออกจาก URL
     this.http
       .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?t=${Date.now()}`)
       .subscribe({
@@ -100,7 +99,6 @@ export class IndividualRecord implements OnInit {
 
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
-    // ✅ ไม่ต้องดึง advisor_id แต่ต้องส่ง student_id ไปให้ PHP รู้ว่าขอดูประวัติของเด็กคนไหน
     this.http
       .get<
         any[]
@@ -256,10 +254,14 @@ export class IndividualRecord implements OnInit {
     const student = this.selectedStudent();
     if (!data.length) return alert('ไม่มีข้อมูล');
     const headers = ['วันที่', 'เวลา', 'ประเภท', 'รูปแบบ', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
-    const csvRows = data.map(
-      (l) =>
-        `"${this.formatThaiDate(l.date)}","${l.time}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`,
-    );
+    const csvRows = data.map((l) => {
+      // 🌟 เพิ่ม logic ให้รวม end_time ลงในไฟล์ Excel ด้วย
+      const startTime = l.time ? l.time.substring(0, 5) : '';
+      const endTime = l.end_time ? l.end_time.substring(0, 5) : '';
+      const timeDisplay = endTime ? `${startTime} - ${endTime}` : startTime;
+
+      return `"${this.formatThaiDate(l.date)}","${timeDisplay}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`;
+    });
     this.downloadCSV(headers, csvRows, `ประวัติการปรึกษา_${student.student_code}.csv`);
   }
 
