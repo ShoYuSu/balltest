@@ -63,22 +63,17 @@ export class LoginComponent {
           if (res.success) {
             const role = res.role?.toLowerCase().trim();
             const tokenToSave = res.token ? res.token : 'fake-token-for-test';
-            const permsString = res.perms || '';
-            const isAdvisorFlag = res.is_advisor || false;
 
-            // 🌟 เก็บแค่ Token (และรูป/ชื่อถ้าอยากให้โชว์ไวๆ)
+            // 🌟 เก็บแค่ Token (รูปโปรไฟล์เก็บไว้โหลดไวๆ ได้ ไม่เป็นไร)
             localStorage.setItem('token', tokenToSave);
-            localStorage.setItem('full_name', res.full_name || '');
-            localStorage.setItem('student_code', res.student_code || '');
             localStorage.setItem('img_profile', res.img_profile || '');
 
             if (role === 'student') {
-              // 🚀 นักศึกษาไป 4200 ต่อ (เดี๋ยวเมนูจะไปโหลดสิทธิ์เอง)
+              // 🚀 นักศึกษาไป 4200 ต่อ
               this.router.navigate(['/personal-data']);
             } else {
-              // 🚀 อาจารย์/แอดมิน โยนไป 4201
-              const encodedPerms = encodeURIComponent(permsString);
-              window.location.href = `http://localhost:4201/dashboard?role=${role}&token=${tokenToSave}&user=${res.full_name}&perms=${encodedPerms}&student_code=${res.student_code || ''}&is_advisor=${isAdvisorFlag}`;
+              // 🚀 อาจารย์/แอดมิน โยนไป 4201 ส่งไปแค่ TOKEN ตัวเดียวจบ!! ไม่มี role ติดไปแล้ว
+              window.location.href = `http://localhost:4201/dashboard?token=${tokenToSave}`;
             }
           } else {
             this.errorMessage = res.message;

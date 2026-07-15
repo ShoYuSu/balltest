@@ -57,16 +57,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    // 🌟 1. ดักจับข้อมูลจาก URL (ที่ส่งมาจากหน้า Login 4200) มาเก็บลงตู้เซฟของ 4201
+    // ดักจับ Token จาก URL
     this.captureUrlParams();
 
-    // 🌟 2. พอดักจับเสร็จแล้ว ค่อยดึงข้อมูลมาใช้งาน ตัวแปรจะได้ไม่ว่างเปล่าแล้ว!
-    this.userName = localStorage.getItem('full_name') || 'ผู้ใช้งาน';
-    this.userRole = localStorage.getItem('role')?.toLowerCase().trim() || '';
-    this.isAdvisor = localStorage.getItem('is_advisor') === 'true';
-    this.studentCode =
-      localStorage.getItem('student_code') || localStorage.getItem('username') || '';
+    // 🌟 1. ดึง Token ออกมาแกะกล่อง!
+    const token = localStorage.getItem('token');
 
+    if (token) {
+      const payload = this.decodeToken(token);
+
+      if (payload) {
+        // 🌟 2. ดึงข้อมูลทุกอย่างจาก Token อย่างเดียวเลย
+        this.userRole = payload.role?.toLowerCase().trim() || '';
+        this.isAdvisor = payload.is_advisor === true;
+        this.studentCode = payload.student_code || '';
+        this.userName = payload.full_name || 'ผู้ใช้งาน';
+      }
+    }
+
+    // ดึงรูปโปรไฟล์มาแสดง
     const savedImagePath = localStorage.getItem('img_profile');
     if (savedImagePath && savedImagePath !== 'null' && savedImagePath !== '') {
       const cleanPath = savedImagePath.startsWith('/')
@@ -83,20 +92,34 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🛠️ ฟังก์ชันดักจับ URL ที่เพิ่มเข้ามาใหม่
+  // 🛡️ ฟังก์ชันสำหรับแกะกล่อง Token หน้าบ้าน
+  private decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        window
+          .atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Token ไม่ถูกต้อง หรือถูกปลอมแปลง:', error);
+      return null;
+    }
+  }
+
   captureUrlParams() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      // ถ้าเจอคำว่า token ใน URL แสดงว่าเพิ่งย้ายมาจากหน้า Login
-      if (params.has('token')) {
-        localStorage.setItem('token', params.get('token') || '');
-        localStorage.setItem('role', params.get('role') || '');
-        localStorage.setItem('full_name', params.get('user') || '');
-        localStorage.setItem('permissions', decodeURIComponent(params.get('perms') || ''));
-        localStorage.setItem('student_code', params.get('student_code') || '');
-        localStorage.setItem('is_advisor', params.get('is_advisor') || 'false');
 
-        // กวาดข้อมูลเสร็จ ก็ลบรกๆ ใน URL ทิ้งไปเลย ผู้ใช้จะได้ไม่เห็น
+      if (params.has('token')) {
+        // 🌟 รับมาแค่ Token อย่างเดียว โค้ดขยะบรรทัดอื่นลบทิ้งหมดแล้ว!
+        localStorage.setItem('token', params.get('token') || '');
+
+        // ลบ URL ทิ้งเพื่อความสวยงาม
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
