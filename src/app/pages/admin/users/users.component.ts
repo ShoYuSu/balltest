@@ -20,6 +20,8 @@ export class UsersComponent implements OnInit {
   // ข้อมูลที่เลือกไว้จัดการ
   userToReset: any = null;
   userToDeleteId: any = null;
+  currentPage: number = 1;
+  pageSize: number = 5;
 
   searchText = '';
   users: any[] = []; // ข้อมูลต้นฉบับจากฐานข้อมูล
@@ -58,14 +60,14 @@ export class UsersComponent implements OnInit {
       width: 'small',
       cell: (el: any) => el,
     },
-    {
-      columnDef: 'delete',
-      header: 'ลบ',
-      tag: 'delete',
-      display: true,
-      width: 'small',
-      cell: (el: any) => el,
-    },
+    // {
+    //   columnDef: 'delete',
+    //   header: 'ลบ',
+    //   tag: 'delete',
+    //   display: true,
+    //   width: 'small',
+    //   cell: (el: any) => el,
+    // },
   ];
 
   private http = inject(HttpClient);
@@ -78,7 +80,7 @@ export class UsersComponent implements OnInit {
   }
 
   // ⭐️ ฟังก์ชัน Search กรองข้อมูลตาม ชื่อ, อีเมล หรือรหัสนักศึกษา
-  get filteredStudents() {
+ get filteredStudents() {
     const search = this.searchText.toLowerCase();
     return this.users.filter(
       (s) =>
@@ -86,6 +88,26 @@ export class UsersComponent implements OnInit {
         (s.email || '').toLowerCase().includes(search) ||
         (s.student_code || '').includes(search),
     );
+  }
+  get pagedStudents() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredStudents.slice(start, start + this.pageSize);
+  }
+  get totalPages() {
+    return Math.max(1, Math.ceil(this.filteredStudents.length / this.pageSize));
+  }
+
+  // 5. เพิ่มฟังก์ชันเปลี่ยนหน้า
+  goToPage(page: number) {
+  if (page >= 1 && page <= this.totalPages) {
+    this.currentPage = page;
+  }
+}
+
+  // 6. สำคัญ: รีเซ็ตไปหน้า 1 เมื่อพิมพ์ค้นหา
+  // เพิ่มบรรทัดนี้ใน ngOnInit หรือแก้ไขจุดที่ใช้ searchText
+  onSearchChange() {
+    this.currentPage = 1;
   }
 
   // โหลดข้อมูลผู้ใช้งานทั้งหมดจาก API

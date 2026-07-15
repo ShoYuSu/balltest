@@ -10,6 +10,7 @@
       <input
         type="text"
         [(ngModel)]="searchText"
+        (input)="onSearchChange()"
         placeholder="ค้นหาชื่อ, อีเมล หรือรหัส..."
         class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-sm shadow-sm transition-all"
       />
@@ -34,7 +35,7 @@
       </thead>
 
       <tbody>
-        @for (user of filteredStudents; track user.id) {
+        @for (user of pagedStudents; track user.id) {
           <tr class="border-b hover:bg-gray-50/50 transition-colors">
             @for (col of columns; track col.columnDef) {
               @if (col.display) {
@@ -82,8 +83,57 @@
         }
       </tbody>
     </table>
+    <div class="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4">
+  <div class="flex flex-1 justify-between sm:hidden">
+    <button 
+      type="button"
+      (click)="goToPage(currentPage - 1)" 
+      [disabled]="currentPage === 1"
+      class="relative inline-flex items-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 cursor-pointer">
+      ก่อนหน้า
+    </button>
+    <button 
+      type="button"
+      (click)="goToPage(currentPage + 1)" 
+      [disabled]="currentPage === totalPages"
+      class="relative ml-3 inline-flex items-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 cursor-pointer">
+      ถัดไป
+    </button>
+  </div>
+  
+  <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm text-gray-500 font-medium">
+        แสดงหน้า <span class="text-gray-800 font-semibold">{{ currentPage }}</span> จากทั้งหมด <span class="text-gray-800 font-semibold">{{ totalPages }}</span> หน้า
+      </p>
+    </div>
+    <div>
+      <nav class="inline-flex items-center gap-1 bg-gray-50 p-1 rounded-xl" aria-label="Pagination">
+        <button 
+          type="button"
+          (click)="goToPage(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:bg-white hover:text-gray-700 hover:shadow-sm transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none cursor-pointer">
+          <span class="material-symbols-outlined text-xl">chevron_left</span>
+        </button>
+        
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-500/20">
+          {{ currentPage }}
+        </span>
+
+        <button 
+          type="button"
+          (click)="goToPage(currentPage + 1)" 
+          [disabled]="currentPage === totalPages"
+          class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:bg-white hover:text-gray-700 hover:shadow-sm transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none cursor-pointer">
+          <span class="material-symbols-outlined text-xl">chevron_right</span>
+        </button>
+      </nav>
+    </div>
   </div>
 </div>
+  </div>
+
 
 @if (isResetModalOpen) {
   <div class="fixed inset-0 z-[150] flex items-center justify-center p-4">
