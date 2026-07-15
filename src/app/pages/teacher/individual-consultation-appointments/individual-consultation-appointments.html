@@ -47,7 +47,7 @@
       <span class="material-symbols-outlined ">settings</span> จัดการประเภท
     </button>
     <button (click)="openCreateModal()"
-            class="ml-auto bg-primary   hover:bg-primary_hover text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
+            class="ml-auto bg-primary hover:bg-primary_hover text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
       <span class="material-symbols-outlined">add</span> เพิ่มนัดหมาย
     </button>
   </div>
@@ -170,15 +170,22 @@
           }
         </div>
 
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
+          <input type="date" [(ngModel)]="newApp.date"
+                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+        </div>
+
+        <!-- 🌟 เพิ่มและจัดเรียงเวลาเริ่ม - เวลาสิ้นสุดให้ดูง่าย -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
-            <input type="date" [(ngModel)]="newApp.date"
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
+            <input type="time" [(ngModel)]="newApp.time"
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
-            <input type="time" [(ngModel)]="newApp.time"
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
+            <input type="time" [(ngModel)]="newApp.endTime"
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
         </div>
@@ -272,15 +279,22 @@
                  class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed">
         </div>
 
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">วันที่นัดหมาย</label>
+          <input type="date" [(ngModel)]="selectedApp.rawDate"
+                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+        </div>
+
+        <!-- 🌟 โหมดแก้ไข ก็แบ่งเวลาเป็น 2 ช่องให้เหมือนตอนสร้าง -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่นัดหมาย</label>
-            <input type="date" [(ngModel)]="selectedApp.rawDate"
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
+            <input type="time" [(ngModel)]="selectedApp.rawTime"
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
-            <input type="time" [(ngModel)]="selectedApp.rawTime"
+            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
+            <input type="time" [(ngModel)]="selectedApp.rawEndTime"
                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
         </div>

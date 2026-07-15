@@ -14,16 +14,14 @@ import { environment } from '../../../../environments/environment';
 export class IndividualConsultationAppointments implements OnInit {
   private http = inject(HttpClient);
 
-  apiUrl = environment.apiUrl; // ดึงมาจาก environment
+  apiUrl = environment.apiUrl;
 
   appointments = signal<any[]>([]);
   myStudents = signal<any[]>([]);
 
-  // Search & Filter
   searchQuery = signal('');
   selectedFilter = signal('ทั้งหมด');
 
-  // Types โหลดจาก DB
   availableTypes = signal<string[]>([]);
   filterOptions = computed(() => ['ทั้งหมด', ...this.availableTypes()]);
 
@@ -45,7 +43,6 @@ export class IndividualConsultationAppointments implements OnInit {
     return list;
   });
 
-  // Modal states
   isCreateModalOpen = signal(false);
   isEditModalOpen = signal(false);
   isLogModalOpen = signal(false);
@@ -60,12 +57,11 @@ export class IndividualConsultationAppointments implements OnInit {
 
   newTypeInput = signal('');
 
-  // Form models
-  newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
+  // 🌟 เพิ่ม endTime เข้าไปในโมเดล
+  newApp = { studentId: '', date: '', time: '', endTime: '', type: '', topic: '', details: '' };
   selectedApp: any = null;
   appointmentToCancelId: string | null = null;
 
-  // Student search
   studentSearch = signal('');
 
   selectStudent(std: any) {
@@ -121,7 +117,6 @@ export class IndividualConsultationAppointments implements OnInit {
           this.availableTypes.set(merged);
 
           const formattedApps = data
-            // 👉 ตรงนี้แหละครับที่เพิ่มเข้ามา: && a.status !== 'ดำเนินการแล้ว'
             .filter((a) => a.students?.length === 1 && a.status !== 'ดำเนินการแล้ว')
             .map((app) => ({
               id: app.appointment_id.toString(),
@@ -130,10 +125,12 @@ export class IndividualConsultationAppointments implements OnInit {
               status: app.status ?? '',
               date: this.formatThaiDate(app.appointment_date),
               rawDate: app.appointment_date,
-              time: this.formatTime(app.start_time),
+              // 🌟 ส่งค่าไปจัดรูปแบบเวลาให้สวยงาม
+              time: this.formatTime(app.start_time, app.end_time),
               rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
+              rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '', // 🌟 เก็บเวลาสิ้นสุดดิบไว้แก้ไข
               details: app.description ?? '',
-              note: app.note ?? '', // ดึง note มาจาก DB ด้วย
+              note: app.note ?? '',
               studentName: app.students[0].name,
               studentId: app.students[0].id,
               img: app.students[0].img
@@ -146,15 +143,10 @@ export class IndividualConsultationAppointments implements OnInit {
       });
   }
 
-  // ตัวกันตายถ้ารูปโหลดไม่ขึ้น
   onImgError(event: Event, name: string) {
     (event.target as HTMLImageElement).src =
       `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fed7aa&color=c2410c`;
   }
-
-  // =============================================
-  // CRUD
-  // =============================================
 
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
@@ -168,6 +160,7 @@ export class IndividualConsultationAppointments implements OnInit {
       description: this.newApp.details,
       date: this.newApp.date,
       time: this.newApp.time,
+      end_time: this.newApp.endTime, // 🌟 ส่งเวลาสิ้นสุดให้ PHP
       type: this.newApp.type,
       student_ids: [this.newApp.studentId],
     };
@@ -195,6 +188,7 @@ export class IndividualConsultationAppointments implements OnInit {
       description: this.selectedApp.details,
       date: this.selectedApp.rawDate,
       time: this.selectedApp.rawTime,
+      end_time: this.selectedApp.rawEndTime, // 🌟 ส่งเวลาสิ้นสุดให้ PHP
       type: this.selectedApp.type,
     };
     this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
@@ -210,21 +204,19 @@ export class IndividualConsultationAppointments implements OnInit {
     });
   }
 
-  // ฟังก์ชันใหม่: บันทึกผลการให้คำปรึกษา
   submitConsultationLog() {
     if (!this.selectedApp) return;
 
     const payload = {
       appointment_id: this.selectedApp.id,
       note: this.selectedApp.note || '',
-      status: 'ดำเนินการแล้ว', // อัปเดตสถานะให้รู้ว่าปรึกษาเสร็จแล้ว
+      status: 'ดำเนินการแล้ว',
     };
 
     this.http.post(`${environment.apiUrl}/save_appointment_log.php`, payload).subscribe({
       next: (res: any) => {
         if (res.status === 'success') {
           this.closeModals();
-          // พอโหลดใหม่ ตัวที่ 'ดำเนินการแล้ว' จะหายวับไปเข้าหน้าประวัติ
           this.loadAppointments();
         } else {
           alert('เกิดข้อผิดพลาด: ' + res.message);
@@ -258,10 +250,6 @@ export class IndividualConsultationAppointments implements OnInit {
         },
       });
   }
-
-  // =============================================
-  // Type Management
-  // =============================================
 
   get filteredCreateTypes() {
     const q = (this.newApp.type || '').toLowerCase();
@@ -331,10 +319,6 @@ export class IndividualConsultationAppointments implements OnInit {
     return this.appointments().filter((a) => a.type === type).length;
   }
 
-  // =============================================
-  // Modal & Dropdown helpers
-  // =============================================
-
   closeDropdowns() {
     this.activeDropdownId.set(null);
     this.isFilterDropdownOpen.set(false);
@@ -362,7 +346,16 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   openCreateModal() {
-    this.newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
+    // 🌟 รีเซ็ตค่าให้ว่างตอนเปิด
+    this.newApp = {
+      studentId: '',
+      date: '',
+      time: '',
+      endTime: '',
+      type: '',
+      topic: '',
+      details: '',
+    };
     this.studentSearch.set('');
     this.isStudentDropdownOpen.set(false);
     this.isCreateTypeOpen.set(false);
@@ -405,17 +398,21 @@ export class IndividualConsultationAppointments implements OnInit {
     this.isConfirmCancelModalOpen.set(false);
     this.isManageTypesModalOpen.set(false);
     this.appointmentToCancelId = null;
-    this.newApp = { studentId: '', date: '', time: '', type: '', topic: '', details: '' };
+    this.newApp = {
+      studentId: '',
+      date: '',
+      time: '',
+      endTime: '',
+      type: '',
+      topic: '',
+      details: '',
+    };
     this.studentSearch.set('');
     this.isStudentDropdownOpen.set(false);
     this.isCreateTypeOpen.set(false);
     this.isEditTypeOpen.set(false);
     this.newTypeInput.set('');
   }
-
-  // =============================================
-  // Formatting
-  // =============================================
 
   formatThaiDate(dStr: string) {
     if (!dStr) return '';
@@ -437,8 +434,13 @@ export class IndividualConsultationAppointments implements OnInit {
     return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  formatTime(tStr: string) {
-    return tStr ? tStr.substring(0, 5) + ' น.' : '';
+  // 🌟 ปรับฟังก์ชันให้รวมเวลาสิ้นสุดได้
+  formatTime(start: string, end?: string) {
+    let str = start ? start.substring(0, 5) : '';
+    if (end) {
+      str += ' - ' + end.substring(0, 5);
+    }
+    return str ? str + ' น.' : '';
   }
 
   exportToExcel() {
