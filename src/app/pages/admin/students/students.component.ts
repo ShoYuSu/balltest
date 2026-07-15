@@ -507,8 +507,8 @@ export class StudentsComponent implements OnInit {
         .get<any>(`${environment.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(student.major)}`)
         .subscribe({
           next: (res) => {
-            // ⭐️ get_curriculum.php ตอนนี้ส่งกลับเป็น { categories: [...], curriculum_year: ... }
-            this.curriculumData = Array.isArray(res?.categories) ? [...res.categories] : [];
+            // 🟢 get_curriculum.php ส่งกลับเป็น array ของ categories ตรงๆ (ไม่ได้ห่อด้วย object)
+            this.curriculumData = Array.isArray(res) ? [...res] : (Array.isArray(res?.categories) ? [...res.categories] : []);
             this.cdr.detectChanges();
             this.loadStudentPassedCourses(student.student_id);
           },

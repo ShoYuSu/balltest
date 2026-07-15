@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -57,6 +58,8 @@ export class StudyResultsComponent implements OnInit {
   showModal    = signal(false);
   modalLoading = signal(false);
   curriculum   = signal<any[]>([]);
+  curriculumMajor = signal('');
+  curriculumYear  = signal('');
   passedMap    = signal<Record<number, { grade: string; semester: number; year: number }>>({});
   studentId    = signal(0);
   savingSet    = signal<Set<number>>(new Set());
@@ -103,7 +106,7 @@ export class StudyResultsComponent implements OnInit {
   }
 
   loadStudyResults(restoreTerm?: string) {
-    const studentCode = localStorage.getItem('student_code') || localStorage.getItem('username') || '';
+    const studentCode = getAuthUser().student_code;
     if (!studentCode) return;
 
     this.http.get<any>(`${this.apiUrl}/get_study_results.php?student_code=${studentCode}&t=${Date.now()}`).subscribe({
@@ -125,8 +128,8 @@ export class StudyResultsComponent implements OnInit {
   }
 
   printTranscript() {
-    const name = localStorage.getItem('full_name') || '';
-    const code = localStorage.getItem('student_code') || '';
+    const name = getAuthUser().full_name;
+    const code = getAuthUser().student_code;
     const subjects = this.allSubjects();
     const summary = this.creditSummary();
 
@@ -238,12 +241,14 @@ function dlPdf(){
 
   loadModalData() {
     this.modalLoading.set(true);
-    const userId = localStorage.getItem('user_id');
+    const userId = getAuthUser().user_id;
     if (!userId) return;
 
     this.http.get<any>(`${this.apiUrl}/get_student_profile.php?user_id=${userId}`).subscribe({
       next: profile => {
         this.studentId.set(profile.student_id);
+        this.curriculumMajor.set(profile.major || '');
+        this.curriculumYear.set(profile.curriculum_year || '');
 
         forkJoin({
           curriculum: this.http.get<any[]>(`${this.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(profile.major)}`),

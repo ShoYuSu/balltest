@@ -4,6 +4,7 @@ import { DecimalPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 interface StudentProfile {
   student_id: number;
@@ -40,7 +41,7 @@ export class PersonalDataComponent implements OnInit {
   student: StudentProfile = {
     student_id: 0,
     student_code: '-',
-    full_name: localStorage.getItem('full_name') || '-',
+    full_name: getAuthUser().full_name || '-',
     email: null,
     phone: null,
     img_profile: localStorage.getItem('img_profile'),
@@ -72,7 +73,7 @@ export class PersonalDataComponent implements OnInit {
   }
 
   ngOnInit() {
-    const userId = localStorage.getItem('user_id');
+    const userId = getAuthUser().user_id;
     if (!userId) return;
 
     this.http
@@ -142,7 +143,7 @@ export class PersonalDataComponent implements OnInit {
   }
 
   saveProfile() {
-    const userId = localStorage.getItem('user_id');
+    const userId = getAuthUser().user_id;
     if (!userId || this.saving) return;
 
     this.saving = true;
@@ -167,7 +168,6 @@ export class PersonalDataComponent implements OnInit {
               email: this.editForm.email,
               phone: this.editForm.phone || null,
             };
-            localStorage.setItem('full_name', this.editForm.full_name);
             this.showModal = false;
           }
           this.saving = false;

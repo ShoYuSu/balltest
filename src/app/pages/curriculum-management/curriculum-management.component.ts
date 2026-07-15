@@ -149,8 +149,8 @@ export class CurriculumManagementComponent implements OnInit {
       )
       .subscribe({
         next: (res: any) => {
-          // ⭐️ get_curriculum.php ตอนนี้ส่งกลับเป็น { categories: [...], curriculum_year: ... }
-          const categories = res?.categories ?? [];
+          // 🟢 get_curriculum.php ส่งกลับเป็น array ของ categories ตรงๆ (ไม่ได้ห่อด้วย object)
+          const categories = Array.isArray(res) ? res : (res?.categories ?? []);
 
           // กางแผง Accordion ออกมาทั้งหมด (true) เพื่อไม่ให้เกิดบั๊กหน้าจอว่างเปล่าตอนเปิดครั้งแรก
           this.curriculumData = categories.map((cat: any) => {

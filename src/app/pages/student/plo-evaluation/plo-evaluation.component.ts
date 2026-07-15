@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 interface PloItem {
   plo_id: number;
@@ -60,7 +61,7 @@ export class PloEvaluationComponent implements OnInit {
   }
 
   ngOnInit() {
-    const userId = localStorage.getItem('user_id');
+    const userId = getAuthUser().user_id;
     if (!userId) return;
 
     this.http

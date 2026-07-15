@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
+import { getAuthUser } from '../auth-user.util';
 
 interface ActivityFile { file_id: number; file_url: string; file_type: string; }
 interface ActivityItem {
@@ -115,7 +116,7 @@ export class Activity implements OnInit {
   ngOnInit() { this.loadActivities(); }
 
   loadActivities() {
-    const uid = localStorage.getItem('user_id');
+    const uid = getAuthUser().user_id;
     if (!uid) return;
     this.http.get<ActivityItem[]>(`${this.base}/get_student_activities.php?user_id=${uid}`).subscribe({
       next: d => { this.activities = d; this.cdr.detectChanges(); },
@@ -161,7 +162,7 @@ export class Activity implements OnInit {
 
   save() {
     if (!this.form.title || !this.selectedDate || this.saving) return;
-    const uid = localStorage.getItem('user_id');
+    const uid = getAuthUser().user_id;
     if (!uid) return;
     this.saving = true; this.cdr.detectChanges();
 
