@@ -91,8 +91,9 @@ export class HomeComponent implements OnInit {
 
           this.studentsInCare.set(formattedStudents);
           this.dashboardStats[0].value = formattedStudents.length;
+          // 🟢 เช็คให้เป๊ะว่าต้องเป็นคำว่า 'PLO ผ่าน' หรือ 'ผ่าน' เท่านั้น ห้ามนับ 'ไม่ผ่าน'
           this.dashboardStats[1].value = formattedStudents.filter((s) =>
-            s.ploStatus.includes('ผ่าน'),
+            s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน'
           ).length;
 
           const validStudentIds = new Set(formattedStudents.map((s) => s.id.toString()));
