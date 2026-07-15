@@ -59,27 +59,23 @@ export class HomeComponent implements OnInit {
   appointments = signal<any[]>([]);
 
   totalItems = computed(() => this.studentsInCare().length);
-  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
+  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage) || 1);
   paginatedStudents = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
     return this.studentsInCare().slice(start, start + this.itemsPerPage);
   });
   pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  openStudentResult(student: any) {
-    this.router.navigate(['/student-result', student.id], {
-      state: { student },
-    });
+  ngOnInit() {
+    this.loadDashboardData();
   }
 
-  ngOnInit() {
-    // 1. ดึงข้อมูลนักศึกษาและสถานะ PLO ก่อน
-    const advisorId = localStorage.getItem('advisor_id');
-    if (!advisorId) return;
+  loadDashboardData() {
+    // 🟢 ไม่ต้องดึง advisorId จาก localStorage แล้ว เพราะ Interceptor จะส่ง Token ไปให้หลังบ้านเอง
+
+    // 1. ดึงข้อมูลนักศึกษา
     this.http
-      .get<
-        any[]
-      >(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}&t=${Date.now()}`)
+      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           const formattedStudents = data.map((student: any) => ({
@@ -94,78 +90,52 @@ export class HomeComponent implements OnInit {
           }));
 
           this.studentsInCare.set(formattedStudents);
-
           this.dashboardStats[0].value = formattedStudents.length;
-          this.dashboardStats[1].value = formattedStudents.filter(
-            (s) => s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน',
+          this.dashboardStats[1].value = formattedStudents.filter((s) =>
+            s.ploStatus.includes('ผ่าน'),
           ).length;
 
-          // 🌟 สร้าง List รหัสนักศึกษา "เฉพาะเด็กในการดูแล 16 คนนี้" เอาไว้กรอง
           const validStudentIds = new Set(formattedStudents.map((s) => s.id.toString()));
 
-          // 2. ดึงข้อมูลนัดหมายมาคำนวณ (ทำต่อเมื่อมีข้อมูลเด็ก 16 คนแล้ว)
+          // 2. ดึงนัดหมายหลังจากได้ข้อมูลเด็กแล้ว
           this.http
-            .get<
-              any[]
-            >(`${environment.apiUrl}/get_appointments.php?advisor_id=${advisorId}&t=${Date.now()}`)
+            .get<any[]>(`${environment.apiUrl}/get_appointments.php?t=${Date.now()}`)
             .subscribe({
               next: (appData) => {
                 const allApps = appData || [];
 
-                // 🎯 นัดหมายทั้งหมด (นับเฉพาะนักศึกษาที่ไม่ซ้ำคน และต้องเป็นเด็กของเรา)
-                const allScheduledStudents = new Set<string>();
-                allApps.forEach((app: any) => {
-                  if (app.students && Array.isArray(app.students)) {
-                    app.students.forEach((student: any) => {
-                      // 👉 เช็คว่ารหัสเด็กคนนี้ อยู่ในแก๊ง 16 คนของเราไหม?
-                      if (student.id && validStudentIds.has(student.id.toString())) {
-                        allScheduledStudents.add(student.id.toString());
-                      }
-                    });
-                  }
+                // คำนวณสถิติ
+                const allScheduled = new Set<string>();
+                const consulted = new Set<string>();
+
+                allApps.forEach((app) => {
+                  app.students?.forEach((s: any) => {
+                    if (validStudentIds.has(s.id.toString())) {
+                      allScheduled.add(s.id.toString());
+                      if (app.status === 'ดำเนินการแล้ว') consulted.add(s.id.toString());
+                    }
+                  });
                 });
-                this.dashboardStats[2].value = allScheduledStudents.size;
 
-                // 🎯 บันทึกการปรึกษา (นับเฉพาะคิวที่ทำเสร็จแล้ว และต้องเป็นเด็กของเรา)
-                const completedApps = allApps.filter((app: any) => app.status === 'ดำเนินการแล้ว');
-                const consultedStudents = new Set<string>();
+                this.dashboardStats[2].value = allScheduled.size;
+                this.dashboardStats[3].value = consulted.size;
 
-                completedApps.forEach((app: any) => {
-                  if (app.students && Array.isArray(app.students)) {
-                    app.students.forEach((student: any) => {
-                      if (student.id && validStudentIds.has(student.id.toString())) {
-                        consultedStudents.add(student.id.toString());
-                      }
-                    });
-                  }
-                });
-                this.dashboardStats[3].value = consultedStudents.size;
-
-                // 🎯 จัดการข้อมูลสำหรับโชว์ใน "การนัดหมายล่าสุด"
-                const formatted = allApps
-                  .filter((app: any) => app.status !== 'ดำเนินการแล้ว')
-                  .map((app: any) => {
-                    const first = app.students?.[0];
-                    return {
+                // จัดการรายการนัดหมายล่าสุด
+                this.appointments.set(
+                  allApps
+                    .filter((a) => a.status !== 'ดำเนินการแล้ว')
+                    .map((app) => ({
                       id: app.appointment_id,
-                      studentCode: first?.id || '-',
-                      name: first
-                        ? first.name + (app.students.length > 1 ? ' (และเพื่อน)' : '')
-                        : 'ไม่ระบุ',
+                      studentCode: app.students?.[0]?.id || '-',
+                      name:
+                        app.students?.[0]?.name + (app.students.length > 1 ? ' (และเพื่อน)' : ''),
                       topic: app.title,
                       type: app.type,
-                      note: app.note,
                       date: this.formatDate(app.appointment_date),
                       time: app.start_time?.substring(0, 5) + ' น.',
-                      img: first?.img
-                        ? `${environment.apiUrl}/${first.img}`
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(first?.name || '')}&background=fed7aa&color=c2410c`,
                       isGroup: app.students.length > 1,
-                      memberCount: app.students.length,
-                    };
-                  });
-
-                this.appointments.set(formatted);
+                    })),
+                );
               },
             });
         },
@@ -201,8 +171,11 @@ export class HomeComponent implements OnInit {
     if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
 
+  openStudentResult(student: any) {
+    this.router.navigate(['/student-result', student.id], { state: { student } });
+  }
+
   goToAppointment(app: any) {
-    const targetPath = app.isGroup ? '/group' : '/individual';
-    this.router.navigate([targetPath], { queryParams: { id: app.id } });
+    this.router.navigate([app.isGroup ? '/group' : '/individual'], { queryParams: { id: app.id } });
   }
 }

@@ -29,6 +29,9 @@ export class PloComponent implements OnInit {
     { dept_id: 2, dept_name_th: 'ภาควิชาเทคโนโลยีการอาหาร' },
   ];
 
+  public majorsList: string[] = [];
+  public selectedMajorFilter: string | null = null;
+
   public yearsList = [
     { year_id: 1, year_name: 'ชั้นปีที่ 1' },
     { year_id: 2, year_name: 'ชั้นปีที่ 2' },
@@ -48,6 +51,7 @@ export class PloComponent implements OnInit {
   showYloModal = false;
   showDeleteModal = false;
   isDepartmentDropdownOpen = false;
+  isMajorDropdownOpen = false;
 
   selectedCourse: any;
   selectedPlo: any;
@@ -87,6 +91,15 @@ export class PloComponent implements OnInit {
         const dept = this.departmentsList.find((d) => Number(d.dept_id) === Number(el.dept_id));
         return dept ? dept.dept_name_th : '-';
       },
+    },
+    {
+      columnDef: 'major',
+      header: 'สาขา',
+      tag: 'text',
+      display: true,
+      width: 'medium',
+      align: 'left',
+      cell: (el) => el.major_name || '-',
     },
     {
       columnDef: 'year',
@@ -136,6 +149,21 @@ export class PloComponent implements OnInit {
     this.initForms();
     this.loadPloYloData();
     this.loadDepartments();
+    this.loadMajors();
+  }
+
+  get filteredDataSource(): any[] {
+    if (!this.selectedMajorFilter) return this.dataSource;
+    return this.dataSource.filter((row) => row.major_name === this.selectedMajorFilter);
+  }
+
+  setMajorFilter(major_name: string | null) {
+    this.selectedMajorFilter = major_name;
+    this.cdr.detectChanges();
+  }
+
+  isMajorFilterActive(major_name: string): boolean {
+    return this.selectedMajorFilter === major_name;
   }
 
   loadDepartments() {
@@ -150,11 +178,27 @@ export class PloComponent implements OnInit {
     });
   }
 
+loadMajors() {
+  this.http.get<any>(`${environment.apiUrl}/get_majors.php`).subscribe({
+    next: (res) => {
+      if (res && res.success) {
+        this.majorsList = res.majors || [];
+        this.cdr.detectChanges();
+      }
+    },
+    error: (err) => {
+      console.error('Error loading majors:', err);
+      // แจ้งผู้ใช้ตรงนี้ เช่น toast/snackbar แทนปล่อยว่างเงียบๆ
+    },
+  });
+}
+
   initForms() {
     this.courseForm = this.fb.group({
       curriculum_id: [null], 
       curriculum_name: ['', Validators.required],
       dept_id: [1, Validators.required],
+      major_name: [null, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
     });
 
@@ -262,11 +306,28 @@ export class PloComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  toggleMajorDropdown() {
+    this.isMajorDropdownOpen = !this.isMajorDropdownOpen;
+  }
+
+  selectMajor(major: string) {
+    this.courseForm.patchValue({ major_name: major });
+    this.courseForm.get('major_name')?.markAsDirty();
+    this.isMajorDropdownOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  getSelectedMajorName(): string {
+    const selected = this.courseForm.get('major_name')?.value;
+    return selected || 'เลือกสาขา';
+  }
+
   openAddCourse() {
     this.isEditMode = false;
     this.courseForm.reset({
       year: new Date().getFullYear() + 543,
       dept_id: 1,
+      major_name: null,
       curriculum_id: '',
       curriculum_name: '',
     });
@@ -291,6 +352,7 @@ export class PloComponent implements OnInit {
       curriculum_id: course.curriculum_id,
       curriculum_name: course.curriculum_name,
       dept_id: Number(course.dept_id),
+      major_name: course.major_name || null,
       year: course.year,
     });
     this.courseForm.get('curriculum_id')?.disable();
@@ -401,6 +463,7 @@ export class PloComponent implements OnInit {
       curriculum_id: this.isEditMode ? currentId : null,
       curriculum_name: formValue.curriculum_name,
       dept_id: Number(formValue.dept_id),
+      major_name: formValue.major_name,
       year: formValue.year,
     };
 

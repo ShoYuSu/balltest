@@ -27,7 +27,6 @@ export class IndividualRecord implements OnInit {
     if (query) {
       list = list.filter(
         (s) =>
-          // 🎯 ป้องกัน Error กรณีไม่มีข้อมูลชื่อ
           (s.full_name || '').toLowerCase().includes(query) ||
           (s.student_code || '').includes(query),
       );
@@ -69,11 +68,9 @@ export class IndividualRecord implements OnInit {
   }
 
   loadStudentsSummary() {
-    const advisorId = localStorage.getItem('advisor_id');
-    if (!advisorId) return;
-
+    // ✅ ไม่ต้องดึง advisor_id จาก localStorage และลบออกจาก URL
     this.http
-      .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?advisor_id=${advisorId}`)
+      .get<any[]>(`${this.apiUrl}/get_student_consultation_summary.php?t=${Date.now()}`)
       .subscribe({
         next: (data) => {
           if (!data || !Array.isArray(data)) {
@@ -82,13 +79,12 @@ export class IndividualRecord implements OnInit {
           }
 
           const processed = data.map((s) => {
-            // 🎯 ดักจับชื่อ ป้องกันค่าว่าง
             const studentName = s.full_name || s.name || s.student_name || 'ไม่ระบุชื่อ';
 
             return {
               ...s,
               full_name: studentName,
-              year: s.year || '-', // 🎯 รับค่าชั้นปี
+              year: s.year || '-',
               imgUrl:
                 s.image && s.image.trim() !== ''
                   ? `${this.apiUrl}/${s.image}`
@@ -104,11 +100,11 @@ export class IndividualRecord implements OnInit {
 
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
-    const advisorId = localStorage.getItem('advisor_id');
+    // ✅ ไม่ต้องดึง advisor_id แต่ต้องส่ง student_id ไปให้ PHP รู้ว่าขอดูประวัติของเด็กคนไหน
     this.http
       .get<
         any[]
-      >(`${this.apiUrl}/get_student_consultation_logs.php?advisor_id=${advisorId}&student_id=${student.student_id}`)
+      >(`${this.apiUrl}/get_student_consultation_logs.php?student_id=${student.student_id}&t=${Date.now()}`)
       .subscribe({
         next: (data) => this.studentLogs.set(data || []),
         error: () => this.studentLogs.set([]),

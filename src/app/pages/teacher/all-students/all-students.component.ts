@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // 👉 1. นำเข้า Router
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-all-students',
@@ -13,19 +13,14 @@ import { Router } from '@angular/router'; // 👉 1. นำเข้า Router
 })
 export class AllStudentsComponent implements OnInit {
   private http = inject(HttpClient);
-  private router = inject(Router); // 👉 2. Inject Router เข้ามาใช้งาน
+  private router = inject(Router);
 
-  // --- 1. ตั้งค่าระบบ Pagination ---
   currentPage = signal(1);
   itemsPerPage = 7;
 
-  // --- 2. รอรับข้อมูลนักศึกษาจากฐานข้อมูล ---
   studentsInCare = signal<any[]>([]);
-
-  // --- 3. ตัวแปรเก็บคำค้นหา ---
   searchQuery = signal('');
 
-  // --- 4. ระบบกรองข้อมูล ---
   filteredStudents = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const students = this.studentsInCare();
@@ -40,9 +35,8 @@ export class AllStudentsComponent implements OnInit {
     );
   });
 
-  // --- 5. คำนวณข้อมูลสำหรับ Pagination ---
   totalItems = computed(() => this.filteredStudents().length);
-  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage));
+  totalPages = computed(() => Math.ceil(this.totalItems() / this.itemsPerPage) || 1);
 
   paginatedStudents = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
@@ -53,59 +47,44 @@ export class AllStudentsComponent implements OnInit {
     return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
   });
 
-  // --- 6. ฟังก์ชันสำหรับกดปุ่มเปลี่ยนหน้า ---
   goToPage(page: number) {
     this.currentPage.set(page);
   }
-
   nextPage() {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update((p) => p + 1);
-    }
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
   }
-
   prevPage() {
-    if (this.currentPage() > 1) {
-      this.currentPage.update((p) => p - 1);
-    }
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
   }
 
-  // 👉 7. ฟังก์ชันคลิกไปหน้าผลการเรียน (พ่วงข้อมูลเด็กไปด้วย)
   goToStudentResult(student: any) {
     this.router.navigate(['/student-result', student.id], {
       state: { student: student },
     });
   }
 
-  // --- 8. ดึงข้อมูลจริงจาก Database ---
-
   ngOnInit() {
-    //  เปลี่ยนจาก 'user_id' เป็น 'advisor_id' เพื่อให้มันดึงเลข 1 ออกมาใช้งาน
-    const advisorId = localStorage.getItem('advisor_id');
-    if (!advisorId) return;
+    // ✅ ลบการเช็ค localStorage และลบ ?advisor_id=... ออกจาก URL แล้วยิง API ตรงๆ ได้เลย!
+    this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php`).subscribe({
+      next: (data) => {
+        const formattedStudents = data.map((student: any) => ({
+          id: student.student_code,
+          name: student.full_name,
+          email: student.email ? student.email : 'ไม่มีอีเมล',
+          year: student.year,
+          gpa: student.gpa,
+          credits: `${student.total_credits}/127`,
+          ploStatus: student.ploStatus.replace('PLO ', ''),
+          img: student.image
+            ? `${environment.apiUrl}/${student.image}`
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
+        }));
 
-    this.http
-      .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?advisor_id=${advisorId}`)
-      .subscribe({
-        next: (data) => {
-          const formattedStudents = data.map((student: any) => ({
-            id: student.student_code,
-            name: student.full_name,
-            email: student.email ? student.email : 'ไม่มีอีเมล',
-            year: student.year,
-            gpa: student.gpa,
-            credits: `${student.total_credits}/127`,
-            ploStatus: student.ploStatus.replace('PLO ', ''),
-            img: student.image
-              ? `${environment.apiUrl}/${student.image}`
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(student.full_name)}&background=fff7ed&color=ea580c`,
-          }));
-
-          this.studentsInCare.set(formattedStudents);
-        },
-        error: (error) => {
-          console.error('ไม่สามารถดึงข้อมูลนักศึกษาได้:', error.message);
-        },
-      });
+        this.studentsInCare.set(formattedStudents);
+      },
+      error: (error) => {
+        console.error('ไม่สามารถดึงข้อมูลนักศึกษาได้:', error.message);
+      },
+    });
   }
 }
