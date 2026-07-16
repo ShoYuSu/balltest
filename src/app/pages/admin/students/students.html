@@ -203,8 +203,17 @@
             >
           </div>
 
+          <div
+            *ngIf="col.columnDef === 'advisor'"
+            class="flex flex-col gap-0.5"
+            [class.text-gray-700]="s.status !== 'inactive'"
+            [class.text-gray-400]="s.status === 'inactive'"
+          >
+            <span *ngFor="let name of advisorList(s)">{{ name }}</span>
+          </div>
+
           <span
-            *ngIf="col.tag === 'text'"
+            *ngIf="col.tag === 'text' && col.columnDef !== 'advisor'"
             [class.text-gray-700]="s.status !== 'inactive'"
             [class.text-gray-400]="s.status === 'inactive'"
           >
