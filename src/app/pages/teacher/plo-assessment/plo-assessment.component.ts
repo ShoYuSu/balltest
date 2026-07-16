@@ -203,7 +203,7 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   toggleYloStatus(
-    targetYloName: string,
+    targetYloId: number, // 🌟 เปลี่ยนรับค่า ID เข้ามาแทน
     currentStatus: string | null,
     newStatusToSet: 'passed' | 'failed',
   ) {
@@ -213,11 +213,11 @@ export class PloAssessmentComponent implements OnInit {
     plos.forEach((plo) => {
       plo.sub_plos?.forEach((sub) => {
         sub.ylos?.forEach((ylo) => {
-          if (ylo.ylo_name === targetYloName) ylo.status = newStatus;
+          if (ylo.ylo_id === targetYloId) ylo.status = newStatus; // 🌟 ติ๊กเฉพาะ ID ที่ตรงกันเป๊ะๆ
         });
       });
       plo.direct_ylos?.forEach((ylo) => {
-        if (ylo.ylo_name === targetYloName) ylo.status = newStatus;
+        if (ylo.ylo_id === targetYloId) ylo.status = newStatus; // 🌟 ติ๊กเฉพาะ ID ที่ตรงกันเป๊ะๆ
       });
     });
 

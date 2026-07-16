@@ -258,11 +258,11 @@
                                 </div>
                               </div>
                               <div class="flex gap-2 ml-6">
-                                <button (click)="toggleYloStatus(ylo.ylo_name, ylo.status, 'passed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                                <button (click)="toggleYloStatus(ylo.ylo_id, ylo.status, 'passed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
                                         [ngClass]="ylo.status === 'passed' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
                                   <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-green-500]="ylo.status === 'passed'">check_circle</span> ผ่าน
                                 </button>
-                                <button (click)="toggleYloStatus(ylo.ylo_name, ylo.status, 'failed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                                <button (click)="toggleYloStatus(ylo.ylo_id, ylo.status, 'failed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
                                         [ngClass]="ylo.status === 'failed' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
                                   <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-red-500]="ylo.status === 'failed'">cancel</span> ไม่ผ่าน
                                 </button>
@@ -294,11 +294,11 @@
                               </div>
                             </div>
                             <div class="flex gap-2 ml-6">
-                              <button (click)="toggleYloStatus(ylo.ylo_name, ylo.status, 'passed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                              <button (click)="toggleYloStatus(ylo.ylo_id, ylo.status, 'passed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
                                       [ngClass]="ylo.status === 'passed' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
                                 <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-green-500]="ylo.status === 'passed'">check_circle</span> ผ่าน
                               </button>
-                              <button (click)="toggleYloStatus(ylo.ylo_name, ylo.status, 'failed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
+                              <button (click)="toggleYloStatus(ylo.ylo_id, ylo.status, 'failed')" class="flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer"
                                       [ngClass]="ylo.status === 'failed' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'">
                                 <span class="material-symbols-outlined text-[14px] align-middle mr-1" [class.text-red-500]="ylo.status === 'failed'">cancel</span> ไม่ผ่าน
                               </button>
