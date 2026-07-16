@@ -43,9 +43,18 @@ export class AssignAdvisorComponent implements OnInit {
 
   // ตัวแปรควบคุม Dropdown ปีการศึกษา (แทนที่ dropdown ภาคเรียนเดิม)
   readonly currentAcademicYear = new Date().getFullYear() + 543;
-  academicYears: number[] = [this.currentAcademicYear - 1, this.currentAcademicYear, this.currentAcademicYear + 1];
   selectedAcademicYear: number = this.currentAcademicYear;
   isAcademicYearDropdownOpen = false;
+
+  // ปีการศึกษาที่เลือกได้ = ปีที่มีข้อมูลจริงจากประวัติการจัดสรร รวมกับปีปัจจุบัน/ปีถัดไปเสมอ
+  // (กันเคสปีเก่าที่เคยมอบหมายไว้แล้วไม่เคยเปลี่ยนอาจารย์เลย ให้ยังโผล่ในตัวเลือกได้)
+  get academicYears(): number[] {
+    const fromHistory = this.assignedList
+      .map(r => Number(r.academic_year))
+      .filter(y => Number.isFinite(y) && y > 0);
+    const years = new Set<number>([...fromHistory, this.currentAcademicYear, this.currentAcademicYear + 1]);
+    return [...years].sort((a, b) => b - a);
+  }
 
   // 💡 เพิ่มตัวแปรสำหรับควบคุม "ตารางดูประวัติ" และ "Modal เปลี่ยนอาจารย์"
   assignedList: any[] = [];             // รายชื่อนักศึกษาที่จัดสรรอาจารย์แล้วทั้งหมด

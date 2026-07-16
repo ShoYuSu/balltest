@@ -291,6 +291,13 @@ export class AdvisorHistoryComponent implements OnInit {
       });
   }
 
+  // 🌟 แยกรายชื่ออาจารย์ (advisor_name เป็น string คั่นด้วย ", " จาก GROUP_CONCAT) ให้เป็น array แสดงคนละบรรทัด
+  advisorNames(h: any): string[] {
+    const raw = (h?.advisor_name || '').trim();
+    if (!raw) return ['-'];
+    return raw.split(',').map((n: string) => n.trim()).filter((n: string) => n);
+  }
+
   closeModal() {
     this.isModalOpen = false;
     this.selectedStudent = null;
