@@ -88,9 +88,10 @@ export class AdvisorRecord implements OnInit {
     }, 160);
   }
 
-  advisorImgUrl(img: string | null): string {
+  advisorImgUrl(img: string | null, name?: string | null): string {
     if (img) return `${environment.apiUrl}/${img}`;
-    return 'https://i.pravatar.cc/150?img=12';
+    // ไม่มีรูปใน DB → ใช้รูปตัวอักษรจาก ui-avatars เหมือนหน้าข้อมูลส่วนตัว/แท็บบนขวา
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'อาจารย์')}&background=fff7ed&color=ea580c`;
   }
 
   formatTime(t: string | null): string {

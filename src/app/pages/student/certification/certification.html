@@ -159,9 +159,49 @@
         วันที่ได้รับ
       </label>
 
-      <input
-        type="date"
-        [(ngModel)]="issueDate">
+      <div class="date-wrapper">
+        <button type="button" class="date-btn" (click)="showCalendar = !showCalendar; $event.stopPropagation()">
+          <span class="material-symbols-outlined">event</span>
+          <span [class.text-gray-400]="!issueDate">
+            {{ issueDate ? displayDate : 'เลือกวันที่' }}
+          </span>
+          <span class="material-symbols-outlined ml-auto text-gray-400">
+            {{ showCalendar ? 'expand_less' : 'expand_more' }}
+          </span>
+        </button>
+
+        @if (showCalendar) {
+          <div class="calendar-panel" (click)="$event.stopPropagation()">
+
+            <!-- Cal header -->
+            <div class="cal-head">
+              <button class="cal-nav" (click)="prevCal()">‹</button>
+              <span class="cal-title">{{ monthNames[calMonth] }} {{ calYear + 543 }}</span>
+              <button class="cal-nav" (click)="nextCal()">›</button>
+            </div>
+
+            <!-- Day names -->
+            <div class="cal-days-head">
+              <span *ngFor="let d of dayNames">{{ d }}</span>
+            </div>
+
+            <!-- Days grid -->
+            <div class="cal-grid">
+              <button *ngFor="let d of calendarDays"
+                class="cal-day"
+                [class.empty]="!d"
+                [class.today]="isToday(d)"
+                [class.selected]="isSelectedDay(d)"
+                [disabled]="!d"
+                (click)="pickDay(d)">
+                {{ d || '' }}
+              </button>
+            </div>
+
+          </div>
+          <div class="fixed inset-0 z-[49]" (click)="showCalendar = false"></div>
+        }
+      </div>
 
     </div>
     

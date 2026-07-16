@@ -51,6 +51,52 @@ export class CertificationComponent implements OnInit {
 
   selectedFile: File | null = null;
 
+  // Calendar (date picker แบบเดียวกับหน้ากิจกรรม)
+  showCalendar = false;
+  calYear = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+  dayNames = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+  get calendarDays(): (number | null)[] {
+    const first = new Date(this.calYear, this.calMonth, 1).getDay();
+    const total = new Date(this.calYear, this.calMonth + 1, 0).getDate();
+    const days: (number | null)[] = [];
+    for (let i = 0; i < first; i++) days.push(null);
+    for (let d = 1; d <= total; d++) days.push(d);
+    while (days.length % 7 !== 0) days.push(null);
+    return days;
+  }
+
+  get displayDate(): string {
+    if (!this.issueDate) return '';
+    const d = new Date(this.issueDate);
+    return `${d.getDate()} ${this.monthNames[d.getMonth()]} ${d.getFullYear() + 543}`;
+  }
+
+  isSelectedDay(day: number | null): boolean {
+    if (!day || !this.issueDate) return false;
+    const d = new Date(this.issueDate);
+    return d.getFullYear() === this.calYear && d.getMonth() === this.calMonth && d.getDate() === day;
+  }
+
+  isToday(day: number | null): boolean {
+    if (!day) return false;
+    const t = new Date();
+    return t.getFullYear() === this.calYear && t.getMonth() === this.calMonth && t.getDate() === day;
+  }
+
+  prevCal() { this.calMonth--; if (this.calMonth < 0) { this.calMonth = 11; this.calYear--; } this.cdr.detectChanges(); }
+  nextCal() { this.calMonth++; if (this.calMonth > 11) { this.calMonth = 0; this.calYear++; } this.cdr.detectChanges(); }
+
+  pickDay(day: number | null) {
+    if (!day) return;
+    this.issueDate = `${this.calYear}-${String(this.calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    this.showCalendar = false;
+    this.cdr.detectChanges();
+  }
+
   // =========================
   // INIT
   // =========================
@@ -67,6 +113,13 @@ export class CertificationComponent implements OnInit {
   this.certificateTitle = item.title;
 
   this.issueDate = item.issue_date;
+
+  if (item.issue_date) {
+    const d = new Date(item.issue_date);
+    this.calYear = d.getFullYear();
+    this.calMonth = d.getMonth();
+  }
+  this.showCalendar = false;
 
   this.showModal = true;
 
@@ -145,6 +198,10 @@ deleteCertificate() {
 
   openModal() {
 
+    this.calYear = new Date().getFullYear();
+    this.calMonth = new Date().getMonth();
+    this.showCalendar = false;
+
     this.showModal = true;
 
   }
@@ -156,6 +213,8 @@ deleteCertificate() {
     this.certificateTitle = '';
 
     this.issueDate = '';
+
+    this.showCalendar = false;
 
     this.selectedFile = null;
 

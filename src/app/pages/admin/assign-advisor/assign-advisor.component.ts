@@ -27,12 +27,17 @@ export class AssignAdvisorComponent implements OnInit {
   isDeptDropdownOpen = false;         // สเตตัส เปิด/ปิด Dropdown ภาควิชาอาจารย์
 
   // ตัวแปรควบคุมหน้าจอฝั่งนักศึกษาและ Modal (คงเดิม)
-  selectedAdvisors: any[] = []; 
+  selectedAdvisors: any[] = [];
   selectedBranch: string = 'ทุกสาขา';
-  searchStudentText: string = ''; 
+  searchStudentText: string = '';
   filteredStudents: any[] = [];
-  selectedStudents: number[] = []; 
+  selectedStudents: number[] = [];
   isBranchDropdownOpen = false;
+
+  // ตัวแปรควบคุม Dropdown filter ชั้นปี (ฝั่งเลือกกลุ่มนักศึกษา)
+  years: (number | string)[] = ['ทุกชั้นปี'];
+  selectedYear: number | string = 'ทุกชั้นปี';
+  isYearDropdownOpen = false;
   showDeleteModal = false;
   targetToDelete: any = null;
   selectedSemester: number = 1;
@@ -125,7 +130,12 @@ export class AssignAdvisorComponent implements OnInit {
         
         this.departments = res.staff_departments || [];
         this.major = ['ทุกสาขา', ...(res.student_majors || []).filter((d: any) => d != null)];
-        
+
+        // สร้างรายการชั้นปีจากข้อมูลนักศึกษาจริง (ไม่ hardcode)
+        const uniqueYears = [...new Set(this.students.map((s: any) => s.year).filter((y: any) => y != null))]
+          .sort((a: any, b: any) => a - b);
+        this.years = ['ทุกชั้นปี', ...uniqueYears];
+
         this.filterAdvisors();
         this.filterStudents();
         this.filterAssignedList();
@@ -138,7 +148,10 @@ export class AssignAdvisorComponent implements OnInit {
   // ================= 2. ระบบจัดการ/กรองข้อมูลฝั่งอาจารย์ =================
   toggleDeptDropdown() {
     this.isDeptDropdownOpen = !this.isDeptDropdownOpen;
-    if (this.isDeptDropdownOpen) this.isBranchDropdownOpen = false;
+    if (this.isDeptDropdownOpen) {
+      this.isBranchDropdownOpen = false;
+      this.isYearDropdownOpen = false;
+    }
   }
 
   selectDept(dept: string) {
@@ -169,13 +182,31 @@ export class AssignAdvisorComponent implements OnInit {
   // ================= 3. ระบบกรองนักศึกษา =================
   toggleBranchDropdown() {
     this.isBranchDropdownOpen = !this.isBranchDropdownOpen;
-    if (this.isBranchDropdownOpen) this.isDeptDropdownOpen = false;
+    if (this.isBranchDropdownOpen) {
+      this.isDeptDropdownOpen = false;
+      this.isYearDropdownOpen = false;
+    }
   }
 
   selectBranch(branch: string) {
     this.selectedBranch = branch;
-    this.isBranchDropdownOpen = false; 
-    this.filterStudents();             
+    this.isBranchDropdownOpen = false;
+    this.filterStudents();
+  }
+
+  // ================= 3.1 ระบบกรองชั้นปี (ฝั่งเลือกกลุ่มนักศึกษา) =================
+  toggleYearDropdown() {
+    this.isYearDropdownOpen = !this.isYearDropdownOpen;
+    if (this.isYearDropdownOpen) {
+      this.isBranchDropdownOpen = false;
+      this.isDeptDropdownOpen = false;
+    }
+  }
+
+  selectYear(year: number | string) {
+    this.selectedYear = year;
+    this.isYearDropdownOpen = false;
+    this.filterStudents();
   }
 
   filterStudents() {
@@ -183,15 +214,18 @@ export class AssignAdvisorComponent implements OnInit {
     if (this.selectedBranch !== 'ทุกสาขา') {
       result = result.filter(s => s.major === this.selectedBranch);
     }
+    if (this.selectedYear !== 'ทุกชั้นปี') {
+      result = result.filter(s => Number(s.year) === Number(this.selectedYear));
+    }
     if (this.searchStudentText.trim() !== '') {
       const txt = this.searchStudentText.toLowerCase();
-      result = result.filter(s => 
-        (s.name && s.name.toLowerCase().includes(txt)) || 
+      result = result.filter(s =>
+        (s.name && s.name.toLowerCase().includes(txt)) ||
         (s.code && s.code.includes(txt))
       );
     }
     this.filteredStudents = result;
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   // ================= 3.5 ระบบจัดการเทอม =================
@@ -200,6 +234,7 @@ export class AssignAdvisorComponent implements OnInit {
     if (this.isSemesterDropdownOpen) {
       this.isDeptDropdownOpen = false;
       this.isBranchDropdownOpen = false;
+      this.isYearDropdownOpen = false;
     }
   }
 
