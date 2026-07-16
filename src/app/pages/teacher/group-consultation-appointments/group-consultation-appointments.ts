@@ -52,6 +52,7 @@ export class GroupConsultationAppointments implements OnInit {
   activeDropdownId = signal<string | null>(null);
   isFilterDropdownOpen = signal(false);
 
+  // 🌟 เพิ่ม endTime ในโมเดลใหม่
   newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
   editingApp: any = null;
   appointmentToCancelId = signal<string | null>(null);
@@ -109,6 +110,7 @@ export class GroupConsultationAppointments implements OnInit {
           note: app.note || '',
           date: this.formatThaiDate(app.appointment_date),
           rawDate: app.appointment_date,
+          // 🌟 จัดรูปแบบเวลาให้สวยงาม
           time: this.formatTime(app.start_time, app.end_time),
           rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
           rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
@@ -122,25 +124,6 @@ export class GroupConsultationAppointments implements OnInit {
           })),
         }));
         this.appointments.set(formattedApps);
-
-        this.route.queryParams.subscribe((params) => {
-          const targetId = params['id'];
-          if (targetId) {
-            setTimeout(() => {
-              const element = document.getElementById('appointment-' + targetId);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                element.classList.add(
-                  'ring-2',
-                  'ring-orange-500',
-                  'transition-all',
-                  'duration-500',
-                );
-                setTimeout(() => element.classList.remove('ring-2', 'ring-orange-500'), 3000);
-              }
-            }, 300);
-          }
-        });
       },
       error: (err) => console.error('ดึงข้อมูลนัดหมายล้มเหลว:', err),
     });
@@ -154,7 +137,7 @@ export class GroupConsultationAppointments implements OnInit {
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
     if (this.selectedStudentIds().length < 2 || !this.newApp.topic || !this.newApp.date) {
-      alert('กรุณากรอกข้อมูลให้ครบและเลือกนักศึกษาอย่างน้อย 2 คน (สำหรับการนัดกลุ่ม)');
+      alert('กรุณากรอกข้อมูลให้ครบและเลือกนักศึกษาอย่างน้อย 2 คน');
       return;
     }
     const payload = {
@@ -163,7 +146,7 @@ export class GroupConsultationAppointments implements OnInit {
       description: this.newApp.details,
       date: this.newApp.date,
       time: this.newApp.time,
-      end_time: this.newApp.endTime,
+      end_time: this.newApp.endTime, // 🌟 ส่งค่าไปหลังบ้าน
       type: this.newApp.type,
       student_ids: this.selectedStudentIds(),
     };
@@ -179,17 +162,14 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   submitEditAppointment() {
-    if (!this.editingApp.topic || !this.editingApp.rawDate) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-      return;
-    }
+    if (!this.editingApp.topic || !this.editingApp.rawDate) return;
     const payload = {
       appointment_id: this.editingApp.id,
       title: this.editingApp.topic,
       description: this.editingApp.details,
       date: this.editingApp.rawDate,
       time: this.editingApp.rawTime,
-      end_time: this.editingApp.rawEndTime,
+      end_time: this.editingApp.rawEndTime, // 🌟 ส่งค่าไปหลังบ้าน
       type: this.editingApp.type,
       student_ids: this.selectedStudentIds(),
     };
@@ -205,10 +185,7 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   submitConsultationLog() {
-    if (!this.editingApp.note) {
-      alert('กรุณากรอกผลการให้คำปรึกษา');
-      return;
-    }
+    if (!this.editingApp.note) return;
     const payload = {
       appointment_id: this.editingApp.id,
       note: this.editingApp.note,
@@ -232,14 +209,12 @@ export class GroupConsultationAppointments implements OnInit {
         .post(`${environment.apiUrl}/delete_appointment.php`, { appointment_id: id })
         .subscribe({
           next: (res: any) => {
-            if (res.status === 'success') {
-              this.loadAppointments();
-            } else alert('เกิดข้อผิดพลาด: ' + res.message);
+            if (res.status === 'success') this.loadAppointments();
+            else alert('เกิดข้อผิดพลาด: ' + res.message);
+            this.closeModals();
           },
-          error: () => alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
         });
     }
-    this.closeModals();
   }
 
   setSelectionMode(mode: 'group' | 'all') {
@@ -270,15 +245,10 @@ export class GroupConsultationAppointments implements OnInit {
   openEditModal(app: any, event: Event) {
     event.stopPropagation();
     this.editingApp = { ...app };
-
     const mappedIds = app.students.map((s: any) => {
-      const match = this.myStudents().find(
-        (std) =>
-          String(std.student_code) === String(s.id) || String(std.student_id) === String(s.id),
-      );
+      const match = this.myStudents().find((std) => String(std.student_code) === String(s.id));
       return match ? String(match.student_id) : String(s.id);
     });
-
     this.selectedStudentIds.set(mappedIds);
     this.selectionMode.set('group');
     this.isEditModalOpen.set(true);
@@ -325,30 +295,23 @@ export class GroupConsultationAppointments implements OnInit {
 
   formatTime(start: string, end?: string): string {
     let str = start ? start.substring(0, 5) : '';
-    if (end) {
-      str += ' - ' + end.substring(0, 5);
-    }
+    if (end) str += ' - ' + end.substring(0, 5);
     return str ? str + ' น.' : '';
   }
 
   toggleFilterDropdown(event: Event) {
     event.stopPropagation();
     this.isFilterDropdownOpen.update((v) => !v);
-    this.activeDropdownId.set(null);
   }
-
   selectFilter(option: string, event: Event) {
     event.stopPropagation();
     this.selectedFilter.set(option);
     this.isFilterDropdownOpen.set(false);
   }
-
   toggleDropdown(id: string, event: Event) {
     event.stopPropagation();
-    this.isFilterDropdownOpen.set(false);
     this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
   }
-
   exportToExcel() {
     const data = this.filteredAppointments();
     if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');

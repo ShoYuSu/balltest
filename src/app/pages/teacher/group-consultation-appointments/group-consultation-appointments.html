@@ -169,9 +169,14 @@
           }
         </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
-          <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
+            <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+          </div>
+          <div>
+            <!-- ให้ layout เสมอกัน แม้ไม่มีช่องเวลา -->
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -205,9 +210,16 @@
         </div>
       </div>
 
-      <div class="p-6 bg-white flex justify-end gap-3 shrink-0 border-t border-gray-100">
-        <button (click)="closeModals()" class="px-6 py-2.5 bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
-        <button (click)="submitCreateAppointment()" class="px-8 py-2.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors shadow-sm">สร้างนัดหมาย</button>
+      <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100 rounded-b-3xl">
+        <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
+
+        <!-- 🌟 ปุ่มสร้างนัดหมาย ล็อคสีเทาถ้าข้อมูลไม่ครบ -->
+        <button (click)="submitCreateAppointment()"
+                [disabled]="selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details"
+                [ngClass]="(selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
+                class="px-8 py-2.5 font-bold rounded-xl transition-colors">
+          สร้างนัดหมาย
+        </button>
       </div>
     </div>
   </div>
@@ -266,9 +278,12 @@
           }
         </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-800 mb-1">วันที่นัดหมาย</label>
-          <input type="date" [(ngModel)]="editingApp.rawDate" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-800 mb-1">วันที่นัดหมาย</label>
+            <input type="date" [(ngModel)]="editingApp.rawDate" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
+          </div>
+          <div></div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -302,9 +317,16 @@
         </div>
       </div>
 
-      <div class="p-6 bg-white flex justify-end gap-3 shrink-0 border-t border-gray-100">
-        <button (click)="closeModals()" class="px-6 py-2.5 bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
-        <button (click)="submitEditAppointment()" class="px-8 py-2.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors shadow-sm">บันทึกการแก้ไข</button>
+      <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100 rounded-b-3xl">
+        <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
+
+        <!-- 🌟 ปุ่มบันทึกการแก้ไข ล็อคสีเทาถ้าข้อมูลไม่ครบ -->
+        <button (click)="submitEditAppointment()"
+                [disabled]="selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details"
+                [ngClass]="(selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
+                class="px-8 py-2.5 font-bold rounded-xl transition-colors">
+          บันทึกการแก้ไข
+        </button>
       </div>
     </div>
   </div>
@@ -312,7 +334,7 @@
 
 @if (isLogModalOpen() && editingApp) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
           <span class="material-symbols-outlined text-orange-500">assignment</span> บันทึกผลการปรึกษากลุ่ม
@@ -345,7 +367,7 @@
           <textarea [(ngModel)]="editingApp.note" placeholder="กรอกผลการให้คำปรึกษาสำหรับกลุ่มนี้..." rows="4" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"></textarea>
         </div>
       </div>
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100">
+      <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100 rounded-b-3xl">
         <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
         <button (click)="submitConsultationLog()" class="px-8 py-2.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors">บันทึกผล</button>
       </div>
