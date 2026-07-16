@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#F5FFFA]',
     },
     {
-      label: 'นัดหมายทั้งหมด',
+      label: 'นัดหมายรอดำเนินการ', // 🌟 เปลี่ยนชื่อให้ชัดเจนขึ้นนิดนึงครับ
       value: 0,
       icon: 'person',
       bgColor: 'bg-yellow-100',
@@ -71,8 +71,6 @@ export class HomeComponent implements OnInit {
   }
 
   loadDashboardData() {
-    // 🟢 ไม่ต้องดึง advisorId จาก localStorage แล้ว เพราะ Interceptor จะส่ง Token ไปให้หลังบ้านเอง
-
     // 1. ดึงข้อมูลนักศึกษา
     this.http
       .get<any[]>(`${environment.apiUrl}/get_advisor_students.php?t=${Date.now()}`)
@@ -91,9 +89,8 @@ export class HomeComponent implements OnInit {
 
           this.studentsInCare.set(formattedStudents);
           this.dashboardStats[0].value = formattedStudents.length;
-          // 🟢 เช็คให้เป๊ะว่าต้องเป็นคำว่า 'PLO ผ่าน' หรือ 'ผ่าน' เท่านั้น ห้ามนับ 'ไม่ผ่าน'
-          this.dashboardStats[1].value = formattedStudents.filter((s) =>
-            s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน'
+          this.dashboardStats[1].value = formattedStudents.filter(
+            (s) => s.ploStatus === 'PLO ผ่าน' || s.ploStatus === 'ผ่าน',
           ).length;
 
           const validStudentIds = new Set(formattedStudents.map((s) => s.id.toString()));
@@ -105,31 +102,34 @@ export class HomeComponent implements OnInit {
               next: (appData) => {
                 const allApps = appData || [];
 
-                // คำนวณสถิติ
-                const allScheduled = new Set<string>();
-                const consulted = new Set<string>();
+                // 🌟 แยกการนับอย่างชัดเจน
+                const pendingAppointments = new Set<string>(); // สำหรับนัดหมายที่ยังไม่เสร็จ
+                const consulted = new Set<string>(); // สำหรับคนที่ปรึกษาเสร็จแล้ว
 
                 allApps.forEach((app) => {
                   app.students?.forEach((s: any) => {
                     if (validStudentIds.has(s.id.toString())) {
-                      allScheduled.add(s.id.toString());
-                      if (app.status === 'ดำเนินการแล้ว') consulted.add(s.id.toString());
+                      if (app.status === 'ดำเนินการแล้ว') {
+                        // 🌟 ถ้านัดหมายเสร็จแล้ว ให้นับเข้ากล่องบันทึก
+                        consulted.add(s.id.toString());
+                      } else {
+                        // 🌟 ถ้ายังไม่เสร็จ (รอดำเนินการ) ให้นับเข้ากล่องนัดหมาย
+                        pendingAppointments.add(s.id.toString());
+                      }
                     }
                   });
                 });
 
-                this.dashboardStats[2].value = allScheduled.size;
-                this.dashboardStats[3].value = consulted.size;
+                this.dashboardStats[2].value = pendingAppointments.size; // โชว์ยอดคนรอดำเนินการ
+                this.dashboardStats[3].value = consulted.size; // โชว์ยอดคนที่เสร็จแล้ว
 
-                // จัดการรายการนัดหมายล่าสุด
+                // จัดการรายการนัดหมายล่าสุด (แสดงเฉพาะที่ยังไม่เสร็จ)
                 this.appointments.set(
                   allApps
                     .filter((a) => a.status !== 'ดำเนินการแล้ว')
                     .map((app) => {
-                      // 🟢 ดึงข้อมูลเด็กคนแรกออกมาเพื่อทำรูปโปรไฟล์
                       const mainStudent = app.students?.[0];
                       const studentName = mainStudent?.name || 'ไม่ระบุชื่อ';
-                      // 🟢 เช็คว่ามีรูปไหม ถ้าไม่มีให้ใช้รูปตัวอักษรสีส้มแทน
                       const imgUrl = mainStudent?.img
                         ? `${environment.apiUrl}/${mainStudent.img}`
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=fff7ed&color=ea580c`;
@@ -143,11 +143,11 @@ export class HomeComponent implements OnInit {
                         date: this.formatDate(app.appointment_date),
                         time: app.start_time?.substring(0, 5) + ' น.',
                         isGroup: app.students.length > 1,
-                        img: imgUrl, // 🟢 เพิ่มตัวแปรนี้เข้าไป รูปก็จะมาแล้ว!
+                        img: imgUrl,
                       };
                     }),
                 );
-              }
+              },
             });
         },
       });
