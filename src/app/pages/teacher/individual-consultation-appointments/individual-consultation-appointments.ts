@@ -57,7 +57,7 @@ export class IndividualConsultationAppointments implements OnInit {
 
   newTypeInput = signal('');
 
-  // 🌟 เพิ่ม endTime เข้าไปในโมเดล
+  // 🌟 มี endTime ในโมเดล
   newApp = { studentId: '', date: '', time: '', endTime: '', type: '', topic: '', details: '' };
   selectedApp: any = null;
   appointmentToCancelId: string | null = null;
@@ -125,10 +125,9 @@ export class IndividualConsultationAppointments implements OnInit {
               status: app.status ?? '',
               date: this.formatThaiDate(app.appointment_date),
               rawDate: app.appointment_date,
-              // 🌟 ส่งค่าไปจัดรูปแบบเวลาให้สวยงาม
               time: this.formatTime(app.start_time, app.end_time),
               rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
-              rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '', // 🌟 เก็บเวลาสิ้นสุดดิบไว้แก้ไข
+              rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
               details: app.description ?? '',
               note: app.note ?? '',
               studentName: app.students[0].name,
@@ -160,7 +159,7 @@ export class IndividualConsultationAppointments implements OnInit {
       description: this.newApp.details,
       date: this.newApp.date,
       time: this.newApp.time,
-      end_time: this.newApp.endTime, // 🌟 ส่งเวลาสิ้นสุดให้ PHP
+      end_time: this.newApp.endTime,
       type: this.newApp.type,
       student_ids: [this.newApp.studentId],
     };
@@ -188,7 +187,7 @@ export class IndividualConsultationAppointments implements OnInit {
       description: this.selectedApp.details,
       date: this.selectedApp.rawDate,
       time: this.selectedApp.rawTime,
-      end_time: this.selectedApp.rawEndTime, // 🌟 ส่งเวลาสิ้นสุดให้ PHP
+      end_time: this.selectedApp.rawEndTime,
       type: this.selectedApp.type,
     };
     this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
@@ -346,7 +345,6 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   openCreateModal() {
-    // 🌟 รีเซ็ตค่าให้ว่างตอนเปิด
     this.newApp = {
       studentId: '',
       date: '',
@@ -434,7 +432,6 @@ export class IndividualConsultationAppointments implements OnInit {
     return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  // 🌟 ปรับฟังก์ชันให้รวมเวลาสิ้นสุดได้
   formatTime(start: string, end?: string) {
     let str = start ? start.substring(0, 5) : '';
     if (end) {
