@@ -251,11 +251,17 @@ function dlPdf(){
         this.curriculumYear.set(profile.curriculum_year || '');
 
         forkJoin({
-          curriculum: this.http.get<any[]>(`${this.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(profile.major)}`),
+          curriculum: this.http.get<any>(`${this.apiUrl}/get_curriculum.php?major_name=${encodeURIComponent(profile.major)}`),
           passed:     this.http.get<any[]>(`${this.apiUrl}/get_student_passed_courses.php?student_id=${profile.student_id}`)
         }).subscribe({
           next: ({ curriculum, passed }) => {
-            this.curriculum.set(curriculum);
+            // get_curriculum.php ส่งกลับเป็น { success, curriculum_year, categories }
+            // ไม่ใช่ array ตรงๆ ต้องดึง .categories ออกมาก่อน
+            const categories = curriculum?.categories ?? [];
+            this.curriculum.set(categories);
+            if (curriculum?.curriculum_year) {
+              this.curriculumYear.set(String(curriculum.curriculum_year));
+            }
 
             const map: Record<number, any> = {};
             passed.forEach(p => {
@@ -269,7 +275,7 @@ function dlPdf(){
 
             // หา free elective courses (ไม่อยู่ใน curriculum modules)
             const currIds = new Set<number>();
-            curriculum.forEach((cat: any) =>
+            categories.forEach((cat: any) =>
               cat.modules?.forEach((m: any) =>
                 m.courses?.forEach((c: any) => currIds.add(+c.course_id))
               )
@@ -299,8 +305,16 @@ function dlPdf(){
             }
 
             this.modalLoading.set(false);
+          },
+          error: err => {
+            console.error('[study-results] modal data load error:', err);
+            this.modalLoading.set(false);
           }
         });
+      },
+      error: err => {
+        console.error('[study-results] profile load error:', err);
+        this.modalLoading.set(false);
       }
     });
   }
