@@ -40,8 +40,12 @@ export class AssignAdvisorComponent implements OnInit {
   isYearDropdownOpen = false;
   showDeleteModal = false;
   targetToDelete: any = null;
-  selectedSemester: number = 1;
-  isSemesterDropdownOpen = false;
+
+  // ตัวแปรควบคุม Dropdown ปีการศึกษา (แทนที่ dropdown ภาคเรียนเดิม)
+  readonly currentAcademicYear = new Date().getFullYear() + 543;
+  academicYears: number[] = [this.currentAcademicYear - 1, this.currentAcademicYear, this.currentAcademicYear + 1];
+  selectedAcademicYear: number = this.currentAcademicYear;
+  isAcademicYearDropdownOpen = false;
 
   // 💡 เพิ่มตัวแปรสำหรับควบคุม "ตารางดูประวัติ" และ "Modal เปลี่ยนอาจารย์"
   assignedList: any[] = [];             // รายชื่อนักศึกษาที่จัดสรรอาจารย์แล้วทั้งหมด
@@ -151,6 +155,7 @@ export class AssignAdvisorComponent implements OnInit {
     if (this.isDeptDropdownOpen) {
       this.isBranchDropdownOpen = false;
       this.isYearDropdownOpen = false;
+      this.isAcademicYearDropdownOpen = false;
     }
   }
 
@@ -185,6 +190,7 @@ export class AssignAdvisorComponent implements OnInit {
     if (this.isBranchDropdownOpen) {
       this.isDeptDropdownOpen = false;
       this.isYearDropdownOpen = false;
+      this.isAcademicYearDropdownOpen = false;
     }
   }
 
@@ -200,6 +206,7 @@ export class AssignAdvisorComponent implements OnInit {
     if (this.isYearDropdownOpen) {
       this.isBranchDropdownOpen = false;
       this.isDeptDropdownOpen = false;
+      this.isAcademicYearDropdownOpen = false;
     }
   }
 
@@ -229,18 +236,18 @@ export class AssignAdvisorComponent implements OnInit {
   }
 
   // ================= 3.5 ระบบจัดการเทอม =================
-  toggleSemesterDropdown() {
-    this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
-    if (this.isSemesterDropdownOpen) {
+  toggleAcademicYearDropdown() {
+    this.isAcademicYearDropdownOpen = !this.isAcademicYearDropdownOpen;
+    if (this.isAcademicYearDropdownOpen) {
       this.isDeptDropdownOpen = false;
       this.isBranchDropdownOpen = false;
       this.isYearDropdownOpen = false;
     }
   }
 
-  selectSemester(sem: number) {
-    this.selectedSemester = sem;
-    this.isSemesterDropdownOpen = false;
+  selectAcademicYear(year: number) {
+    this.selectedAcademicYear = year;
+    this.isAcademicYearDropdownOpen = false;
     this.cdr.detectChanges();
   }
 
@@ -323,7 +330,7 @@ export class AssignAdvisorComponent implements OnInit {
     const payload = {
       advisor_ids: this.selectedAdvisors.map(a => a.id),
       student_ids: this.selectedStudents,
-      semester: this.selectedSemester
+      year: this.selectedAcademicYear
     };
 
     this.http.post<any>(`${environment.apiUrl}/assign_advisor.php`, payload).subscribe({
