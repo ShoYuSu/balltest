@@ -1,4 +1,4 @@
-<div class="p-8 bg-gray-50 min-h-screen" (click)="activeDropdownId.set(null); isFilterDropdownOpen.set(false)">
+<div class="p-8 bg-gray-50 min-h-screen" (click)="closeDropdowns()">
   <div class="flex justify-between items-start mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">การนัดหมายปรึกษา — รายกลุ่ม</h1>
@@ -40,7 +40,12 @@
       <span class="material-symbols-outlined text-green-600">table_view</span> Export Excel
     </button>
 
-    <button (click)="isCreateModalOpen.set(true)" class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
+    <!-- 🌟 ปุ่มจัดการประเภทรายกลุ่ม -->
+    <button (click)="openManageTypesModal($event)" class="px-4 py-2.5 bg-white hover:bg-yellow-50 border border-gray-200 text-yellow-600 hover:border-yellow-500 text-sm font-medium rounded-md flex items-center gap-1 transition-all shadow-sm">
+      <span class="material-symbols-outlined ">settings</span> จัดการประเภท
+    </button>
+
+    <button (click)="openCreateModal()" class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
       <span class="material-symbols-outlined">group_add</span> เพิ่มนัดหมายกลุ่ม
     </button>
   </div>
@@ -117,8 +122,8 @@
 </div>
 
 @if (isCreateModalOpen()) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" (click)="closeDropdowns()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
       <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
           <span class="material-symbols-outlined text-orange-500 text-2xl">calendar_month</span> สร้างนัดหมายใหม่
@@ -169,14 +174,9 @@
           }
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
-            <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
-          </div>
-          <div>
-            <!-- ให้ layout เสมอกัน แม้ไม่มีช่องเวลา -->
-          </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-800 mb-1">วันที่</label>
+          <input type="date" [(ngModel)]="newApp.date" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600">
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -190,13 +190,59 @@
           </div>
         </div>
 
+        <!-- 🌟 แทนที่ Select ด้วย Custom Dropdown -->
         <div>
-          <label class="block text-sm font-bold text-gray-800 mb-1">ประเภทหัวข้อ</label>
-          <select [(ngModel)]="newApp.type" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white">
-            @for (t of availableTypes(); track t) {
-              <option [value]="t">{{ t }}</option>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
+            <button (click)="openManageTypesModal($event)"
+                    class="text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-sm">settings</span> จัดการประเภท
+            </button>
+          </div>
+          <div class="relative">
+            <input type="text" [(ngModel)]="newApp.type"
+                   (click)="$event.stopPropagation(); isCreateTypeOpen.set(true)"
+                   (focus)="isCreateTypeOpen.set(true)"
+                   (input)="isCreateTypeOpen.set(true)"
+                   placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
+                   class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white">
+            @if (isCreateTypeOpen()) {
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
+                @for (t of filteredCreateTypes; track t) {
+                  <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
+                       [ngClass]="newApp.type === t ? 'bg-orange-50' : ''">
+                    <button (click)="selectCreateType(t)"
+                            class="flex-1 text-left px-4 py-2.5 text-sm"
+                            [ngClass]="newApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
+                      {{ t }}
+                    </button>
+                    <div class="flex items-center pr-3 gap-1">
+                      @if (newApp.type === t) {
+                        <span class="material-symbols-outlined text-orange-500 text-base">check</span>
+                      }
+                      <button (click)="deleteType(t, $event)"
+                              class="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <span class="material-symbols-outlined text-sm">close</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+                @if (!availableTypes().includes(newApp.type) && newApp.type.trim() !== '') {
+                  <div (click)="addCreateType()"
+                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-sm font-bold text-orange-600 border-t border-gray-100">
+                    <span class="material-symbols-outlined text-base">add_circle</span>
+                    สร้างประเภท "{{ newApp.type }}"
+                  </div>
+                }
+                @if (filteredCreateTypes.length === 0 && availableTypes().includes(newApp.type)) {
+                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ไม่พบประเภทที่ค้นหา</div>
+                }
+                @if (availableTypes().length === 0 && newApp.type.trim() === '') {
+                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
+                }
+              </div>
             }
-          </select>
+          </div>
         </div>
 
         <div>
@@ -213,7 +259,6 @@
       <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100 rounded-b-3xl">
         <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
 
-        <!-- 🌟 ปุ่มสร้างนัดหมาย ล็อคสีเทาถ้าข้อมูลไม่ครบ -->
         <button (click)="submitCreateAppointment()"
                 [disabled]="selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details"
                 [ngClass]="(selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
@@ -226,8 +271,8 @@
 }
 
 @if (isEditModalOpen() && editingApp) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" (click)="closeDropdowns()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
       <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-center shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
           <span class="material-symbols-outlined text-orange-500 text-2xl">edit_calendar</span> แก้ไขนัดหมายกลุ่ม
@@ -297,13 +342,55 @@
           </div>
         </div>
 
+        <!-- 🌟 แทนที่ Select ด้วย Custom Dropdown -->
         <div>
-          <label class="block text-sm font-bold text-gray-800 mb-1">ประเภทหัวข้อ</label>
-          <select [(ngModel)]="editingApp.type" class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white">
-            @for (t of availableTypes(); track t) {
-              <option [value]="t">{{ t }}</option>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
+            <button (click)="openManageTypesModal($event)"
+                    class="text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-sm">settings</span> จัดการประเภท
+            </button>
+          </div>
+          <div class="relative">
+            <input type="text" [(ngModel)]="editingApp.type"
+                   (click)="$event.stopPropagation(); isEditTypeOpen.set(true)"
+                   (focus)="isEditTypeOpen.set(true)"
+                   (input)="isEditTypeOpen.set(true)"
+                   class="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white">
+            @if (isEditTypeOpen()) {
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
+                @for (t of filteredEditTypes; track t) {
+                  <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
+                       [ngClass]="editingApp.type === t ? 'bg-orange-50' : ''">
+                    <button (click)="selectEditType(t)"
+                            class="flex-1 text-left px-4 py-2.5 text-sm"
+                            [ngClass]="editingApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
+                      {{ t }}
+                    </button>
+                    <div class="flex items-center pr-3 gap-1">
+                      @if (editingApp.type === t) {
+                        <span class="material-symbols-outlined text-orange-500 text-base">check</span>
+                      }
+                      <button (click)="deleteType(t, $event)"
+                              class="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                        <span class="material-symbols-outlined text-sm">close</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+                @if (!availableTypes().includes(editingApp.type) && editingApp.type?.trim() !== '') {
+                  <div (click)="addEditType()"
+                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-sm font-bold text-orange-600 border-t border-gray-100">
+                    <span class="material-symbols-outlined text-base">add_circle</span>
+                    สร้างประเภท "{{ editingApp.type }}"
+                  </div>
+                }
+                @if (availableTypes().length === 0) {
+                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
+                }
+              </div>
             }
-          </select>
+          </div>
         </div>
 
         <div>
@@ -320,7 +407,6 @@
       <div class="p-6 bg-gray-50 flex justify-end gap-3 shrink-0 border-t border-gray-100 rounded-b-3xl">
         <button (click)="closeModals()" class="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">ยกเลิก</button>
 
-        <!-- 🌟 ปุ่มบันทึกการแก้ไข ล็อคสีเทาถ้าข้อมูลไม่ครบ -->
         <button (click)="submitEditAppointment()"
                 [disabled]="selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details"
                 [ngClass]="(selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
@@ -386,6 +472,63 @@
       <div class="flex gap-3">
         <button (click)="closeModals()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">กลับไป</button>
         <button (click)="confirmCancel()" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-sm">ใช่, ยกเลิกเลย</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 🌟 หน้าต่าง จัดการประเภท -->
+@if (isManageTypesModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-orange-500">category</span> จัดการประเภทหัวข้อ
+        </h2>
+        <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
+      </div>
+
+      <div class="p-6 space-y-3 max-h-[55vh] overflow-y-auto overscroll-contain">
+        @if (availableTypes().length === 0) {
+          <div class="text-center py-8 text-gray-400">
+            <span class="material-symbols-outlined text-4xl mb-2 block text-gray-300">label_off</span>
+            <p class="text-sm">ยังไม่มีประเภทหัวข้อ</p>
+          </div>
+        }
+        @for (type of availableTypes(); track type) {
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-orange-200 transition-colors">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-orange-400 text-base">label</span>
+              <div>
+                <span class="font-medium text-gray-800 text-sm">{{ type }}</span>
+                <span class="text-xs text-gray-400 ml-2">
+                  ({{ typeUsageCount(type) }} นัดหมาย)
+                </span>
+              </div>
+            </div>
+            <button (click)="deleteType(type, $event)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="p-6 border-t border-gray-100 bg-gray-50 space-y-3">
+        <label class="block text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
+        <div class="flex gap-2">
+          <input type="text"
+                 [ngModel]="newTypeInput()"
+                 (ngModelChange)="newTypeInput.set($event)"
+                 (keydown.enter)="addNewTypeFromModal()"
+                 placeholder="ชื่อประเภทหัวข้อ..."
+                 class="flex-1 p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm">
+          <button (click)="addNewTypeFromModal()"
+                  class="px-4 py-2.5 bg-orange-500 text-white text-sm font-bold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">add</span> เพิ่ม
+          </button>
+        </div>
+        <p class="text-xs text-gray-400">การลบประเภทไม่กระทบข้อมูลนัดหมายที่มีอยู่แล้ว</p>
       </div>
     </div>
   </div>
