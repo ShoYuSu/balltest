@@ -63,15 +63,20 @@
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-2 shrink-0">
           <div>
             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span class="material-symbols-outlined text-indigo-600 font-semibold text-2xl">timeline</span>
-              กราฟเส้นอัตราความครอบคลุม
+              <span class="material-symbols-outlined text-indigo-600 font-semibold text-2xl">bar_chart</span>
+              กราฟแท่งอัตราความครอบคลุม
             </h3>
             <p class="text-sm text-gray-400 mt-1">
-              แนวโน้มร้อยละการให้คำปรึกษาเปรียบเทียบแต่ละภาควิชา
+              ร้อยละนักศึกษาที่ได้รับการดูแล/ให้คำปรึกษาแล้ว เทียบรายสาขา 
             </p>
           </div>
-          <div class="px-3 py-1 bg-indigo-50 rounded-xl border border-indigo-100 shrink-0">
-            <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">เทรนด์ภาพรวม</span>
+          <div class="px-3 py-1.5 bg-indigo-50 rounded-xl border border-indigo-100 shrink-0 text-right">
+            <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest block">
+              ปีการศึกษา {{ selectedYear }}
+            </span>
+            <span class="text-[10px] font-semibold text-indigo-500">
+              ภาคเรียนที่ {{ selectedSemester }}
+            </span>
           </div>
         </div>
 
@@ -88,52 +93,31 @@
               <text x="30" y="147" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">33%</text>
               <text x="30" y="204" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">0%</text>
 
-              <defs>
-                <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.2"/>
-                  <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-
-              <path [attr.d]="areaChartPath" fill="url(#lineGradient)" />
-              <path [attr.d]="lineChartPath" fill="none" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"/>
-
-              <g *ngFor="let item of advisingKpiData; let i = index" class="group cursor-pointer">
-                <line 
-                  [attr.x1]="getPointX(i)" [attr.y1]="30" 
-                  [attr.x2]="getPointX(i)" [attr.y2]="200" 
-                  stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4" 
-                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              <g *ngFor="let item of advisingKpiData; let i = index">
+                <!-- แท่งกราฟ มุมโค้งมน สะอาดตา -->
+                <rect
+                  [attr.x]="getBarX(i)"
+                  [attr.y]="getPointY(item.advising_percentage)"
+                  [attr.width]="barWidth"
+                  [attr.height]="getBarHeight(item.advising_percentage)"
+                  rx="10"
+                  [attr.fill]="item.colorHex || '#4f46e5'"
+                  class="drop-shadow-sm"
                 />
 
-                <circle
-                  [attr.cx]="getPointX(i)"
-                  [attr.cy]="getPointY(item.advising_percentage)"
-                  r="10"
-                  fill="#ffffff"
-                  [attr.stroke]="item.colorHex || '#4f46e5'"
-                  stroke-width="5"
-                  class="transition-all duration-300 group-hover:r-[14px] shadow-lg"
-                />
-
-                <rect 
-                  [attr.x]="getPointX(i) - 25" 
-                  [attr.y]="getPointY(item.advising_percentage) - 42" 
-                  width="50" height="24" rx="12" fill="#1e293b" 
-                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
-                <text 
-                  [attr.x]="getPointX(i)" 
-                  [attr.y]="getPointY(item.advising_percentage) - 26" 
-                  text-anchor="middle" 
-                  class="text-xs font-bold fill-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                <!-- % แสดงตลอด ไม่ต้อง hover -->
+                <text
+                  [attr.x]="getPointX(i)"
+                  [attr.y]="getPointY(item.advising_percentage) - 12"
+                  text-anchor="middle"
+                  class="text-[13px] font-black fill-gray-700"
                 >
                   {{item.advising_percentage}}%
                 </text>
 
                 <text 
                   [attr.x]="getPointX(i)" y="225" text-anchor="middle" 
-                  class="text-[12px] font-bold fill-gray-600 transition-colors group-hover:fill-indigo-600"
+                  class="text-[12px] font-bold fill-gray-600"
                 >
                   {{item.major}}
                 </text>
@@ -147,7 +131,7 @@
             </svg>
             
             <div *ngIf="advisingKpiData.length === 0" class="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-10">
-              <span class="material-symbols-outlined text-4xl text-slate-300">show_chart</span>
+              <span class="material-symbols-outlined text-4xl text-slate-300">bar_chart</span>
               <p class="text-xs text-gray-400 mt-2 font-semibold">ยังไม่มีข้อมูลสถิติการให้คำปรึกษาในระบบ</p>
             </div>
           </div>
@@ -163,12 +147,17 @@
             </h3>
             <p class="text-sm text-gray-400 mt-1">วิเคราะห์สมรรถนะเฉลี่ยนักศึกษา</p>
           </div>
-          <span class="text-xs px-4 py-2 rounded-full font-semibold shadow-sm" [ngClass]="userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'">
-            {{ userRole === 'admin' ? 'ภาพรวมคณะ' : 'กลุ่มดูแล' }}
-          </span>
+          <div class="flex flex-col items-end gap-1.5 shrink-0">
+            <span class="text-xs px-4 py-2 rounded-full font-semibold shadow-sm" [ngClass]="userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'">
+              {{ userRole === 'admin' ? 'ภาพรวมคณะ' : 'กลุ่มดูแล' }}
+            </span>
+            <span class="text-[10px] font-semibold text-gray-400">
+              ปีการศึกษา {{ selectedYear }} • ภาคเรียนที่ {{ selectedSemester }}
+            </span>
+          </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto pr-2 space-y-3 pb-2 custom-scrollbar">
+        <div class="flex-1 overflow-y-auto pr-2 space-y-3 pb-2 custom-scrollbar mt-4">
           <div *ngFor="let plo of ploKpiData" class="group flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/40 hover:to-white hover:shadow-lg transition-all duration-300">
             <div class="flex items-center gap-4 flex-1 pr-4 min-w-0">
               

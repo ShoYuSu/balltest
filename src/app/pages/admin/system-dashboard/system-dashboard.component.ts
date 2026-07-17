@@ -15,8 +15,8 @@ export class SystemDashboardComponent implements OnInit {
   selectedYear!: number;
   selectedSemester: number = 1;
   selectedMajor: string = 'all'; 
-  userRole: string = 'admin';
-  currentAdvisorId: number = 14;
+  userRole: string = 'student'; // ค่า default ก่อนถอดรหัส token — จะถูกแทนที่ทันทีใน ngOnInit
+  currentAdvisorId: number = 0;
 
   availableYears: number[] = [];
   availableMajors: string[] = []; 
@@ -69,9 +69,40 @@ export class SystemDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.setUserFromToken();
     this.loadStats();
     this.loadAvailableYears();
     this.loadAvailableMajors();
+  }
+
+  private setUserFromToken() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const payload = this.decodeJwtPayload(token);
+      if (payload?.role) {
+        this.userRole = payload.role;
+      }
+      if (payload?.advisor_id) {
+        this.currentAdvisorId = Number(payload.advisor_id);
+      }
+    } catch (e) {
+      console.error('ถอดรหัส Token ไม่สำเร็จ:', e);
+    }
+  }
+
+  private decodeJwtPayload(token: string): any {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const jsonPayload = decodeURIComponent(
+      atob(padded)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   }
 
   loadAvailableYears() {
@@ -99,8 +130,10 @@ export class SystemDashboardComponent implements OnInit {
     });
   }
 
+  // 🔴 เพิ่ม this.cdr.detectChanges() เพื่อให้อัปเดตหน้าจอทันทีเมื่อเปลี่ยนฟิลเตอร์
   onFilterChange() {
     this.loadKpiData();
+    this.cdr.detectChanges(); 
   }
 
   loadStats() {
@@ -127,6 +160,7 @@ export class SystemDashboardComponent implements OnInit {
     this.isYearDropdownOpen = !this.isYearDropdownOpen;
     this.isSemesterDropdownOpen = false;
     this.isMajorDropdownOpen = false;
+    this.cdr.detectChanges(); // 🔴 สั่งให้อัปเดตการเปิด/ปิด เมนูทันที
   }
 
   toggleSemesterDropdown(event: Event) {
@@ -134,6 +168,7 @@ export class SystemDashboardComponent implements OnInit {
     this.isSemesterDropdownOpen = !this.isSemesterDropdownOpen;
     this.isYearDropdownOpen = false;
     this.isMajorDropdownOpen = false;
+    this.cdr.detectChanges(); // 🔴 สั่งให้อัปเดตการเปิด/ปิด เมนูทันที
   }
 
   toggleMajorDropdown(event: Event) {
@@ -141,31 +176,41 @@ export class SystemDashboardComponent implements OnInit {
     this.isMajorDropdownOpen = !this.isMajorDropdownOpen;
     this.isYearDropdownOpen = false;
     this.isSemesterDropdownOpen = false;
+    this.cdr.detectChanges(); // 🔴 สั่งให้อัปเดตการเปิด/ปิด เมนูทันที
   }
 
+  // 🔴 แก้ไขฟังก์ชันเลือกปี: สั่งอัปเดตหน้าจอทันทีหลังเปลี่ยนค่า
   selectYear(year: number) {
     this.selectedYear = year;
     this.isYearDropdownOpen = false;
     this.onFilterChange();
+    this.cdr.detectChanges();
   }
 
+  // 🔴 แก้ไขฟังก์ชันเลือกภาคเรียน: สั่งอัปเดตหน้าจอทันทีหลังเปลี่ยนค่า
   selectSemester(semester: number) {
     this.selectedSemester = semester;
     this.isSemesterDropdownOpen = false;
     this.onFilterChange();
+    this.cdr.detectChanges();
   }
 
+  // 🔴 แก้ไขฟังก์ชันเลือกสาขา: สั่งอัปเดตหน้าจอทันทีหลังเปลี่ยนค่า
   selectMajor(major: string) {
     this.selectedMajor = major;
     this.isMajorDropdownOpen = false;
     this.onFilterChange();
+    this.cdr.detectChanges();
   }
 
   @HostListener('document:click')
   clickout() {
-    this.isYearDropdownOpen = false;
-    this.isSemesterDropdownOpen = false;
-    this.isMajorDropdownOpen = false;
+    if (this.isYearDropdownOpen || this.isSemesterDropdownOpen || this.isMajorDropdownOpen) {
+      this.isYearDropdownOpen = false;
+      this.isSemesterDropdownOpen = false;
+      this.isMajorDropdownOpen = false;
+      this.cdr.detectChanges(); // 🔴 สั่งอัปเดตหน้าจอทันทีตอนคลิกที่ว่างแล้วเมนูปิด
+    }
   }
 
   loadKpiData() {
@@ -184,18 +229,18 @@ export class SystemDashboardComponent implements OnInit {
 
           if (item.advising_percentage >= 90) {
             greenTone  = '#10b981'; // emerald-500
-            textStatus = '🏆 Leader Tier (ดูแลดีเยี่ยม)';
+            textStatus = ' ดูแลครบถ้วน (≥90%)';
           } else if (item.advising_percentage >= 70) {
             greenTone  = '#34d399'; // emerald-400
-            textStatus = '✨ Passed Tier (ผ่านเกณฑ์ดี)';
+            textStatus = ' ดูแลตามเกณฑ์ (≥70%)';
           } else {
             greenTone  = '#a3e635'; // lime-400
-            textStatus = '⚡ Improving Tier (ควรเร่งส่งเสริม)';
+            textStatus = ' ต้องเร่งติดตาม (<70%)';
           }
 
           return { ...item, colorHex: greenTone, statusLabel: textStatus };
         });
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // อัปเดตทันทีเมื่อได้ข้อมูลกราฟ
       });
 
     // PLO KPI
@@ -203,19 +248,25 @@ export class SystemDashboardComponent implements OnInit {
       .get(`${apiBase}?action=plo_kpi&year=${this.selectedYear}&semester=${this.selectedSemester}&role=${this.userRole}&advisor_id=${this.currentAdvisorId}${majorParam}`)
       .subscribe((res: any) => {
         this.ploKpiData = res;
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // อัปเดตทันทีเมื่อได้ข้อมูล PLO
       });
   }
 
-  // ─── Chart Calculation Helpers (เพิ่มใหม่สำหรับกราฟเส้น) ───
+  // ─── Chart Calculation Helpers (แท่งกราฟ + วงกลมยอดแท่ง) ───
 
-  getPointX(index: number): number {
+  readonly barWidth = 48;
+
+  private calcX(index: number, count: number): number {
     const minX = 60;
     const maxX = 740;
     const width = maxX - minX;
-    if (!this.advisingKpiData || this.advisingKpiData.length === 0) return minX;
-    if (this.advisingKpiData.length === 1) return minX + width / 2;
-    return minX + index * (width / (this.advisingKpiData.length - 1));
+    if (count === 0) return minX;
+    if (count === 1) return minX + width / 2;
+    return minX + index * (width / (count - 1));
+  }
+
+  getPointX(index: number): number {
+    return this.calcX(index, this.advisingKpiData?.length || 0);
   }
 
   getPointY(percentage: number): number {
@@ -225,22 +276,12 @@ export class SystemDashboardComponent implements OnInit {
     return maxY - (percentage / 100) * height;
   }
 
-  get lineChartPath(): string {
-    if (!this.advisingKpiData || this.advisingKpiData.length === 0) return '';
-    return this.advisingKpiData.map((d, i) => {
-      const x = this.getPointX(i);
-      const y = this.getPointY(d.advising_percentage);
-      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-    }).join(' ');
+  getBarX(index: number): number {
+    return this.getPointX(index) - this.barWidth / 2;
   }
 
-  get areaChartPath(): string {
-    if (!this.advisingKpiData || this.advisingKpiData.length === 0) return '';
-    let path = this.lineChartPath;
-    const firstX = this.getPointX(0);
-    const lastX = this.getPointX(this.advisingKpiData.length - 1);
-    const bottomY = 200;
-    path += ` L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-    return path;
+  getBarHeight(percentage: number): number {
+    const baseline = 200;
+    return baseline - this.getPointY(percentage);
   }
 }
