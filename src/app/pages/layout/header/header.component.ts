@@ -178,7 +178,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
+    // 1. แอบ Backup รหัสที่จำไว้ก่อน
+    const savedEmail = localStorage.getItem('savedEmail');
+    const savedPassword = localStorage.getItem('savedPassword');
+
+    // 2. ล้างบางข้อมูล (Token และ Profile บินหมด)
     localStorage.clear();
+
+    // 3. เอารหัสผ่านที่แอบ Backup ไว้ยัดกลับเข้าไปใหม่ เพื่อให้หน้า Login ยังจำได้
+    if (savedEmail && savedPassword) {
+      localStorage.setItem('savedEmail', savedEmail);
+      localStorage.setItem('savedPassword', savedPassword);
+    }
+
+    // 4. เด้งกลับหน้า Login
     window.location.href = 'http://localhost:4200/login';
   }
 }
