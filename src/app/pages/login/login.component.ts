@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -21,19 +21,41 @@ export class LoginComponent {
   loginStep: 'select' | 'student' | 'teacher' = 'select';
   hidePassword = true;
 
+  // 🌟 เพิ่ม rememberMe เข้าไปใน FormGroup
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    rememberMe: new FormControl(false),
   });
 
   loading = false;
   showErrorModal = false;
   errorMessage = '';
 
+  ngOnInit() {
+    // 🌟 ดึงข้อมูลที่เคยบันทึกไว้ตอนเปิดหน้าเว็บมาใส่ฟอร์ม
+    this.loadSavedCredentials();
+  }
+
+  // 🌟 ฟังก์ชันโหลดข้อมูลที่จำไว้
+  loadSavedCredentials() {
+    const savedEmail = localStorage.getItem('savedEmail');
+    const savedPassword = localStorage.getItem('savedPassword');
+
+    if (savedEmail && savedPassword) {
+      this.loginForm.patchValue({
+        email: savedEmail,
+        password: atob(savedPassword), // ถอดรหัส Base64 กลับเป็นรหัสผ่าน
+        rememberMe: true,
+      });
+    }
+  }
+
   setStep(step: 'select' | 'student' | 'teacher') {
     this.loginStep = step;
     this.isStudentPage = step === 'student';
-    this.loginForm.reset();
+    this.loginForm.reset(); // ล้างฟอร์มเวลาสลับหน้า
+    this.loadSavedCredentials(); // 🌟 โหลดข้อมูลที่จำไว้กลับมาใส่ใหม่
     this.cdr.detectChanges();
   }
 
@@ -50,7 +72,7 @@ export class LoginComponent {
     }
 
     this.loading = true;
-    const { email, password } = this.loginForm.value;
+    const { email, password, rememberMe } = this.loginForm.value;
 
     this.http
       .post(`${environment.apiUrl}/login.php`, {
@@ -64,15 +86,21 @@ export class LoginComponent {
             const role = res.role?.toLowerCase().trim();
             const tokenToSave = res.token ? res.token : 'fake-token-for-test';
 
-            // 🌟 เก็บแค่ Token (รูปโปรไฟล์เก็บไว้โหลดไวๆ ได้ ไม่เป็นไร)
             localStorage.setItem('token', tokenToSave);
             localStorage.setItem('img_profile', res.img_profile || '');
 
+            // 🌟 จัดการจดจำรหัสผ่าน ถ้าติ๊กให้จำ ถ้าไม่ติ๊กให้ลบทิ้ง
+            if (rememberMe) {
+              localStorage.setItem('savedEmail', email as string);
+              localStorage.setItem('savedPassword', btoa(password as string)); // เข้ารหัสเป็น Base64
+            } else {
+              localStorage.removeItem('savedEmail');
+              localStorage.removeItem('savedPassword');
+            }
+
             if (role === 'student') {
-              // 🚀 นักศึกษาไป 4200 ต่อ
               this.router.navigate(['/personal-data']);
             } else {
-              // 🚀 อาจารย์/แอดมิน โยนไป 4201 ส่งไปแค่ TOKEN ตัวเดียวจบ!! ไม่มี role ติดไปแล้ว
               window.location.href = `http://localhost:4201/dashboard?token=${tokenToSave}`;
             }
           } else {

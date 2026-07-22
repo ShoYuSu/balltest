@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#F5FFFA]',
     },
     {
-      label: 'นัดหมายรอดำเนินการ', // 🌟 เปลี่ยนชื่อให้ชัดเจนขึ้นนิดนึงครับ
+      label: 'การนัดหมาย', // 🌟 เปลี่ยนชื่อให้ชัดเจนขึ้นนิดนึงครับ
       value: 0,
       icon: 'person',
       bgColor: 'bg-yellow-100',
@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit {
       cardBg: 'bg-[#FFFDF0]',
     },
     {
-      label: 'บันทึกการปรึกษา (คน)',
+      label: 'บันทึกการปรึกษา',
       value: 0,
       icon: 'assignment',
       bgColor: 'bg-purple-100',
