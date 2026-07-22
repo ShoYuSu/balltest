@@ -1,0 +1,19 @@
+/* กล่องฟอร์มด้านในโมดัล: ซ่อน scrollbar เดิม + ใส่เงาไล่สีบอกว่ายังเลื่อนได้อีก
+   (เงาจะโผล่/หายเองอัตโนมัติตามตำแหน่งที่เลื่อนถึง ไม่ต้องใช้ JS) */
+.modal-scroll-area {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge เก่า */
+
+  background:
+    linear-gradient(white 30%, rgba(255, 255, 255, 0)) center top,
+    linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(15, 23, 42, .12), rgba(15, 23, 42, 0)) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(15, 23, 42, .12), rgba(15, 23, 42, 0)) center bottom;
+  background-repeat: no-repeat;
+  background-color: #fff;
+  background-size: 100% 32px, 100% 32px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
+}
+.modal-scroll-area::-webkit-scrollbar {
+  display: none;                /* Chrome/Edge/Safari */
+}

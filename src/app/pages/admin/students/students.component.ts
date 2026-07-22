@@ -598,6 +598,13 @@ export class StudentsComponent implements OnInit {
     if (this.isMajorDropdownOpen) this.isYearDropdownOpen = false;
   }
 
+  // 🌟 แยกรายชื่ออาจารย์ที่ปรึกษา (advisor_name เป็น string คั่นด้วย ", " จาก GROUP_CONCAT) ให้เป็น array เพื่อแสดงคนละบรรทัด
+  advisorList(student: any): string[] {
+    const raw = (student?.advisor_name || '').trim();
+    if (!raw) return ['-'];
+    return raw.split(',').map((n: string) => n.trim()).filter((n: string) => n);
+  }
+
   get uniqueMajors() {
     if (!this.students) return [];
     const majorsFromStudents = this.students.map((s) => s.major).filter((m) => m);

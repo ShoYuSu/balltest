@@ -110,7 +110,7 @@
 
               <!-- ADVISOR AVATAR -->
               <div class="advisor-mini">
-                <img [src]="advisorImgUrl(a.advisor_img)" class="advisor-mini-avatar"
+                <img [src]="advisorImgUrl(a.advisor_img, a.advisor_name)" class="advisor-mini-avatar"
                      [title]="a.advisor_name" />
               </div>
 
@@ -221,7 +221,7 @@
 
         <!-- Avatar + name -->
         <div class="advisor-profile">
-          <img [src]="advisorImgUrl(selectedAppointment.advisor_img)"
+          <img [src]="advisorImgUrl(selectedAppointment.advisor_img, selectedAppointment.advisor_name)"
                class="advisor-avatar" />
           <div>
             <p class="advisor-name">{{ selectedAppointment.advisor_name }}</p>

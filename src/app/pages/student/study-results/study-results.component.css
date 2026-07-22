@@ -85,3 +85,37 @@
   transform: translateY(-2px);
   transition: 0.2s;
 }
+
+/* Search highlight ในโมดัลแก้ไขผลการเรียน (เนื้อหาถูกแทรกผ่าน innerHTML) */
+::ng-deep mark.search-hl {
+  background: rgba(245, 159, 10, 0.35);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 800;
+}
+
+/* Grade picker trigger — pill shape ทันสมัย เปิด popup เลือกเกรดเอง */
+.grade-btn:hover  { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.grade-btn:focus  { box-shadow: 0 0 0 3px rgba(245,159,10,.18); }
+
+/* Grade popup — เด้งเข้ามาสมูทๆ */
+.grade-popup {
+  transform-origin: top center;
+  animation: gradePopIn .18s cubic-bezier(.16,1,.3,1);
+}
+@keyframes gradePopIn {
+  from { opacity: 0; transform: scale(.9) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* วงกลมเกรดแต่ละอัน — เมาส์ชี้แล้ว pop ขึ้นสมูทๆ */
+.grade-circle {
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease;
+}
+.grade-circle:hover {
+  transform: scale(1.35) translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,.18);
+  position: relative;
+  z-index: 2;
+}

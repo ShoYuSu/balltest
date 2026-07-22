@@ -69,7 +69,8 @@ export class PersonalDataComponent implements OnInit {
     if (this.student.img_profile) {
       return `${environment.apiUrl}/${this.student.img_profile}`;
     }
-    return 'https://i.pravatar.cc/150?img=5';
+    // ไม่มีรูปใน DB → ใช้รูปตัวอักษรจาก ui-avatars เหมือนแท็บบนขวา (header) แทนรูปสมมุติ
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.student.full_name || 'ผู้ใช้งาน')}&background=fff7ed&color=ea580c`;
   }
 
   ngOnInit() {

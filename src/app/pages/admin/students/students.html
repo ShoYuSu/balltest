@@ -203,8 +203,17 @@
             >
           </div>
 
+          <div
+            *ngIf="col.columnDef === 'advisor'"
+            class="flex flex-col gap-0.5"
+            [class.text-gray-700]="s.status !== 'inactive'"
+            [class.text-gray-400]="s.status === 'inactive'"
+          >
+            <span *ngFor="let name of advisorList(s)">{{ name }}</span>
+          </div>
+
           <span
-            *ngIf="col.tag === 'text'"
+            *ngIf="col.tag === 'text' && col.columnDef !== 'advisor'"
             [class.text-gray-700]="s.status !== 'inactive'"
             [class.text-gray-400]="s.status === 'inactive'"
           >
@@ -315,18 +324,25 @@
   class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
 >
   <div
-    class="bg-white rounded-[16px] shadow-2xl w-full h-full max-w-[450px] overflow-y-auto transform transition-all"
+    class="bg-white rounded-[24px] shadow-2xl w-full max-w-[440px] max-h-[88vh] flex flex-col overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200"
   >
-    <div class="p-6 pb-0 flex justify-between items-start">
-      <h3 class="text-xl font-bold text-gray-800">
+    <!-- HEADER (คงที่ ไม่เลื่อนตาม) -->
+    <div class="p-6 pb-4 flex justify-between items-center border-b border-gray-100 shrink-0">
+      <h3 class="text-lg font-bold text-gray-800">
         {{ isEditMode ? 'แก้ไขข้อมูลนักศึกษา' : 'เพิ่มนักศึกษาใหม่' }}
       </h3>
-      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
-        <span class="material-symbols-outlined">close</span>
+      <button
+        type="button"
+        (click)="closeModal()"
+        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+      >
+        <span class="material-symbols-outlined text-xl">close</span>
       </button>
     </div>
 
-    <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="p-8 pt-4 space-y-4 text-left">
+    <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="flex flex-col flex-1 min-h-0">
+    <!-- BODY: เลื่อนได้ตรงนี้ที่เดียว มีเงาบอกว่ายังเลื่อนต่อได้ ไม่มี scrollbar โผล่ -->
+    <div class="modal-scroll-area flex-1 overflow-y-auto p-6 space-y-4 text-left">
       <div class="flex flex-col items-center">
         <div class="relative">
           <div
@@ -525,20 +541,20 @@
         </div>
       </div>
 
-      <div class="space-y-1">
-        <label class="text-xs font-semibold text-gray-600 uppercase">ปีหลักสูตร</label>
-        <div class="relative">
-          <input
-            type="text"
-            formControlName="curriculum_year"
-            readonly
-            placeholder="เลือกหลักสูตรเพื่อระบุปี"
-            class="w-full px-4 py-2.5 bg-gray-100/70 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed"
-          />
-        </div>
-      </div>
-
       <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-600 uppercase">ปีหลักสูตร</label>
+          <div class="relative">
+            <input
+              type="text"
+              formControlName="curriculum_year"
+              readonly
+              placeholder="เลือกหลักสูตรก่อน"
+              class="w-full px-4 py-2.5 bg-gray-100/70 border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed"
+            />
+          </div>
+        </div>
+
         <div class="space-y-1 relative">
           <label class="text-xs font-semibold text-gray-600 uppercase">ชั้นปี</label>
 
@@ -575,22 +591,24 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="flex gap-4 pt-10">
-        <button
-          type="button"
-          (click)="closeModal()"
-          class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all"
-        >
-          ยกเลิก
-        </button>
-        <button
-          type="submit"
-          class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all"
-        >
-          {{ isEditMode ? 'ยืนยันการแก้ไข' : 'บันทึกข้อมูล' }}
-        </button>
-      </div>
+    <!-- FOOTER (คงที่ ไม่เลื่อนตาม เห็นปุ่มบันทึก/ยกเลิกเสมอ = รู้ว่าฟอร์มจบตรงไหน) -->
+    <div class="flex gap-3 p-6 border-t border-gray-100 shrink-0">
+      <button
+        type="button"
+        (click)="closeModal()"
+        class="flex-1 py-3 border border-gray-200 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all"
+      >
+        ยกเลิก
+      </button>
+      <button
+        type="submit"
+        class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all"
+      >
+        {{ isEditMode ? 'ยืนยันการแก้ไข' : 'บันทึกข้อมูล' }}
+      </button>
+    </div>
     </form>
   </div>
 </div>

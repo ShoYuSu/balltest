@@ -21,7 +21,7 @@ export class UsersComponent implements OnInit {
   userToReset: any = null;
   userToDeleteId: any = null;
   currentPage: number = 1;
-  pageSize: number = 5;
+  pageSize: number = 10;
 
   searchText = '';
   users: any[] = []; // ข้อมูลต้นฉบับจากฐานข้อมูล

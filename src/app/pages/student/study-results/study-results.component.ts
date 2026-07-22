@@ -67,6 +67,9 @@ export class StudyResultsComponent implements OnInit {
   collapsedCats = signal<Set<number>>(new Set());
   collapsedMods = signal<Set<number>>(new Set());
 
+  // ─── Course Search (ในโมดัลแก้ไขผลการเรียน) ──────────────────
+  modalSearch = signal('');
+
   readonly gradeOptionsAF = ['', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'W'];
   readonly gradeOptionsSU = ['', 'S', 'U'];
 
@@ -78,6 +81,10 @@ export class StudyResultsComponent implements OnInit {
   // Fixed-position dropdown (เพื่อหลีกเลี่ยง overflow clip)
   freeDropdownRect: { top: number; left: number; width: number } | null = null;
   activeDropdownSlot = -1;
+
+  // Grade picker (custom dropdown แทน native <select> เพื่อดีไซน์ popup เองได้)
+  gradeDropdownRect: { top: number; left: number; width: number } | null = null;
+  activeGradeTarget: { courseId: number; options: string[] } | null = null;
 
   get activeDropdownData(): { slot: any; rect: { top: number; left: number; width: number } } | null {
     if (this.activeDropdownSlot < 0 || !this.freeDropdownRect) return null;
@@ -229,6 +236,7 @@ function dlPdf(){
 
   // ─── Modal ─────────────────────────────────────────────────
   openModal() {
+    this.modalSearch.set('');
     this.showModal.set(true);
     this.loadModalData();
   }
@@ -236,8 +244,13 @@ function dlPdf(){
   closeModal() {
     const lastTerm = this.selectedTerm();
     this.showModal.set(false);
+    this.modalSearch.set('');
+    this.closeGradeDropdown();
     this.loadStudyResults(lastTerm);
   }
+
+  onModalSearch(q: string) { this.modalSearch.set(q); }
+  clearModalSearch() { this.modalSearch.set(''); }
 
   loadModalData() {
     this.modalLoading.set(true);
@@ -327,13 +340,68 @@ function dlPdf(){
     return gradeSystem === 'ผ่าน/ไม่ผ่าน (S/U)' ? this.gradeOptionsSU : this.gradeOptionsAF;
   }
 
+  gradeSelectClass(grade: string | undefined): string {
+    if (!grade) return 'border-gray-200 text-gray-400 bg-white';
+    if (['A', 'B+', 'B', 'S'].includes(grade))   return 'border-emerald-300 text-emerald-700 bg-emerald-50';
+    if (['C+', 'C'].includes(grade))             return 'border-blue-300 text-blue-700 bg-blue-50';
+    if (['D+', 'D'].includes(grade))             return 'border-amber-300 text-amber-700 bg-amber-50';
+    if (['F', 'U', 'W'].includes(grade))         return 'border-red-300 text-red-700 bg-red-50';
+    return 'border-gray-200 text-gray-400 bg-white';
+  }
+
+  // ─── Grade Picker (custom dropdown) ────────────────────────
+  toggleGradeDropdown(courseId: number, options: string[], event: Event) {
+    if (this.activeGradeTarget?.courseId === courseId) {
+      this.closeGradeDropdown();
+      return;
+    }
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+
+    // แถวเดียวแนวนอน วงกลม 36px + gap 6px + padding container 8px ต่อฝั่ง
+    const circle = 36, gap = 6, pad = 16;
+    const width = options.length * circle + (options.length - 1) * gap + pad;
+    let left = rect.left + rect.width / 2 - width / 2; // จัดกึ่งกลางใต้ปุ่มที่กด
+    left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+
+    this.gradeDropdownRect = { top: rect.bottom + 8, left, width };
+    this.activeGradeTarget = { courseId, options };
+  }
+
+  closeGradeDropdown() {
+    this.activeGradeTarget = null;
+    this.gradeDropdownRect = null;
+  }
+
+  closeGradeDropdownDelayed() {
+    setTimeout(() => this.closeGradeDropdown(), 180);
+  }
+
+  pickGrade(grade: string) {
+    if (!this.activeGradeTarget) return;
+    this.onGradeChange(this.activeGradeTarget.courseId, grade);
+    this.closeGradeDropdown();
+  }
+
+  isGradeDropdownOpen(courseId: number): boolean {
+    return this.activeGradeTarget?.courseId === courseId;
+  }
+
+  get activeGradeValue(): string {
+    if (!this.activeGradeTarget) return '';
+    return this.passedMap()[this.activeGradeTarget.courseId]?.grade || '';
+  }
+
   toggleCat(catId: number) {
     const s = new Set(this.collapsedCats());
     s.has(catId) ? s.delete(catId) : s.add(catId);
     this.collapsedCats.set(s);
   }
 
-  isCatCollapsed(catId: number) { return this.collapsedCats().has(catId); }
+  isCatCollapsed(catId: number) {
+    if (this.modalSearch().trim()) return false; // ค้นหาอยู่ → กางทุกหมวดที่มีผลลัพธ์
+    return this.collapsedCats().has(catId);
+  }
 
   toggleMod(modId: number) {
     const s = new Set(this.collapsedMods());
@@ -341,9 +409,60 @@ function dlPdf(){
     this.collapsedMods.set(s);
   }
 
-  isModCollapsed(modId: number) { return this.collapsedMods().has(modId); }
+  isModCollapsed(modId: number) {
+    if (this.modalSearch().trim()) return false; // ค้นหาอยู่ → กางทุกกลุ่มที่มีผลลัพธ์
+    return this.collapsedMods().has(modId);
+  }
+
+  // ─── Search Matching ───────────────────────────────────────
+  private norm(s: string): string { return (s ?? '').toLowerCase().trim(); }
+
+  courseMatchesSearch(course: any): boolean {
+    const q = this.norm(this.modalSearch());
+    if (!q) return true;
+    return this.norm(course.course_code).includes(q) || this.norm(course.course_name).includes(q);
+  }
+
+  modHasMatch(mod: any): boolean {
+    if (!this.norm(this.modalSearch())) return true;
+    return (mod.courses ?? []).some((c: any) => this.courseMatchesSearch(c));
+  }
+
+  catHasMatch(cat: any): boolean {
+    if (!this.norm(this.modalSearch())) return true;
+    if (!cat.modules || cat.modules.length === 0) return true; // หมวดเลือกเสรี ไม่กรองด้วยช่องค้นหานี้
+    return (cat.modules ?? []).some((m: any) => this.modHasMatch(m));
+  }
+
+  get hasSearchResults(): boolean {
+    if (!this.norm(this.modalSearch())) return true;
+    // หมวดเลือกเสรีไม่มี modules อยู่แล้ว ไม่นับเป็น "ผลลัพธ์" ของการค้นหานี้
+    return this.curriculum().some(cat => (cat.modules?.length ?? 0) > 0 && this.catHasMatch(cat));
+  }
+
+  private escapeHtml(s: string): string {
+    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  highlightMatch(text: string): string {
+    const raw = text ?? '';
+    const escaped = this.escapeHtml(raw);
+    const q = this.norm(this.modalSearch());
+    if (!q) return escaped;
+    const idx = this.norm(raw).indexOf(q);
+    if (idx === -1) return escaped;
+    const before = this.escapeHtml(raw.slice(0, idx));
+    const match  = this.escapeHtml(raw.slice(idx, idx + q.length));
+    const after  = this.escapeHtml(raw.slice(idx + q.length));
+    return `${before}<mark class="search-hl">${match}</mark>${after}`;
+  }
 
   // ─── Category Progress ────────────────────────────────────
+  catProgressPct(cat: any): number {
+    if (!cat.required_credit) return 0;
+    return Math.min(100, Math.round((this.catCreditsDone(cat) / cat.required_credit) * 100));
+  }
+
   catCreditsDone(cat: any): number {
     if (!cat.modules || cat.modules.length === 0) {
       let done = 0;

@@ -18,36 +18,32 @@
 
     <div class="relative min-w-[160px]">
       <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 block"
-        >ภาคเรียนปัจจุบัน</label
+        >ปีการศึกษา</label
       >
       <button
         type="button"
-        (click)="toggleSemesterDropdown()"
+        (click)="toggleAcademicYearDropdown()"
         class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-100 transition-all"
       >
-        <span>ภาคเรียนที่ {{ selectedSemester }}</span>
+        <span>ปีการศึกษา {{ selectedAcademicYear }}</span>
         <span
           class="material-symbols-rounded text-slate-400 transition-transform"
-          [ngClass]="{ 'rotate-180': isSemesterDropdownOpen }"
+          [ngClass]="{ 'rotate-180': isAcademicYearDropdownOpen }"
           >keyboard_arrow_down</span
         >
       </button>
-      @if (isSemesterDropdownOpen) {
+      @if (isAcademicYearDropdownOpen) {
         <div
           class="absolute right-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl z-50 p-1.5 py-2 animate-in fade-in slide-in-from-top-2 duration-200"
         >
-          <button
-            (click)="selectSemester(1)"
-            class="w-full text-left px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-          >
-            ภาคเรียนที่ 1
-          </button>
-          <button
-            (click)="selectSemester(2)"
-            class="w-full text-left px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-          >
-            ภาคเรียนที่ 2
-          </button>
+          @for (y of academicYears; track y) {
+            <button
+              (click)="selectAcademicYear(y)"
+              class="w-full text-left px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+            >
+              ปีการศึกษา {{ y }}
+            </button>
+          }
         </div>
       }
     </div>
@@ -200,7 +196,7 @@
         </span>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 shrink-0">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 shrink-0">
         <div class="relative">
           <button
         type="button"
@@ -230,18 +226,48 @@
           }
         </div>
 
+        <!-- Dropdown filter ชั้นปี -->
         <div class="relative">
-          <span class="material-symbols-rounded absolute left-4 top-3.5 text-slate-400 text-xl"
-            >search</span
+          <button
+            type="button"
+            (click)="toggleYearDropdown()"
+            class="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-100 transition-all"
           >
-          <input
-            type="text"
-            [(ngModel)]="searchStudentText"
-            (input)="filterStudents()"
-            placeholder="ค้นหาชื่อ หรือ รหัสนักศึกษา..."
-            class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-          />
+            <span class="truncate">{{ selectedYear === 'ทุกชั้นปี' ? selectedYear : 'ชั้นปีที่ ' + selectedYear }}</span>
+            <span
+              class="material-symbols-rounded text-slate-400 transition-transform"
+              [ngClass]="{ 'rotate-180': isYearDropdownOpen }"
+              >keyboard_arrow_down</span
+            >
+          </button>
+          @if (isYearDropdownOpen) {
+            <div
+              class="absolute left-0 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto p-1"
+            >
+              @for (y of years; track y) {
+                <button
+                  (click)="selectYear(y)"
+                  class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  {{ y === 'ทุกชั้นปี' ? y : 'ชั้นปีที่ ' + y }}
+                </button>
+              }
+            </div>
+          }
         </div>
+      </div>
+
+      <div class="relative mb-4 shrink-0">
+        <span class="material-symbols-rounded absolute left-4 top-3.5 text-slate-400 text-xl"
+          >search</span
+        >
+        <input
+          type="text"
+          [(ngModel)]="searchStudentText"
+          (input)="filterStudents()"
+          placeholder="ค้นหาชื่อ หรือ รหัสนักศึกษา..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+        />
       </div>
 
       <div
@@ -302,17 +328,25 @@
                   >รหัส: {{ student.code }}</span
                 >
               </div>
-              <div class="flex items-center justify-between mt-0.5">
-                <p class="text-xs text-slate-400 truncate">{{ student.major }}</p>
+              <div class="flex items-center justify-between gap-2 mt-0.5">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <p class="text-xs text-slate-400 truncate">{{ student.major }}</p>
+                  @if (student.year) {
+                    <span
+                      class="shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md"
+                      >ปี {{ student.year }}</span
+                    >
+                  }
+                </div>
                 @if (student.advisor_name) {
                   <span
-                    class="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md font-medium max-w-[180px] truncate"
+                    class="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md font-medium max-w-[140px] truncate shrink-0"
                   >
                     อ.เดิม: {{ student.advisor_name }}
                   </span>
                 } @else {
                   <span
-                    class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md font-medium"
+                    class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md font-medium shrink-0"
                     >ยังไม่มีที่ปรึกษา</span
                   >
                 }

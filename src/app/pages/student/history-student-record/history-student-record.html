@@ -126,7 +126,7 @@
           }
 
           <div class="timeline">
-            @for (adv of advisors; track adv.year; let i = $index; let last = $last) {
+            @for (adv of advisors; track $index; let i = $index; let last = $last) {
               <div class="timeline-item">
 
                 <!-- LINE -->
