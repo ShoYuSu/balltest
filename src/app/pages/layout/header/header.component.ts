@@ -178,20 +178,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    // 1. แอบ Backup รหัสที่จำไว้ก่อน
+    // 1. ดึงรหัสผ่านที่จำไว้ออกมาพักไว้
     const savedEmail = localStorage.getItem('savedEmail');
     const savedPassword = localStorage.getItem('savedPassword');
 
-    // 2. ล้างบางข้อมูล (Token และ Profile บินหมด)
+    // 2. ล้างบางทุกอย่างทิ้ง (Token หาย 100%)
     localStorage.clear();
+    sessionStorage.clear(); // กันเหนียวเผื่อมีขยะค้าง
 
-    // 3. เอารหัสผ่านที่แอบ Backup ไว้ยัดกลับเข้าไปใหม่ เพื่อให้หน้า Login ยังจำได้
+    // 3. ยัดรหัสผ่านกลับเข้าไปใหม่
     if (savedEmail && savedPassword) {
       localStorage.setItem('savedEmail', savedEmail);
       localStorage.setItem('savedPassword', savedPassword);
     }
 
-    // 4. เด้งกลับหน้า Login
-    window.location.href = 'http://localhost:4200/login';
+    // 4. ใช้ Angular Router พาไปหน้า Login แล้ว "บังคับรีเฟรชล้าง Memory" 1 รอบ!
+    this.router.navigate(['/login']).then(() => {
+      window.location.reload();
+    });
   }
 }
