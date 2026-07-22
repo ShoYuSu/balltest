@@ -23,7 +23,7 @@ export class GroupConsultationAppointments implements OnInit {
 
   searchQuery = signal('');
   selectedFilter = signal('ทั้งหมด');
-  availableTypes = signal<string[]>(['วิชาการ', 'กิจกรรม', 'ส่วนตัว', 'อาชีพ/ฝึกงาน']);
+  availableTypes = signal<string[]>([]);
   filterOptions = computed(() => ['ทั้งหมด', ...this.availableTypes()]);
 
   filteredAppointments = computed(() => {
