@@ -18,6 +18,8 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-curriculum-management',
@@ -207,12 +209,13 @@ export class CurriculumManagementComponent implements OnInit {
     this.isAddCourseModal = true;
   }
 
-  saveCategory() {
+ saveCategory() {
   if (this.categoryForm.invalid) return;
 
   const payload = {
     ...this.categoryForm.value,
-    major_name: this.selectedMajor
+    major_name: this.selectedMajor,
+    curriculum_year: this.selectedYear
   };
 
   const url = this.isEditCategoryMode
@@ -225,11 +228,35 @@ export class CurriculumManagementComponent implements OnInit {
     });
   }
 
-  this.http.post(url, payload).subscribe((res: any) => {
-    if (res.success) {
-      this.loadCurriculumData();
-      this.closeModal();
-    }
+  this.http.post(url, payload).subscribe({
+    next: (res: any) => {
+      if (res.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ',
+          text: res.message || 'บันทึกหมวดวิชาเรียบร้อยแล้ว',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        this.loadCurriculumData();
+        this.closeModal();
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'ไม่สามารถบันทึกได้',
+          text: res.message,
+          confirmButtonColor: '#3085d6',
+        });
+      }
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'การเชื่อมต่อล้มเหลว',
+        text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้',
+        confirmButtonColor: '#d33',
+      });
+    },
   });
 }
 

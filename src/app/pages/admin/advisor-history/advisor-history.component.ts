@@ -32,7 +32,7 @@ export class AdvisorHistoryComponent implements OnInit {
   public currentPage: number = 1;
   public pageSize: number = 5;
 
-  public myStats = [
+  public myStats: any[] = [
     {
       label: 'นักศึกษาทั้งหมด',
       value: 0,
@@ -41,22 +41,14 @@ export class AdvisorHistoryComponent implements OnInit {
       textColor: 'text-blue-600',
       cardBg: 'bg-[#F3FBFF]',
     },
-    {
-      label: 'วิทยาการข้อมูลและคอมพิวเตอร์',
-      value: 0,
-      icon: 'school',
-      bgColor: 'bg-green-100',
-      textColor: 'text-green-600',
-      cardBg: 'bg-[#F5FFFA]',
-    },
-    {
-      label: 'เทคโนโลยีการอาหาร',
-      value: 0,
-      icon: 'person',
-      bgColor: 'bg-yellow-100',
-      textColor: 'text-yellow-600',
-      cardBg: 'bg-[#FFF9E5]',
-    },
+  ];
+
+  private statColorPresets = [
+    { bgColor: 'bg-green-100', textColor: 'text-green-600', cardBg: 'bg-[#F5FFFA]' },
+    { bgColor: 'bg-yellow-100', textColor: 'text-yellow-600', cardBg: 'bg-[#FFF9E5]' },
+    { bgColor: 'bg-purple-100', textColor: 'text-purple-600', cardBg: 'bg-[#FAF5FF]' },
+    { bgColor: 'bg-pink-100', textColor: 'text-pink-600', cardBg: 'bg-[#FFF5F8]' },
+    { bgColor: 'bg-orange-100', textColor: 'text-orange-600', cardBg: 'bg-[#FFF6EE]' },
   ];
 
   public columns: TableColumnModel[] = [
@@ -64,6 +56,7 @@ export class AdvisorHistoryComponent implements OnInit {
       columnDef: 'profile',
       header: 'โปรไฟล์',
       tag: 'image',
+      align: 'center',
       display: true,
       width: 'small',
       cell: (el) => (el.image ? `http://localhost:8080/api/${el.image}` : null),
@@ -72,6 +65,7 @@ export class AdvisorHistoryComponent implements OnInit {
       columnDef: 'student_code',
       header: 'รหัสนักศึกษา',
       tag: 'text',
+      align: 'center',
       display: true,
       width: 'medium',
       cell: (el) => el.student_code,
@@ -131,6 +125,7 @@ export class AdvisorHistoryComponent implements OnInit {
         const rawMajors = data.map((s) => s.department || s.major);
         this.uniqueMajors = [...new Set(rawMajors)].filter((m) => m != null && m !== '');
 
+        this.buildStatCards();
         this.currentPage = 1;
         this.calculateStats();
         this.filterStudents();
@@ -244,18 +239,32 @@ export class AdvisorHistoryComponent implements OnInit {
     }
   }
 
+  buildStatCards() {
+    const totalCard = this.myStats[0];
+
+    const majorCards = this.uniqueMajors.map((major, index) => {
+      const preset = this.statColorPresets[index % this.statColorPresets.length];
+      return {
+        label: major,
+        value: 0,
+        icon: 'school',
+        ...preset,
+      };
+    });
+
+    this.myStats = [totalCard, ...majorCards];
+  }
+
   calculateStats() {
     const total = this.students.length;
-    const csDept = this.students.filter(
-      (s) => (s.department || s.major) === 'วิทยาการข้อมูลและคอมพิวเตอร์',
-    ).length;
-    const foodDept = this.students.filter(
-      (s) => (s.department || s.major) === 'เทคโนโลยีการอาหาร',
-    ).length;
-
     this.myStats[0].value = total;
-    this.myStats[1].value = csDept;
-    this.myStats[2].value = foodDept;
+
+    for (let i = 1; i < this.myStats.length; i++) {
+      const majorLabel = this.myStats[i].label;
+      this.myStats[i].value = this.students.filter(
+        (s) => (s.department || s.major) === majorLabel,
+      ).length;
+    }
   }
 
   openHistory(student: any) {
@@ -265,7 +274,9 @@ export class AdvisorHistoryComponent implements OnInit {
     this.cdr.detectChanges(); // สั่งให้รีเรนเดอร์เปิดหน้าต่าง Modal มารอ (อาจจะขึ้น Loading สวยๆ ไว้)
 
     this.http
-      .get<any[]>(`http://localhost:8080/api/get_advisor_history.php?student_id=${student.student_id}`)
+      .get<
+        any[]
+      >(`http://localhost:8080/api/get_advisor_history.php?student_id=${student.student_id}`)
       .subscribe({
         next: (historyData) => {
           const colorPresets = [
@@ -295,7 +306,10 @@ export class AdvisorHistoryComponent implements OnInit {
   advisorNames(h: any): string[] {
     const raw = (h?.advisor_name || '').trim();
     if (!raw) return ['-'];
-    return raw.split(',').map((n: string) => n.trim()).filter((n: string) => n);
+    return raw
+      .split(',')
+      .map((n: string) => n.trim())
+      .filter((n: string) => n);
   }
 
   closeModal() {
