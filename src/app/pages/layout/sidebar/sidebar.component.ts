@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -16,6 +16,9 @@ export class SidebarComponent implements OnInit {
   activeMenu: string | null = null;
   isSidebarOpen = true;
 
+  // จอกว้างน้อยกว่านี้ (px) ให้เริ่มต้นแบบยุบเหลือแค่ไอคอน
+  private readonly collapseBreakpoint = 1024;
+
   // ฟังก์ชันเดียวจัดการเปิด-ปิด โดยเช็คชื่อเมนู
   toggleMenu(menuName: string) {
     if (this.activeMenu === menuName) {
@@ -32,8 +35,23 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  @HostListener('window:resize')
+  onResize() {
+    this.applyResponsiveDefault();
+  }
+
   ngOnInit() {
     this.userRole = this.getRoleFromToken();
+    this.applyResponsiveDefault();
+  }
+
+  // ตั้งค่าเริ่มต้นตามขนาดจอ: จอเล็ก (มือถือ/แท็บเล็ต) ให้ยุบเป็นไอคอนอย่างเดียว
+  private applyResponsiveDefault() {
+    if (typeof window === 'undefined') return;
+    this.isSidebarOpen = window.innerWidth >= this.collapseBreakpoint;
+    if (!this.isSidebarOpen) {
+      this.activeMenu = null;
+    }
   }
 
   //  ดึง role จาก payload ของ JWT token โดยตรง (ไม่ต้องพึ่ง localStorage.setItem('role', ...))
