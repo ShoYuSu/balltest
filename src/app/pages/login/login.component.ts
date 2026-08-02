@@ -126,6 +126,16 @@ export class LoginComponent implements OnInit {
               localStorage.removeItem('savedPassword');
             }
 
+            // 🌟 บังคับเปลี่ยนรหัสผ่านตอนล็อกอินครั้งแรก (เช็คจาก flag ที่ login.php ส่งมา)
+            if (res.must_change_password) {
+              this.router.navigate(['/change-password'], {
+                queryParams: { first: 1 },
+              });
+              this.loading = false;
+              this.cdr.detectChanges();
+              return;
+            }
+
             if (role === 'student') {
               this.router.navigate(['/personal-data']);
             } else {
