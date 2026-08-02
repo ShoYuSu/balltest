@@ -52,6 +52,7 @@ export class PloComponent implements OnInit {
   showDeleteModal = false;
   isDepartmentDropdownOpen = false;
   isMajorDropdownOpen = false;
+  isMajorFilterDropdownOpen = false;
 
   selectedCourse: any;
   selectedPlo: any;
@@ -164,6 +165,10 @@ export class PloComponent implements OnInit {
 
   isMajorFilterActive(major_name: string): boolean {
     return this.selectedMajorFilter === major_name;
+  }
+
+  toggleMajorFilterDropdown() {
+    this.isMajorFilterDropdownOpen = !this.isMajorFilterDropdownOpen;
   }
 
   loadDepartments() {
@@ -761,6 +766,7 @@ loadMajors() {
     this.showDeleteModal = false;
     this.isDepartmentDropdownOpen = false;
     this.isYloYearDropdownOpen = false;
+    this.isMajorFilterDropdownOpen = false;
 
     this.selectedPlo = null;
     this.selectedSubPlo = null;

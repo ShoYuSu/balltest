@@ -1,6 +1,28 @@
 <header class="bg-white backdrop-blur-md border-b border-gray-100 px-6 h-[80px] flex justify-end items-center z-40 sticky top-0">
   <div class="flex items-center gap-3">
 
+    <!-- ===== FONT SIZE (ก เล็ก / กลาง / ใหญ่) ===== -->
+    <div class="flex items-center gap-0.5 bg-white border border-gray-100 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] p-1">
+      <button (click)="fontSizeService.setSize('font-small')"
+              [class.bg-orange-50]="fontSizeService.current === 'font-small'"
+              [class.text-orange-600]="fontSizeService.current === 'font-small'"
+              class="w-8 h-8 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors outline-none">
+        ก
+      </button>
+      <button (click)="fontSizeService.setSize('font-medium')"
+              [class.bg-orange-50]="fontSizeService.current === 'font-medium'"
+              [class.text-orange-600]="fontSizeService.current === 'font-medium'"
+              class="w-8 h-8 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors outline-none">
+        ก
+      </button>
+      <button (click)="fontSizeService.setSize('font-large')"
+              [class.bg-orange-50]="fontSizeService.current === 'font-large'"
+              [class.text-orange-600]="fontSizeService.current === 'font-large'"
+              class="w-8 h-8 rounded-xl text-base font-bold text-gray-500 hover:bg-gray-50 transition-colors outline-none">
+        ก
+      </button>
+    </div>
+
     <!-- ===== BELL (student only) ===== -->
     @if (userRole === 'student') {
       <div class="relative">

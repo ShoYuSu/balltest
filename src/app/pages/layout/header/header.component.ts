@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
+import { FontSizeService, FontSize } from '../../../shared/components/font-size.service';
 
 interface UpcomingAppointment {
   appointment_id: number;
@@ -25,6 +26,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  fontSizeService = inject(FontSizeService);
 
   userName: string = 'ผู้ใช้งาน';
   userRole: string = '';

@@ -12,34 +12,60 @@
     </button>
   </div>
 
-  <div class="flex flex-wrap items-center gap-2 mb-4">
-    <span class="text-sm font-semibold text-slate-600 mr-1">กรองตามสาขา:</span>
-    <button
-      type="button"
-      (click)="setMajorFilter(null)"
-      class="px-4 py-2 rounded-xl text-sm font-medium transition-all"
-      [ngClass]="
-        selectedMajorFilter === null
-          ? 'bg-[#6366f1] text-white shadow'
-          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-      "
-    >
-      ทั้งหมด
-    </button>
-    @for (major of majorsList; track major) {
+  <div class="flex items-center gap-3 mb-4">
+    <span class="text-sm font-semibold text-slate-600">กรองตามสาขา:</span>
+    <div class="relative w-64">
       <button
         type="button"
-        (click)="setMajorFilter(major)"
-        class="px-4 py-2 rounded-xl text-sm font-medium transition-all"
-        [ngClass]="
-          isMajorFilterActive(major)
-            ? 'bg-[#6366f1] text-white shadow'
-            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-        "
+        (click)="toggleMajorFilterDropdown()"
+        class="flex items-center justify-between w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-all"
       >
-        {{ major }}
+        <span>{{ selectedMajorFilter || 'ทั้งหมด' }}</span>
+        <span
+          class="material-symbols-outlined text-slate-400 text-lg transition-transform"
+          [class.rotate-180]="isMajorFilterDropdownOpen"
+        >
+          expand_more
+        </span>
       </button>
-    }
+
+      @if (isMajorFilterDropdownOpen) {
+        <div class="absolute z-30 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl">
+          <ul class="p-2 text-sm max-h-64 overflow-y-auto">
+            <li>
+              <button
+                type="button"
+                (click)="setMajorFilter(null); isMajorFilterDropdownOpen = false"
+                class="w-full p-2.5 rounded-lg text-left transition-all"
+                [ngClass]="
+                  selectedMajorFilter === null
+                    ? 'bg-indigo-50 text-[#6366f1] font-semibold'
+                    : 'text-slate-600 hover:bg-slate-50'
+                "
+              >
+                ทั้งหมด
+              </button>
+            </li>
+            @for (major of majorsList; track major) {
+              <li>
+                <button
+                  type="button"
+                  (click)="setMajorFilter(major); isMajorFilterDropdownOpen = false"
+                  class="w-full p-2.5 rounded-lg text-left transition-all"
+                  [ngClass]="
+                    isMajorFilterActive(major)
+                      ? 'bg-indigo-50 text-[#6366f1] font-semibold'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  "
+                >
+                  {{ major }}
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
   </div>
 
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
