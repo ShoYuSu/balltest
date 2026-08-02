@@ -229,7 +229,10 @@ export class StudentsComponent implements OnInit {
     const trimmedMajor = this.newMajorName.trim();
     if (trimmedMajor) {
       this.http
-        .post(`${environment.apiUrl}/add_major.php`, { major_name: trimmedMajor })
+        .post(`${environment.apiUrl}/add_major.php`, {
+          major_name: trimmedMajor,
+          faculty_name: 'วิทยาศาสตร์', // 🌟 ต้องส่งไปด้วย ไม่งั้น faculty_name จะเป็น NULL ใน DB
+        })
         .subscribe({
           next: (res: any) => {
             if (res.success || res.message === 'มีสาขานี้อยู่แล้ว') {
@@ -245,6 +248,7 @@ export class StudentsComponent implements OnInit {
               });
               this.newMajorName = '';
               this.isAddingNewMajor = false;
+              this.cdr.detectChanges();
             } else {
               // 🌟 จุดแก้ไขที่ 1: เปลี่ยนแจ้งเตือนสาขาผิดพลาด
               Swal.fire({
