@@ -1,21 +1,26 @@
-<div class="p-8 bg-gray-50 min-h-screen" (click)="closeDropdowns()">
-  <div class="flex justify-between items-start mb-6">
+<div class="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen pb-20" (click)="closeDropdowns()">
+  <!-- Header -->
+  <div class="flex justify-between items-start mb-4 sm:mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800">การนัดหมายปรึกษา — รายบุคคล</h1>
-      <p class="text-gray-500">จัดการตารางนัดหมายและบันทึกประวัติการให้คำปรึกษา</p>
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800">การนัดหมายปรึกษา — รายบุคคล</h1>
+      <p class="text-xs sm:text-sm text-gray-500 mt-1">จัดการตารางนัดหมายและบันทึกประวัติการให้คำปรึกษา</p>
     </div>
   </div>
 
-  <div class="flex flex-wrap gap-3 mb-6 items-center">
-    <div class="relative flex-grow max-w-md">
-      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="ค้นหาด้วยรหัสนักศึกษา หรือชื่อ..."
-             class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+  <!-- Toolbar: Search, Filter, Buttons -->
+  <div class="flex flex-col lg:flex-row gap-3 mb-6 items-start lg:items-center">
+
+    <!-- Search -->
+    <div class="relative w-full lg:flex-grow lg:max-w-md">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px] sm:text-[24px]">search</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="ค้นหาด้วยรหัส หรือชื่อ..."
+             class="w-full pl-10 pr-4 py-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
     </div>
 
-    <div class="relative min-w-[170px]">
+    <!-- Filter Dropdown -->
+    <div class="relative w-full lg:w-auto lg:min-w-[170px]">
       <button (click)="toggleFilterDropdown($event)"
-              class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm font-medium">
+              class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm text-sm sm:text-base font-medium">
         {{ selectedFilter() }}
         <span class="material-symbols-outlined text-gray-400 transition-transform duration-200"
               [class.rotate-180]="isFilterDropdownOpen()">expand_more</span>
@@ -38,68 +43,77 @@
       }
     </div>
 
-    <button (click)="exportToExcel()"
-            class="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors shadow-sm font-medium">
-      <span class="material-symbols-outlined text-green-600">table_view</span> Export Excel
-    </button>
-    <button (click)="openManageTypesModal($event)"
-            class="px-4 py-2.5 bg-white hover:bg-yellow-50 border border-gray-200 text-yellow-600 hover:border-yellow-500 text-sm font-medium rounded-md flex items-center gap-1 transition-all shadow-sm">
-      <span class="material-symbols-outlined ">settings</span> จัดการประเภท
-    </button>
-    <button (click)="openCreateModal()"
-            class="ml-auto bg-primary hover:bg-primary_hover text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all">
-      <span class="material-symbols-outlined">add</span> เพิ่มนัดหมาย
-    </button>
+    <!-- Action Buttons (Responsive Grid on Mobile, Flex on Desktop) -->
+    <div class="w-full lg:w-auto lg:ml-auto grid grid-cols-2 lg:flex gap-2">
+      <button (click)="exportToExcel()"
+              class="col-span-1 lg:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors shadow-sm text-[12px] sm:text-sm font-medium">
+        <span class="material-symbols-outlined text-[18px] text-green-600">table_view</span>
+        <span class="hidden xs:inline">Export Excel</span><span class="xs:hidden">Excel</span>
+      </button>
+      <button (click)="openManageTypesModal($event)"
+              class="col-span-1 lg:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white hover:bg-yellow-50 border border-gray-200 text-yellow-600 hover:border-yellow-500 rounded-lg transition-all shadow-sm text-[12px] sm:text-sm font-medium">
+        <span class="material-symbols-outlined text-[18px]">settings</span> จัดการประเภท
+      </button>
+      <button (click)="openCreateModal()"
+              class="col-span-2 lg:col-span-auto bg-primary hover:bg-primary_hover text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all text-sm sm:text-base">
+        <span class="material-symbols-outlined text-[20px]">add</span> เพิ่มนัดหมาย
+      </button>
+    </div>
   </div>
 
-  <div class="space-y-4">
+  <!-- Appointments List -->
+  <div class="space-y-3 sm:space-y-4">
     @for (app of filteredAppointments(); track app.id) {
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-all">
-        <div class="flex items-center gap-5">
+      <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition-all">
+
+        <!-- Info Section -->
+        <div class="flex items-start sm:items-center gap-3 sm:gap-5 w-full md:w-auto">
           <img [src]="app.img" (error)="onImgError($event, app.studentName)"
-               class="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm">
-          <div>
-            <div class="flex items-center gap-3 mb-1">
-              <h3 class="font-bold text-gray-900">{{ app.studentName }}</h3>
+               class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-gray-100 shadow-sm shrink-0 mt-1 sm:mt-0">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-3 mb-1">
+              <h3 class="font-bold text-gray-900 text-sm sm:text-base truncate max-w-full">{{ app.studentName }}</h3>
               @if (app.type) {
-                <span class="px-3 py-0.5 bg-cyan-50 text-cyan-600 text-xs font-bold rounded-full">{{ app.type }}</span>
+                <span class="px-2 sm:px-3 py-0.5 bg-cyan-50 text-cyan-600 text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap">{{ app.type }}</span>
               }
               @if (app.status && app.status !== 'ดำเนินการแล้ว') {
-                <span class="px-3 py-0.5 bg-orange-50 text-orange-600 text-xs font-bold rounded-full">{{ app.status }}</span>
+                <span class="px-2 sm:px-3 py-0.5 bg-orange-50 text-orange-600 text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap">{{ app.status }}</span>
               }
             </div>
-            <p class="text-gray-400 text-sm mb-2">รหัส {{ app.studentId }}</p>
-            <p class="text-gray-700 font-medium">{{ app.topic }}</p>
-            <div class="flex items-center gap-6 mt-3 text-sm text-gray-500">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-red-400 text-lg">calendar_today</span>{{ app.date }}
+            <p class="text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2 truncate">รหัส {{ app.studentId }}</p>
+            <p class="text-gray-700 font-medium text-xs sm:text-sm line-clamp-2 sm:line-clamp-1">{{ app.topic }}</p>
+
+            <div class="flex flex-wrap items-center gap-3 sm:gap-6 mt-2 sm:mt-3 text-[11px] sm:text-sm text-gray-500">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-red-400 text-[16px] sm:text-lg">calendar_today</span>{{ app.date }}
               </div>
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-500 text-lg">schedule</span>{{ app.time }}
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-blue-500 text-[16px] sm:text-lg">schedule</span>{{ app.time }}
               </div>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <!-- Action Buttons Section -->
+        <div class="flex items-center justify-end gap-2 w-full md:w-auto border-t border-gray-50 md:border-t-0 pt-3 md:pt-0 shrink-0">
           <button (click)="openLogModal(app)"
-                  class="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-semibold transition-colors">
-            <span class="material-symbols-outlined text-green-500">edit_note</span> บันทึกผลการปรึกษา
+                  class="flex-1 md:flex-none justify-center px-3 sm:px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 text-[12px] sm:text-sm font-semibold transition-colors">
+            <span class="material-symbols-outlined text-green-500 text-[18px]">edit_note</span> บันทึกผล
           </button>
           <div class="relative">
             <button (click)="toggleDropdown(app.id, $event)"
-                    class="px-3 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-1 text-sm font-semibold transition-colors">
-              จัดการ<span class="material-symbols-outlined">expand_more</span>
+                    class="px-2.5 sm:px-3 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-0.5 text-[12px] sm:text-sm font-semibold transition-colors">
+              จัดการ<span class="material-symbols-outlined text-[18px]">expand_more</span>
             </button>
             @if (activeDropdownId() === app.id) {
-              <div class="absolute right-0 mt-2 w-44 bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-10">
+              <div class="absolute right-0 mt-2 w-40 sm:w-44 bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-10">
                 <button (click)="openEditModal(app, $event)"
-                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                  <span class="material-symbols-outlined text-blue-500 text-base">edit</span> แก้ไขนัดหมาย
+                        class="w-full text-left px-4 py-2.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-500 text-[18px]">edit</span> แก้ไขนัดหมาย
                 </button>
                 <button (click)="promptCancelAppointment(app.id, $event)"
-                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50">
-                  <span class="material-symbols-outlined text-red-500 text-base">delete</span> ยกเลิกนัดหมาย
+                        class="w-full text-left px-4 py-2.5 text-xs sm:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50">
+                  <span class="material-symbols-outlined text-red-500 text-[18px]">delete</span> ยกเลิกนัดหมาย
                 </button>
               </div>
             }
@@ -109,89 +123,92 @@
     }
 
     @if (filteredAppointments().length === 0) {
-      <div class="text-center py-16 text-gray-400">
-        <span class="material-symbols-outlined text-5xl mb-3 block text-gray-300">event_busy</span>
-        <p class="text-sm">ไม่พบข้อมูลการนัดหมายที่ต้องดำเนินการ</p>
+      <div class="text-center py-16 bg-white rounded-xl border border-gray-100 border-dashed text-gray-400">
+        <span class="material-symbols-outlined text-4xl sm:text-5xl mb-3 block text-gray-300">event_busy</span>
+        <p class="text-xs sm:text-sm">ไม่พบข้อมูลการนัดหมายที่ต้องดำเนินการ</p>
       </div>
     }
   </div>
 
-  <div class="mt-8 text-sm text-gray-500">
+  <div class="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500 text-center sm:text-left">
     <p>แสดง {{ filteredAppointments().length }} รายการ</p>
   </div>
 </div>
 
+<!-- ================= Modals ================= -->
+
 @if (isCreateModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible"
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible flex flex-col max-h-[90vh]"
          (click)="$event.stopPropagation()">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-primary">add_circle</span> สร้างนัดหมายใหม่
+      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-primary text-[24px]">add_circle</span> สร้างนัดหมายใหม่
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
+      <div class="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
 
+        <!-- (โค้ด Input ด้านในเหมือนเดิม แค่ปรับ padding/text-size นิดหน่อย) -->
         <div class="relative">
-          <label class="block text-sm font-bold text-gray-700 mb-2">เลือกนักศึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-2">เลือกนักศึกษา</label>
           <div class="relative">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">search</span>
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-[20px]">search</span>
             <input type="text"
                    [ngModel]="studentSearch()"
                    (ngModelChange)="studentSearch.set($event); newApp.studentId = ''"
                    (focus)="isStudentDropdownOpen.set(true)"
                    (click)="$event.stopPropagation(); isStudentDropdownOpen.set(true)"
                    placeholder="พิมพ์ชื่อหรือรหัสเพื่อค้นหา..."
-                   class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm"
+                   class="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm text-sm"
                    [ngClass]="newApp.studentId ? 'border-orange-400 bg-orange-50/30' : ''">
           </div>
           @if (isStudentDropdownOpen()) {
-            <div class="absolute w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[999] max-h-64 overflow-y-auto overscroll-contain">
+            <div class="absolute w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[999] max-h-56 overflow-y-auto overscroll-contain">
               @for (std of filteredStudents(); track std.student_code) {
                 <div (click)="selectStudent(std)"
-                     class="flex items-center gap-4 p-4 hover:bg-orange-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
+                     class="flex items-center gap-3 p-3 hover:bg-orange-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
                   <img [src]="std.imgUrl" (error)="onImgError($event, std.full_name)"
-                       class="w-10 h-10 rounded-full object-cover shadow-sm flex-shrink-0">
+                       class="w-10 h-10 rounded-full object-cover shadow-sm shrink-0">
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-bold text-gray-900 truncate">{{ std.full_name }}</div>
-                    <div class="text-xs text-gray-500 mt-0.5">รหัส: {{ std.student_code }}</div>
+                    <div class="text-xs sm:text-sm font-bold text-gray-900 truncate">{{ std.full_name }}</div>
+                    <div class="text-[10px] sm:text-xs text-gray-500 mt-0.5">รหัส: {{ std.student_code }}</div>
                   </div>
                   @if (newApp.studentId === std.student_id) {
                     <span class="material-symbols-outlined text-orange-500 text-lg flex-shrink-0">check_circle</span>
                   }
                 </div>
               } @empty {
-                <div class="p-6 text-center text-gray-400 text-sm">ไม่พบข้อมูลนักศึกษา</div>
+                <div class="p-4 sm:p-6 text-center text-gray-400 text-xs sm:text-sm">ไม่พบข้อมูลนักศึกษา</div>
               }
             </div>
           }
         </div>
 
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่</label>
           <input type="date" [(ngModel)]="newApp.date"
-                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                 class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
             <input type="time" [(ngModel)]="newApp.time"
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
             <input type="time" [(ngModel)]="newApp.endTime"
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
           </div>
         </div>
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
           </div>
           <div class="relative">
             <input type="text" [(ngModel)]="newApp.type"
@@ -199,40 +216,40 @@
                    (focus)="isCreateTypeOpen.set(true)"
                    (input)="isCreateTypeOpen.set(true)"
                    placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
             @if (isCreateTypeOpen()) {
               <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredCreateTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="newApp.type === t ? 'bg-orange-50' : ''">
                     <button (click)="selectCreateType(t)"
-                            class="flex-1 text-left px-4 py-2.5 text-sm"
+                            class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm"
                             [ngClass]="newApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
                       {{ t }}
                     </button>
-                    <div class="flex items-center pr-3 gap-1">
+                    <div class="flex items-center pr-2 sm:pr-3 gap-1">
                       @if (newApp.type === t) {
-                        <span class="material-symbols-outlined text-orange-500 text-base">check</span>
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
                       }
                       <button (click)="deleteType(t, $event)"
-                              class="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <span class="material-symbols-outlined text-sm">close</span>
+                              class="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
                       </button>
                     </div>
                   </div>
                 }
                 @if (!availableTypes().includes(newApp.type) && newApp.type.trim() !== '') {
                   <div (click)="addCreateType()"
-                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-sm font-bold text-orange-600 border-t border-gray-100">
-                    <span class="material-symbols-outlined text-base">add_circle</span>
+                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-xs sm:text-sm font-bold text-orange-600 border-t border-gray-100">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
                     สร้างประเภท "{{ newApp.type }}"
                   </div>
                 }
                 @if (filteredCreateTypes.length === 0 && availableTypes().includes(newApp.type)) {
-                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ไม่พบประเภทที่ค้นหา</div>
+                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ไม่พบประเภทที่ค้นหา</div>
                 }
                 @if (availableTypes().length === 0 && newApp.type.trim() === '') {
-                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
+                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
                 }
               </div>
             }
@@ -240,22 +257,23 @@
         </div>
 
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
           <input type="text" [(ngModel)]="newApp.topic" placeholder="ระบุหัวข้อหลัก..."
-                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                 class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
           <textarea [(ngModel)]="newApp.details" placeholder="กรอกรายละเอียด..." rows="3"
-                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 resize-none"></textarea>
+                    class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 resize-none"></textarea>
         </div>
       </div>
 
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 rounded-b-2xl">
-        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
+      <!-- Footer Buttons -->
+      <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 rounded-b-2xl shrink-0">
+        <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitCreateAppointment()"
                 [disabled]="!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details"
-                class="px-8 py-2 font-bold rounded-lg transition-colors"
+                class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-lg transition-colors text-sm sm:text-base"
                 [ngClass]="(!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
           ตกลง
         </button>
@@ -265,49 +283,48 @@
 }
 
 @if (isEditModalOpen() && selectedApp) {
+  <!-- การจัด Modal Edit ใช้หลักการเดียวกับ Create -->
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible"
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible flex flex-col max-h-[90vh]"
          (click)="$event.stopPropagation()">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
           <span class="material-symbols-outlined text-orange-500">edit_calendar</span> แก้ไขนัดหมาย
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
+      <div class="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
+        <!-- Content ด้านใน (เหมือนเดิม) -->
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
           <input type="text" [value]="selectedApp.studentName" readonly
-                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed">
+                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base cursor-not-allowed">
         </div>
-
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">วันที่นัดหมาย</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่นัดหมาย</label>
           <input type="date" [(ngModel)]="selectedApp.rawDate"
-                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
             <input type="time" [(ngModel)]="selectedApp.rawTime"
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลาสิ้นสุด</label>
             <input type="time" [(ngModel)]="selectedApp.rawEndTime"
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
           </div>
         </div>
-
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
             <button (click)="openManageTypesModal($event)"
-                    class="text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
-              <span class="material-symbols-outlined text-sm">settings</span> จัดการประเภท
+                    class="text-[10px] sm:text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px] sm:text-sm">settings</span> จัดการประเภท
             </button>
           </div>
           <div class="relative">
@@ -315,60 +332,59 @@
                    (click)="$event.stopPropagation(); isEditTypeOpen.set(true)"
                    (focus)="isEditTypeOpen.set(true)"
                    (input)="isEditTypeOpen.set(true)"
-                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                   class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
             @if (isEditTypeOpen()) {
               <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredEditTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="selectedApp.type === t ? 'bg-orange-50' : ''">
                     <button (click)="selectEditType(t)"
-                            class="flex-1 text-left px-4 py-2.5 text-sm"
+                            class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm"
                             [ngClass]="selectedApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
                       {{ t }}
                     </button>
-                    <div class="flex items-center pr-3 gap-1">
+                    <div class="flex items-center pr-2 sm:pr-3 gap-1">
                       @if (selectedApp.type === t) {
-                        <span class="material-symbols-outlined text-orange-500 text-base">check</span>
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
                       }
                       <button (click)="deleteType(t, $event)"
-                              class="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                        <span class="material-symbols-outlined text-sm">close</span>
+                              class="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
                       </button>
                     </div>
                   </div>
                 }
                 @if (!availableTypes().includes(selectedApp.type) && selectedApp.type?.trim() !== '') {
                   <div (click)="addEditType()"
-                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-sm font-bold text-orange-600 border-t border-gray-100">
-                    <span class="material-symbols-outlined text-base">add_circle</span>
+                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-xs sm:text-sm font-bold text-orange-600 border-t border-gray-100">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
                     สร้างประเภท "{{ selectedApp.type }}"
                   </div>
                 }
                 @if (availableTypes().length === 0) {
-                  <div class="px-4 py-3 text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
+                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
                 }
               </div>
             }
           </div>
         </div>
-
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
           <input type="text" [(ngModel)]="selectedApp.topic"
-                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
           <textarea rows="3" [(ngModel)]="selectedApp.details"
-                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 resize-none"></textarea>
+                    class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 resize-none text-sm sm:text-base"></textarea>
         </div>
       </div>
 
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 rounded-b-2xl">
-        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
+      <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 rounded-b-2xl shrink-0">
+        <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitEditAppointment()"
                 [disabled]="!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details"
-                class="px-8 py-2 font-bold rounded-lg transition-colors"
+                class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-lg transition-colors text-sm sm:text-base"
                 [ngClass]="(!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
           บันทึกการแก้ไข
         </button>
@@ -379,69 +395,69 @@
 
 @if (isLogModalOpen() && selectedApp) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-primary">assignment</span> บันทึกผลการปรึกษา
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-primary text-[24px]">assignment</span> บันทึกผลการปรึกษา
         </h2>
         <button (click)="closeModals()" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto overscroll-contain">
-        <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
-          <span class="material-symbols-outlined text-primary">info</span>
-          <p class="text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที และจะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา-รายบุคคล"</p>
+      <div class="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
+        <div class="p-3 sm:p-4 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-2 sm:gap-3">
+          <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">info</span>
+          <p class="text-[11px] sm:text-xs text-orange-800 leading-relaxed">สำหรับการให้คำปรึกษาที่ได้ดำเนินการไปแล้ว ระบบจะบันทึกประวัติทันที และจะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา-รายบุคคล"</p>
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
           <input type="text" [value]="selectedApp.studentName + ' (' + selectedApp.studentId + ')'" readonly
-                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">วันที่</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่</label>
             <input type="text" [value]="selectedApp.date" readonly
-                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">เวลา</label>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลา</label>
             <input type="text" [value]="selectedApp.time" readonly
-                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
           </div>
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">ประเภทหัวข้อ</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ประเภทหัวข้อ</label>
           <input type="text" [value]="selectedApp.type" readonly
-                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                 class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1 text-primary">รายละเอียดที่นักศึกษาแจ้ง</label>
-          <p class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 min-h-[48px]">{{ selectedApp.topic }}</p>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1 text-primary">รายละเอียดที่นักศึกษาแจ้ง</label>
+          <p class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-600 min-h-[48px]">{{ selectedApp.topic }}</p>
         </div>
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">บันทึกผลการปรึกษา</label>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">บันทึกผลการปรึกษา</label>
           <textarea [(ngModel)]="selectedApp.note" placeholder="กรอกผลการให้คำปรึกษา..." rows="3"
-                    class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"></textarea>
+                    class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none text-sm sm:text-base"></textarea>
         </div>
       </div>
-      <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
-        <button (click)="closeModals()" class="px-6 py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors">ยกเลิก</button>
-        <button (click)="submitConsultationLog()" class="px-8 py-2 bg-primary text-white font-bold rounded-lg hover:bg-orange-600 transition-colors">บันทึก</button>
+      <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 shrink-0">
+        <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base">ยกเลิก</button>
+        <button (click)="submitConsultationLog()" class="w-full sm:w-auto px-8 py-2.5 sm:py-2 bg-primary text-white font-bold rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base">บันทึก</button>
       </div>
     </div>
   </div>
 }
 
 @if (isConfirmCancelModalOpen()) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 text-center">
-      <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span class="material-symbols-outlined text-4xl">warning</span>
+  <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 sm:p-8 text-center">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-[32px] sm:text-4xl">warning</span>
       </div>
-      <h2 class="text-xl font-bold text-gray-800 mb-2">ยืนยันการยกเลิก</h2>
-      <p class="text-gray-500 text-sm mb-8">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายนี้?<br>การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-      <div class="flex gap-3">
-        <button (click)="closeModals()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">กลับไป</button>
-        <button (click)="confirmCancel()" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors">ใช่, ยกเลิกเลย</button>
+      <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">ยืนยันการยกเลิก</h2>
+      <p class="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายนี้?<br>การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <button (click)="closeModals()" class="w-full py-2.5 sm:py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base">กลับไป</button>
+        <button (click)="confirmCancel()" class="w-full py-2.5 sm:py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors text-sm sm:text-base">ใช่, ยกเลิกเลย</button>
       </div>
     </div>
   </div>
@@ -449,15 +465,15 @@
 
 @if (isManageTypesModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-primary">category</span> จัดการประเภทหัวข้อ
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-primary text-[24px]">category</span> จัดการประเภทหัวข้อ
         </h2>
         <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
       </div>
 
-      <div class="p-6 space-y-3 max-h-[55vh] overflow-y-auto overscroll-contain">
+      <div class="p-4 sm:p-6 space-y-3 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
         @if (availableTypes().length === 0) {
           <div class="text-center py-8 text-gray-400">
             <span class="material-symbols-outlined text-4xl mb-2 block text-gray-300">label_off</span>
@@ -466,25 +482,25 @@
         }
         @for (type of availableTypes(); track type) {
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-orange-200 transition-colors">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-orange-400 text-base">label</span>
-              <div>
-                <span class="font-medium text-gray-800 text-sm">{{ type }}</span>
-                <span class="text-xs text-gray-400 ml-2">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+              <span class="material-symbols-outlined text-orange-400 text-[18px] shrink-0">label</span>
+              <div class="truncate">
+                <span class="font-medium text-gray-800 text-xs sm:text-sm">{{ type }}</span>
+                <span class="text-[10px] sm:text-xs text-gray-400 ml-1 sm:ml-2 whitespace-nowrap">
                   ({{ typeUsageCount(type) }} นัดหมาย)
                 </span>
               </div>
             </div>
             <button (click)="deleteType(type, $event)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-              <span class="material-symbols-outlined text-base">delete</span>
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100 shrink-0">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
             </button>
           </div>
         }
       </div>
 
-      <div class="p-6 border-t border-gray-100 bg-gray-50 space-y-3">
-        <label class="block text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
+      <div class="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 space-y-2 sm:space-y-3 shrink-0">
+        <label class="block text-xs sm:text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
         <div class="flex gap-2">
           <input type="text"
                  [ngModel]="newTypeInput()"
@@ -493,11 +509,11 @@
                  placeholder="ชื่อประเภทหัวข้อ..."
                  class="flex-1 p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm">
           <button (click)="addNewTypeFromModal()"
-                  class="px-4 py-2.5 bg-orange-500 text-white text-sm font-bold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1">
-            <span class="material-symbols-outlined text-base">add</span> เพิ่ม
+                  class="px-4 py-2.5 bg-orange-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1 shrink-0">
+            <span class="material-symbols-outlined text-[18px]">add</span> <span class="hidden xs:inline">เพิ่ม</span>
           </button>
         </div>
-        <p class="text-xs text-gray-400">การลบประเภทไม่กระทบข้อมูลนัดหมายที่มีอยู่แล้ว</p>
+        <p class="text-[10px] sm:text-xs text-gray-400">การลบประเภทไม่กระทบข้อมูลนัดหมายที่มีอยู่แล้ว</p>
       </div>
     </div>
   </div>
