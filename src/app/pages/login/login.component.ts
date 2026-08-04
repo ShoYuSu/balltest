@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router'; // 🌟 ขาดไม่ได้
+import { Router, ActivatedRoute } from '@angular/router'; 
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
@@ -15,7 +15,7 @@ import { environment } from '../../../environments/environment';
 export class LoginComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private route = inject(ActivatedRoute); // 🌟 ต้องมีตัวนี้เพื่อดักจับ ?action=logout
+  private route = inject(ActivatedRoute); 
   private cdr = inject(ChangeDetectorRef);
 
   isStudentPage: boolean = false;
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    rememberMe: new FormControl(false), // 🌟 กล่องจำรหัสเริ่มต้นเป็น false
+    rememberMe: new FormControl(false), 
   });
 
   loading = false;
@@ -33,24 +33,18 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
 
   ngOnInit() {
-    // 🌟 1. ดักจับสัญญาณว่ามาจากปุ่ม Logout ของระบบเพื่อนไหม
     this.route.queryParams.subscribe((params) => {
       if (params['action'] === 'logout') {
-        // ลบข้อมูลขยะเก่าออกทั้งหมด แต่เก็บ savedEmail และ savedPassword ไว้
         localStorage.removeItem('token');
         localStorage.removeItem('img_profile');
         localStorage.removeItem('full_name');
-
-        // ล้าง URL ให้สะอาด
+        localStorage.removeItem('must_change_password'); // ล้างสถานะเผื่อไว้
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-
-      // 🌟 2. ให้โหลดรหัสผ่านที่เคยติ๊ก "จำไว้" เอามาใส่ฟอร์มรอเลย
       this.loadSavedCredentials();
     });
   }
 
-  // 🌟 ฟังก์ชันโหลดข้อมูลที่จำไว้แบบรัดกุม
   loadSavedCredentials() {
     const savedEmail = localStorage.getItem('savedEmail');
     const savedPassword = localStorage.getItem('savedPassword');
@@ -59,8 +53,8 @@ export class LoginComponent implements OnInit {
       try {
         this.loginForm.patchValue({
           email: savedEmail,
-          password: atob(savedPassword), // ถอดรหัส Base64 คืนกลับมา
-          rememberMe: true, // ติ๊กถูกที่กล่องให้ด้วยอัตโนมัติ
+          password: atob(savedPassword), 
+          rememberMe: true, 
         });
       } catch (e) {
         console.error('รหัสผ่านเก่าอ่านไม่ได้ ล้างทิ้งซะเลย', e);
@@ -74,14 +68,10 @@ export class LoginComponent implements OnInit {
     this.loginStep = step;
     this.isStudentPage = step === 'student';
 
-    // 🌟 ดึงรหัสผ่านมาใส่ใหม่ทุกครั้งที่กดเข้าหน้านักศึกษา/อาจารย์
     this.loadSavedCredentials();
-
-    // ถ้าไม่มีให้จำเลย ค่อยเคลียร์ฟอร์มทิ้ง
     if (!localStorage.getItem('savedEmail')) {
       this.loginForm.reset({ email: '', password: '', rememberMe: false });
     }
-
     this.cdr.detectChanges();
   }
 
@@ -115,31 +105,30 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('token', tokenToSave);
             localStorage.setItem('img_profile', res.img_profile || '');
 
-            // 🌟 พระเอกอยู่ตรงนี้: จัดการจดจำรหัสผ่าน
             if (rememberMe) {
               localStorage.setItem('savedEmail', email as string);
-              // เข้ารหัส Base64 ก่อนเก็บ เพื่อไม่ให้คนเห็นรหัสผ่านตรงๆ ใน F12
               localStorage.setItem('savedPassword', btoa(password as string));
             } else {
-              // ถ้าไม่ได้ติ๊ก ให้ลบทิ้ง
               localStorage.removeItem('savedEmail');
               localStorage.removeItem('savedPassword');
             }
 
-            // 🌟 บังคับเปลี่ยนรหัสผ่านตอนล็อกอินครั้งแรก (เช็คจาก flag ที่ login.php ส่งมา)
+            // 🌟 1. ดักเก็บ LocalStorage สำหรับโปรเจกต์นี้ 
             if (res.must_change_password) {
-              this.router.navigate(['/change-password'], {
-                queryParams: { first: 1 },
-              });
-              this.loading = false;
-              this.cdr.detectChanges();
-              return;
+              localStorage.setItem('must_change_password', 'true');
+            } else {
+              localStorage.removeItem('must_change_password');
             }
 
+            // 🌟 2. แนบ Parameter ข้ามโปรเจกต์ไปให้เพื่อน
             if (role === 'student') {
               this.router.navigate(['/personal-data']);
             } else {
-              window.location.href = `http://localhost:4201/dashboard?token=${tokenToSave}`;
+              let targetUrl = `http://localhost:4201/dashboard?token=${tokenToSave}`;
+              if (res.must_change_password) {
+                targetUrl += `&must_change_pwd=true`; // ส่งสัญญาณบังคับเปลี่ยนรหัส
+              }
+              window.location.href = targetUrl;
             }
           } else {
             this.errorMessage = res.message;
@@ -149,7 +138,6 @@ export class LoginComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('🚨 API พังหรือเชื่อมต่อไม่ได้:', err);
           this.errorMessage = 'การเชื่อมต่อผิดพลาด';
           this.showErrorModal = true;
           this.loading = false;
