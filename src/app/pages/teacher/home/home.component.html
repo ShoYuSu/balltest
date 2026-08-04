@@ -1,76 +1,88 @@
-<div class="bg-[#f8fafc] min-h-screen">
+<div class="bg-[#f8fafc] min-h-screen pb-8 p-3 sm:p-6 lg:p-8">
   <app-stat-cards [stats]="dashboardStats"></app-stat-cards>
 
-  <div class="grid grid-cols-1 lg:grid-cols-[1fr,400px] xl:grid-cols-[1fr,450px] gap-6 mt-4">
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr,400px] xl:grid-cols-[1fr,450px] gap-4 sm:gap-6 mt-4">
 
-    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between">
+    <!-- ========================================== -->
+    <!-- ส่วนที่ 1: นักศึกษาในความดูแล -->
+    <!-- ========================================== -->
+    <div class="bg-white p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between">
 
       <div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <!-- Header & Button -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
           <div>
-            <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">นักศึกษาในความดูแล</h2>
-            <p class="text-sm text-gray-500 mt-1">รายชื่อนักศึกษาทั้งหมด {{ totalItems() }} คน</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">นักศึกษาในความดูแล</h2>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">รายชื่อนักศึกษาทั้งหมด {{ totalItems() }} คน</p>
           </div>
-          <button routerLink="/all-students" class="px-5 py-2.5 text-sm font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-xl transition-all shadow-sm">
+          <button routerLink="/all-students" class="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-sm font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-xl transition-all shadow-sm flex justify-center items-center">
             ดูทั้งหมด
           </button>
         </div>
 
-        <div class="mb-6 relative group">
-          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
+        <!-- Search Bar -->
+        <div class="mb-5 sm:mb-6 relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300 text-[20px] sm:text-[24px]">search</span>
           <input type="text" placeholder="ค้นหานักศึกษาด้วยชื่อ, รหัส..."
-                 class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border border-gray-100 rounded-lg focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
+                 class="w-full pl-11 sm:pl-12 pr-4 py-3 bg-gray-50/50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400 shadow-inner">
         </div>
 
+        <!-- Student List -->
         <div class="space-y-3">
           @for (s of paginatedStudents(); track s.id) {
             <div (click)="openStudentResult(s)"
-                 class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-orange-50/30 rounded-2xl border border-gray-100 hover:border-orange-100 transition-all duration-300 cursor-pointer group shadow-sm hover:shadow-md">
-              <div class="flex items-center gap-4 mb-3 sm:mb-0">
-                <img [src]="s.img" class="w-14 h-14 rounded-full object-cover border border-gray-100 shadow-sm group-hover:border-orange-200 transition-colors" alt="avatar">
-                <div>
-                  <div class="font-bold text-base text-gray-900 group-hover:text-orange-600 transition-colors">{{ s.name }}</div>
-                  <div class="text-xs text-gray-500 font-medium mt-0.5">รหัส {{ s.id }} • ปี {{ s.year }} • GPA <span class="text-gray-700 font-bold">{{ s.gpa }}</span></div>
+                 class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-orange-50/30 rounded-2xl border border-gray-100 hover:border-orange-200 transition-all duration-300 cursor-pointer group shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md gap-3 sm:gap-4">
+
+              <!-- Avatar & Info -->
+              <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <img [src]="s.img" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-gray-100 shadow-sm shrink-0" alt="avatar">
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-sm sm:text-base text-gray-900 group-hover:text-orange-600 transition-colors line-clamp-1">{{ s.name }}</div>
+                  <div class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5 truncate">
+                    รหัส {{ s.id }} <span class="hidden sm:inline">•</span><br class="sm:hidden"> ปี {{ s.year }} • GPA <span class="text-gray-700 font-bold">{{ s.gpa }}</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="flex items-center gap-4">
-                <span class="inline-flex items-center justify-center px-3 py-1 text-[11px] font-extrabold rounded-full border"
+              <!-- Status Badge (บนมือถือจะถูกดันลงมาข้างล่างและมีเส้นคั่น, ในจอคอมจะอยู่ขวา) -->
+              <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto border-t sm:border-0 border-gray-50 pt-3 sm:pt-0 shrink-0">
+                <span class="inline-flex items-center justify-center px-3 py-1.5 sm:py-1 text-[11px] font-extrabold rounded-full border whitespace-nowrap"
                       [class]="s.ploStatus === 'PLO รอประเมิน' || s.ploStatus === 'รอประเมิน' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                (s.ploStatus === 'PLO ไม่ผ่าน' || s.ploStatus === 'ไม่ผ่าน' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200')">
                   {{ s.ploStatus }}
                 </span>
-                <span class="material-symbols-outlined text-gray-300 group-hover:text-orange-500 transition-colors transform group-hover:translate-x-1">chevron_right</span>
+                <span class="material-symbols-outlined text-gray-300 group-hover:text-orange-500 transition-colors transform group-hover:translate-x-1 hidden sm:block">chevron_right</span>
               </div>
             </div>
           }
         </div>
 
         @if (paginatedStudents().length === 0) {
-          <div class="text-center py-12 bg-white">
+          <div class="text-center py-12 bg-white rounded-2xl border border-gray-100 border-dashed mt-4">
             <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">group_off</span>
             <p class="text-gray-500 text-sm">ไม่พบรายชื่อนักศึกษา</p>
           </div>
         }
       </div>
 
+      <!-- Pagination -->
       @if (totalItems() > 0) {
-        <div class="mt-8 flex flex-col xl:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-50">
-          <p class="text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-center w-full xl:w-auto">
+        <div class="mt-6 sm:mt-8 flex flex-col xl:flex-row justify-between items-center gap-4 pt-5 sm:pt-6 border-t border-gray-100">
+          <p class="text-[11px] sm:text-sm font-medium text-gray-500 bg-gray-50 sm:bg-white px-4 py-2.5 rounded-xl sm:rounded-full border border-gray-100 text-center w-full xl:w-auto">
             แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }}-{{ (currentPage() * itemsPerPage) > totalItems() ? totalItems() : (currentPage() * itemsPerPage) }}
             จาก <strong class="text-gray-900">{{ totalItems() }}</strong> รายการ
           </p>
 
-          <div class="flex items-center bg-white p-1 rounded-full shadow-sm border border-gray-100">
+          <div class="flex items-center justify-center bg-white p-1.5 rounded-xl sm:rounded-full shadow-sm border border-gray-100 w-full xl:w-auto flex-wrap gap-1">
             <button (click)="prevPage()" [disabled]="currentPage() === 1"
-                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+                    class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-full hover:bg-gray-50 disabled:opacity-30 transition-all">
               <span class="material-symbols-outlined text-sm">chevron_left</span>
             </button>
 
-            <div class="flex px-1 gap-1">
+            <div class="flex px-1 gap-1 flex-wrap justify-center">
               @for (page of pageNumbers(); track page) {
                 <button (click)="goToPage(page)"
-                        class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all"
+                        class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-full text-xs sm:text-sm font-bold transition-all"
                         [class]="currentPage() === page
                                 ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
                                 : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'">
@@ -80,7 +92,7 @@
             </div>
 
             <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+                    class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-full hover:bg-gray-50 disabled:opacity-30 transition-all">
               <span class="material-symbols-outlined text-sm">chevron_right</span>
             </button>
           </div>
@@ -89,80 +101,93 @@
     </div>
 
 
-    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 h-full">
+    <!-- ========================================== -->
+    <!-- ส่วนที่ 2: การนัดหมายล่าสุด -->
+    <!-- ========================================== -->
+    <div class="bg-white p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 h-full">
+
+      <!-- Header & Toggle -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 class="text-xl font-extrabold text-gray-900">การนัดหมายล่าสุด</h2>
 
-        <div class="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100">
-          <button routerLink="/individual" class="px-4 py-2 text-xs font-bold text-gray-600 bg-transparent hover:bg-white hover:text-orange-600 hover:shadow-sm rounded-lg transition-all">
+        <div class="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100 w-full sm:w-auto">
+          <button routerLink="/individual" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-bold text-gray-600 bg-transparent hover:bg-white hover:text-orange-600 hover:shadow-sm rounded-lg transition-all text-center">
             รายบุคคล
           </button>
-          <button routerLink="/group" class="px-4 py-2 text-xs font-bold text-gray-600 bg-transparent hover:bg-white hover:text-orange-600 hover:shadow-sm rounded-lg transition-all">
+          <button routerLink="/group" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-bold text-gray-600 bg-transparent hover:bg-white hover:text-orange-600 hover:shadow-sm rounded-lg transition-all text-center">
             รายกลุ่ม
           </button>
         </div>
       </div>
 
-      <div class="space-y-4">
+      <!-- Appointments List -->
+      <div class="space-y-3 sm:space-y-4">
         @for (app of appointments().slice(0, 4); track app.id + app.date) {
 
-          <div (click)="goToAppointment(app)" class="p-5 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-orange-200 hover:bg-white hover:shadow-lg hover:shadow-orange-50 transition-all duration-300 cursor-pointer group">
+          <div (click)="goToAppointment(app)" class="p-4 sm:p-5 bg-white rounded-2xl border border-gray-100 hover:border-orange-300 hover:shadow-[0_8px_30px_rgba(234,88,12,0.08)] transition-all duration-300 cursor-pointer group shadow-sm">
 
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
+            <!-- App Header: Name & Badge -->
+            <div class="flex items-start justify-between mb-3 gap-3">
+              <div class="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                 @if (app.isGroup) {
-                  <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-105 transition-transform">
-                    <span class="material-symbols-outlined text-2xl">groups</span>
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
+                    <span class="material-symbols-outlined text-xl sm:text-2xl">groups</span>
                   </div>
                 } @else {
-                  <img [src]="app.img" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+                  <img [src]="app.img" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-100 shrink-0">
                 }
 
-                <div>
-                  <div class="font-bold text-sm text-gray-900 line-clamp-1 group-hover:text-orange-600 transition-colors">{{ app.name }}</div>
+                <div class="flex-1 min-w-0 pt-0.5 sm:pt-0">
+                  <div class="font-bold text-sm text-gray-900 group-hover:text-orange-600 transition-colors line-clamp-2 sm:line-clamp-1 leading-tight">{{ app.name }}</div>
 
                   @if (app.isGroup) {
-                    <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-700 text-[10px] font-bold rounded-md border border-orange-100">
+                    <div class="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 bg-orange-50 text-orange-700 text-[10px] font-bold rounded-md border border-orange-100">
                       <span class="material-symbols-outlined text-[12px]">group</span>
                       กลุ่ม ({{ app.memberCount }} คน)
                     </div>
                   } @else {
-                    <div class="text-[11px] font-medium text-gray-500 mt-0.5">รหัส {{ app.studentCode }}</div>
+                    <div class="text-[11px] font-medium text-gray-500 mt-1 sm:mt-0.5 truncate">รหัส {{ app.studentCode }}</div>
                   }
                 </div>
               </div>
 
-              <span class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-white shadow-sm whitespace-nowrap"
+              <!-- Type Badge -->
+              <span class="px-2.5 py-1 text-[10px] font-extrabold rounded-full border bg-white shadow-sm whitespace-nowrap shrink-0 mt-0.5"
                     [class]="app.type === 'อาชีพ/ฝึกงาน' ? 'text-cyan-600 border-cyan-200' :
                              (app.type === 'กิจกรรม' ? 'text-purple-600 border-purple-200' : 'text-blue-600 border-blue-200')">
                 {{ app.type }}
               </span>
             </div>
 
-            <h4 class="text-sm font-bold text-gray-800 mb-3">{{ app.topic }}</h4>
+            <!-- Topic -->
+            <h4 class="text-sm font-bold text-gray-800 mb-2 sm:mb-3 leading-snug">{{ app.topic }}</h4>
 
+            <!-- Note (If any) -->
             @if (app.note) {
-              <div class="p-3 mb-4 text-xs text-gray-600 bg-white rounded-xl border border-gray-100 shadow-sm relative line-clamp-2">
+              <div class="p-3 mb-3 text-[11px] sm:text-xs text-gray-600 bg-gray-50 rounded-xl border border-gray-100 relative line-clamp-2 leading-relaxed">
                 <span class="font-bold text-gray-800">บันทึก: </span>{{ app.note }}
               </div>
             }
 
-            <div class="flex items-center gap-5 text-xs text-gray-500 font-bold bg-white p-2 rounded-xl border border-gray-100">
+            <!-- Date & Time (ลอยอยู่ด้านล่างสุด) -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-[11px] sm:text-xs text-gray-500 font-bold bg-white p-2.5 rounded-xl border border-gray-100 mt-2">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-red-400 text-[16px]">calendar_today</span>
                 {{ app.date }}
               </div>
+              <div class="hidden sm:block w-[1px] h-3 bg-gray-200"></div>
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-blue-500 text-[16px]">schedule</span>
                 {{ app.time }}
               </div>
             </div>
+
           </div>
         }
 
         @if (appointments().length === 0) {
           <div class="text-center py-12 bg-white rounded-2xl border border-gray-100 border-dashed">
-            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div class="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
               <span class="material-symbols-outlined text-2xl text-gray-400">event_busy</span>
             </div>
             <p class="text-sm font-bold text-gray-600">ยังไม่มีการนัดหมาย</p>
@@ -173,5 +198,4 @@
     </div>
 
   </div>
-
 </div>

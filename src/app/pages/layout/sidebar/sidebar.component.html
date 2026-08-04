@@ -1,7 +1,24 @@
-<div class="bg-white h-screen border-r border-gray-100 flex flex-col transition-all duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.02)] select-none z-50"
-     [class.w-[260px]]="isSidebarOpen"
-     [class.w-[84px]]="!isSidebarOpen">
+<!-- 🌟 1. ปุ่มเปิด Sidebar สำหรับจอมือถือ (จะลอยอยู่มุมซ้ายบน โชว์เฉพาะตอนจอเล็ก + Sidebar ปิดอยู่) -->
+@if (!isSidebarOpen) {
+  <button (click)="toggleSidebar()"
+          class="lg:hidden fixed top-5 left-5 z-[60] w-11 h-11 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-100 text-gray-600 hover:text-orange-500 transition-all active:scale-95">
+    <span class="material-symbols-outlined text-[26px] leading-none">menu</span>
+  </button>
+}
 
+<!-- 🌟 2. ฉากหลังสีดำสำหรับมือถือ (คลิกที่ฉากดำเพื่อปิด Sidebar ได้) -->
+@if (isSidebarOpen) {
+  <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity animate-in fade-in" (click)="toggleSidebar()"></div>
+}
+
+<!-- 🌟 3. ตัว Sidebar หลัก (ใช้ fixed บนมือถือเพื่อลอยทับ และใช้ relative บนคอมเพื่อเบียดจอ) -->
+<div class="bg-white h-screen border-r border-gray-100 flex flex-col transition-transform duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.05)] select-none z-50 fixed lg:relative top-0 left-0 w-[260px]"
+     [class.translate-x-0]="isSidebarOpen"
+     [class.-translate-x-full]="!isSidebarOpen"
+     [class.lg:w-[84px]]="!isSidebarOpen"
+     [class.lg:translate-x-0]="!isSidebarOpen">
+
+  <!-- ================= ส่วนหัว Sidebar ================= -->
   <div class="flex items-center justify-between p-4 mb-2 border-b border-gray-50 shrink-0 h-[80px]">
     @if (isSidebarOpen) {
       <div class="flex items-center gap-3 transition-opacity duration-300 animate-fadeIn pl-2">
@@ -15,6 +32,7 @@
       </div>
     }
 
+    <!-- ปุ่มเปิด/ปิด ภายใน Sidebar -->
     <button (click)="toggleSidebar()"
             class="flex items-center justify-center w-10 h-10 text-gray-400 hover:bg-primary/10 hover:text-primary rounded-xl transition-all duration-200 shrink-0 mx-auto"
             [class.mx-auto]="!isSidebarOpen">
@@ -22,8 +40,10 @@
     </button>
   </div>
 
+  <!-- ================= ส่วนเมนูต่างๆ ================= -->
   <div class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar px-3 py-2">
 
+    <!-- 👨‍🏫 เมนูอาจารย์ -->
     @if (userRole === 'teacher' || userRole === 'advisor') {
       <nav>
         <ul class="flex flex-col gap-1.5">
@@ -119,6 +139,7 @@
       </nav>
     }
 
+    <!-- 🎓 เมนูนักศึกษา -->
     @if (userRole === 'student') {
       <nav>
         <ul class="flex flex-col gap-1.5">
@@ -146,6 +167,7 @@
       </nav>
     }
 
+    <!-- 👑 เมนูแอดมิน -->
     @if (userRole === 'admin') {
       <nav>
         <ul class="flex flex-col gap-1.5">
@@ -173,6 +195,7 @@
     }
   </div>
 
+  <!-- ================= ปุ่มกลับไประบบหลัก ================= -->
   @if (userRole === 'admin' || userRole === 'teacher') {
     <div class="px-5 mt-2 mb-4 shrink-0">
       <div class="h-px w-full bg-gray-100 mb-4"></div>
