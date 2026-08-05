@@ -20,7 +20,7 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
 })
 export class ChangePasswordComponent implements OnInit {
   private http = inject(HttpClient);
-  public router = inject(Router); // 🌟 เปลี่ยนเป็น public เพื่อให้ HTML เรียกใช้ได้ด้วย
+  public router = inject(Router);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
@@ -42,8 +42,17 @@ export class ChangePasswordComponent implements OnInit {
   );
 
   ngOnInit() {
+    // 🌟 ดักจับทั้งจาก URL Query Params และ LocalStorage ให้ครอบคลุมทุกกรณี
     this.route.queryParams.subscribe((params) => {
-      this.isFirstLogin = params['first'] === '1';
+      const isFirstParam = params['first'] === '1' || params['first'] === 'true';
+      const mustChangeParam = params['must_change_pwd'] === 'true';
+      const mustChangeLocal = localStorage.getItem('must_change_password') === 'true';
+
+      // หากเข้าเงื่อนไขใดเงื่อนไขหนึ่ง ให้ตั้งค่าเป็น true
+      this.isFirstLogin = isFirstParam || mustChangeParam || mustChangeLocal;
+
+      // 🌟 บังคับให้ Angular ตรวจจับการเปลี่ยนแปลงเพื่อแสดงผลข้อความใน HTML ทันที
+      this.cdr.detectChanges();
     });
 
     if (!localStorage.getItem('token')) {
@@ -51,7 +60,7 @@ export class ChangePasswordComponent implements OnInit {
     }
   }
 
-  // 🌟 ฟังก์ชันสำหรับกดข้าม/ยกเลิก เพื่อกลับไปหน้า personal-data
+  // 🌟 ฟังก์ชันสำหรับกดข้าม/ยกเลิก (ปุ่ม X)
   goBack() {
     this.router.navigate(['/personal-data']);
   }
@@ -89,7 +98,7 @@ export class ChangePasswordComponent implements OnInit {
           if (res.success) {
             this.successMessage = res.message || 'เปลี่ยนรหัสผ่านสำเร็จ';
             
-            // 🌟 อัปเดต LocalStorage ว่าเปลี่ยนรหัสเรียบร้อย
+            // 🌟 อัปเดต LocalStorage ว่าเปลี่ยนรหัสเรียบร้อยแล้ว
             localStorage.setItem('must_change_password', 'false');
             const userJson = localStorage.getItem('user');
             if (userJson) {
