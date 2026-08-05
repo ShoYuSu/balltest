@@ -55,7 +55,7 @@
       </button>
 
       <button (click)="openCreateModal()"
-              class="col-span-2 lg:col-span-auto bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all text-sm sm:text-base">
+              class="col-span-2 lg:col-span-auto bg-primary text-white px-4 sm:px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold shadow-sm shadow-orange-200 transition-all text-sm sm:text-base">
         <span class="material-symbols-outlined text-[20px]">group_add</span> เพิ่มนัดหมายกลุ่ม
       </button>
     </div>
@@ -159,12 +159,12 @@
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-4">
             <button (click)="setSelectionMode('group')"
                     class="flex-1 py-2.5 sm:py-2 rounded-xl font-bold flex items-center justify-center gap-2 border-2 transition-colors text-sm"
-                    [ngClass]="selectionMode() === 'group' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
+                    [ngClass]="selectionMode() === 'group' ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
               <span class="material-symbols-outlined text-[18px]">group</span> เลือกเอง (กลุ่ม)
             </button>
             <button (click)="setSelectionMode('all')"
                     class="flex-1 py-2.5 sm:py-2 rounded-xl font-bold flex items-center justify-center gap-2 border-2 transition-colors text-sm"
-                    [ngClass]="selectionMode() === 'all' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
+                    [ngClass]="selectionMode() === 'all' ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
               <span class="material-symbols-outlined text-[18px]">groups</span> ทั้งชั้นปี
             </button>
           </div>
@@ -175,7 +175,7 @@
               @for (std of myStudents(); track std.student_id) {
                 <div class="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors" (click)="toggleStudentSelection(std.student_id)">
                   <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                       [ngClass]="selectedStudentIds().includes(std.student_id) ? 'border-orange-500 bg-white' : 'border-gray-300 bg-white'">
+                       [ngClass]="selectedStudentIds().includes(std.student_id) ? 'border-primary bg-white' : 'border-gray-300 bg-white'">
                     @if (selectedStudentIds().includes(std.student_id)) {
                       <span class="material-symbols-outlined text-orange-500 text-[14px] sm:text-[18px] font-bold">check</span>
                     }
@@ -316,7 +316,7 @@
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-4">
             <button (click)="setSelectionMode('group')"
                     class="flex-1 py-2.5 sm:py-2 rounded-xl font-bold flex items-center justify-center gap-2 border-2 transition-colors text-sm"
-                    [ngClass]="selectionMode() === 'group' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
+                    [ngClass]="selectionMode() === 'group' ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'">
               <span class="material-symbols-outlined text-[18px]">group</span> เลือกเอง (กลุ่ม)
             </button>
             <button (click)="setSelectionMode('all')"
