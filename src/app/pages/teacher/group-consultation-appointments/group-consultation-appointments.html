@@ -14,19 +14,19 @@
     <div class="relative w-full lg:flex-grow lg:max-w-md">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px] sm:text-[24px]">search</span>
       <input type="text" [(ngModel)]="searchQuery" placeholder="ค้นหาหัวข้อ หรือชื่อนักศึกษา..."
-             class="w-full pl-10 pr-4 py-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+             class="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
     </div>
 
     <!-- Filter Dropdown -->
     <div class="relative w-full lg:w-auto lg:min-w-[170px]">
       <button (click)="toggleFilterDropdown($event)"
-              class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm text-sm sm:text-base font-medium">
+              class="w-full flex items-center justify-between bg-white border-2 border-gray-200 text-gray-700 py-2.5 px-4 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm text-sm sm:text-base font-medium">
         {{ selectedFilter() }}
         <span class="material-symbols-outlined text-gray-400 transition-transform duration-200" [class.rotate-180]="isFilterDropdownOpen()">expand_more</span>
       </button>
 
       @if (isFilterDropdownOpen()) {
-        <div class="absolute left-0 mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn">
+        <div class="absolute left-0 mt-2 w-full bg-white border-2 border-gray-100 rounded-lx shadow-lg py-1.5 z-20 animate-fadeIn">
           @for (option of filterOptions(); track option) {
             <button (click)="selectFilter(option, $event)"
                     class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
@@ -258,7 +258,7 @@
                    (focus)="isCreateTypeOpen.set(true)"
                    (input)="isCreateTypeOpen.set(true)"
                    placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
-                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white text-sm sm:text-base">
+                   class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
             @if (isCreateTypeOpen()) {
               <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredCreateTypes; track t) {
