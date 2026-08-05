@@ -83,58 +83,131 @@
         <div class="w-full flex-1 overflow-x-auto overflow-y-hidden relative mt-4">
           <div class="min-w-[600px] h-full relative flex items-center">
             <svg viewBox="0 0 800 250" class="w-full h-auto drop-shadow-sm overflow-visible">
+              <defs>
+                <!-- แสงเงางามด้านบนแท่งกราฟ -->
+                <linearGradient id="barShine" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                </linearGradient>
+
+                <!-- เงานุ่มใต้แท่งกราฟ -->
+                <filter id="barShadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#4f46e5" flood-opacity="0.18"/>
+                </filter>
+              </defs>
+
+              <!-- เส้น grid แนวนอน -->
               <line x1="40" y1="30" x2="760" y2="30" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
               <line x1="40" y1="86" x2="760" y2="86" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
               <line x1="40" y1="143" x2="760" y2="143" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
-              <line x1="40" y1="200" x2="760" y2="200" stroke="#e2e8f0" stroke-width="2"/>
+              <line x1="40" y1="200" x2="760" y2="200" stroke="#cbd5e1" stroke-width="2"/>
 
-              <text x="30" y="34" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">100%</text>
-              <text x="30" y="90" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">66%</text>
-              <text x="30" y="147" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">33%</text>
-              <text x="30" y="204" text-anchor="end" class="text-[11px] fill-gray-400 font-bold">0%</text>
+              <text x="30" y="34" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">100%</text>
+              <text x="30" y="90" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">66%</text>
+              <text x="30" y="147" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">33%</text>
+              <text x="30" y="204" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">0%</text>
 
-              <g *ngFor="let item of advisingKpiData; let i = index">
-                <!-- แท่งกราฟ มุมโค้งมน สะอาดตา -->
+              <g *ngFor="let item of advisingKpiData; let i = index"
+                 class="cursor-pointer transition-transform duration-300 ease-out hover:-translate-y-1"
+                 (mouseenter)="onBarHover(i, item, $event)"
+                 (mouseleave)="onBarLeave()">
+
+                <!-- แท่งใส invisible กว้างเต็มช่อง ไว้จับ hover ง่ายขึ้น (hit area ใหญ่กว่าแท่งจริง) -->
+                <rect
+                  [attr.x]="getBarX(i) - 8"
+                  y="20"
+                  [attr.width]="barWidth + 16"
+                  height="185"
+                  fill="transparent"
+                />
+
+                <!-- แท่งกราฟ มุมโค้งมน + เงานุ่ม + ขอบเข้มเพิ่มความคมชัด -->
                 <rect
                   [attr.x]="getBarX(i)"
                   [attr.y]="getPointY(item.advising_percentage)"
                   [attr.width]="barWidth"
                   [attr.height]="getBarHeight(item.advising_percentage)"
-                  rx="10"
+                  rx="12"
                   [attr.fill]="item.colorHex || '#4f46e5'"
-                  class="drop-shadow-sm"
+                  filter="url(#barShadow)"
+                  stroke="rgba(0,0,0,0.06)"
+                  stroke-width="1"
+                  class="transition-all duration-300"
+                  [attr.opacity]="hoveredIndex === null || hoveredIndex === i ? 1 : 0.4"
                 />
 
-                <!-- % แสดงตลอด ไม่ต้อง hover -->
+                <!-- ชั้นเงาวาว (shine) ทับบนแท่ง -->
+                <rect
+                  [attr.x]="getBarX(i)"
+                  [attr.y]="getPointY(item.advising_percentage)"
+                  [attr.width]="barWidth"
+                  [attr.height]="getBarHeight(item.advising_percentage)"
+                  rx="12"
+                  fill="url(#barShine)"
+                  class="pointer-events-none"
+                />
+
+                <!-- ป้าย % แบบ pill ลอยเหนือแท่ง สีทึบ ชัดเจน -->
+                <rect
+                  [attr.x]="getPointX(i) - 24"
+                  [attr.y]="getPointY(item.advising_percentage) - 32"
+                  width="48" height="22" rx="11"
+                  [attr.fill]="item.colorHex || '#4f46e5'"
+                />
                 <text
                   [attr.x]="getPointX(i)"
-                  [attr.y]="getPointY(item.advising_percentage) - 12"
+                  [attr.y]="getPointY(item.advising_percentage) - 16"
                   text-anchor="middle"
-                  class="text-[13px] font-black fill-gray-700"
+                  fill="#ffffff"
+                  class="text-[13px] font-black"
                 >
                   {{item.advising_percentage}}%
                 </text>
 
-                <text 
-                  [attr.x]="getPointX(i)" y="225" text-anchor="middle" 
-                  class="text-[12px] font-bold fill-gray-600"
+                <!-- จุดสี + ชื่อสาขา -->
+                <circle [attr.cx]="getPointX(i) - 20" cy="221" r="3.5" [attr.fill]="item.colorHex || '#4f46e5'"/>
+                <text
+                  [attr.x]="getPointX(i)" y="225" text-anchor="middle"
+                  class="text-[13px] font-bold fill-gray-700"
                 >
                   {{item.major}}
                 </text>
-                <text 
-                  [attr.x]="getPointX(i)" y="240" text-anchor="middle" 
-                  class="text-[10px] font-medium fill-gray-400"
+                <text
+                  [attr.x]="getPointX(i)" y="240" text-anchor="middle"
+                  class="text-[11px] font-medium fill-gray-500"
                 >
-                  ({{item.advised_students}}/{{item.total_students}})
+                  ({{item.advised_students}}/{{item.total_students}} คน)
                 </text>
               </g>
             </svg>
-            
+
             <div *ngIf="advisingKpiData.length === 0" class="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-10">
               <span class="material-symbols-outlined text-4xl text-slate-300">bar_chart</span>
               <p class="text-xs text-gray-400 mt-2 font-semibold">ยังไม่มีข้อมูลสถิติการให้คำปรึกษาในระบบ</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Tooltip: ใช้ position:fixed + พิกัดจริงจาก getBoundingClientRect()
+           หนีปัญหาโดน overflow-hidden ของ container ตัดขอบ / ตำแหน่งเพี้ยนตอน scroll -->
+      <div
+        *ngIf="hoveredIndex !== null"
+        class="fixed z-50 pointer-events-none transition-all duration-100 ease-out"
+        [style.left.px]="tooltipClientX"
+        [style.top.px]="tooltipClientY"
+        style="transform: translate(-50%, calc(-100% - 14px));"
+      >
+        <div class="bg-slate-900 text-white rounded-xl px-4 py-3 shadow-2xl ring-1 ring-black/10 whitespace-nowrap">
+          <p class="font-bold text-sm">{{ advisingKpiData[hoveredIndex].major }}</p>
+          <p class="text-emerald-400 font-black text-xl mt-0.5 leading-none">
+            {{ advisingKpiData[hoveredIndex].advising_percentage }}%
+          </p>
+          <p class="text-gray-300 text-xs mt-1">
+            ดูแลแล้ว {{ advisingKpiData[hoveredIndex].advised_students }} / {{ advisingKpiData[hoveredIndex].total_students }} คน
+          </p>
+          <!-- ลูกศรชี้ลงหาแท่งกราฟ -->
+          <div class="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45"></div>
         </div>
       </div>
 

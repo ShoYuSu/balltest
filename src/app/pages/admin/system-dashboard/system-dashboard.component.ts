@@ -63,6 +63,12 @@ export class SystemDashboardComponent implements OnInit {
   advisingKpiData: any[] = [];
   ploKpiData: any[] = [];
 
+  // สำหรับ tooltip กราฟแท่ง (ใช้พิกัดจริงบนหน้าจอ ไม่ใช่ % จาก viewBox
+  // เพื่อไม่ให้โดนตัดขอบโดย overflow-hidden ของ container ที่เลื่อนได้)
+  hoveredIndex: number | null = null;
+  tooltipClientX: number = 0;
+  tooltipClientY: number = 0;
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -283,5 +289,26 @@ export class SystemDashboardComponent implements OnInit {
   getBarHeight(percentage: number): number {
     const baseline = 200;
     return baseline - this.getPointY(percentage);
+  }
+
+  // ─── Tooltip Hover Handlers ───
+  // ใช้ getBoundingClientRect() ของแท่งกราฟที่ hover เพื่อหาตำแหน่งจริงบนหน้าจอ
+  // แม่นยำกว่าคำนวณจาก % viewBox และไม่โดนตัดขอบโดย overflow ของ container
+
+  onBarHover(index: number, item: any, event: MouseEvent) {
+    this.hoveredIndex = index;
+
+    const target = event.currentTarget as SVGGElement;
+    const rect = target.getBoundingClientRect();
+
+    this.tooltipClientX = rect.left + rect.width / 2;
+    this.tooltipClientY = rect.top;
+
+    this.cdr.detectChanges();
+  }
+
+  onBarLeave() {
+    this.hoveredIndex = null;
+    this.cdr.detectChanges();
   }
 }
