@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router'; 
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
@@ -15,7 +15,7 @@ import { environment } from '../../../environments/environment';
 export class LoginComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private route = inject(ActivatedRoute); 
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   isStudentPage: boolean = false;
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    rememberMe: new FormControl(false), 
+    rememberMe: new FormControl(false),
   });
 
   loading = false;
@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
         localStorage.removeItem('token');
         localStorage.removeItem('img_profile');
         localStorage.removeItem('full_name');
-        localStorage.removeItem('must_change_password'); 
+        localStorage.removeItem('must_change_password');
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       this.loadSavedCredentials();
@@ -53,8 +53,8 @@ export class LoginComponent implements OnInit {
       try {
         this.loginForm.patchValue({
           email: savedEmail,
-          password: atob(savedPassword), 
-          rememberMe: true, 
+          password: atob(savedPassword),
+          rememberMe: true,
         });
       } catch (e) {
         console.error('รหัสผ่านเก่าอ่านไม่ได้ ล้างทิ้งซะเลย', e);
@@ -123,8 +123,10 @@ export class LoginComponent implements OnInit {
             // เช็คการนำทางแยกตาม Role และสถานะเปลี่ยนรหัสผ่าน
             if (role === 'student') {
               if (res.must_change_password) {
-                // 🌟 แก้ไขให้วิ่งมาที่หน้า change-password ตามที่ต้องการ
-                this.router.navigate(['/change-password']);
+                // 🌟 วิธี B: ไปหน้า personal-data พร้อมส่งค่าบอกให้เปิด Modal ลอยทับ
+                this.router.navigate(['/personal-data'], {
+                  queryParams: { showPasswordModal: 'true' },
+                });
               } else {
                 // ถ้าเปลี่ยนรหัสแล้ว ให้พาไปหน้าประวัติตามปกติ
                 this.router.navigate(['/personal-data']);
@@ -132,7 +134,7 @@ export class LoginComponent implements OnInit {
             } else {
               let targetUrl = `http://localhost:4201/dashboard?token=${tokenToSave}`;
               if (res.must_change_password) {
-                targetUrl += `&must_change_pwd=true`; 
+                targetUrl += `&must_change_pwd=true`;
               }
               window.location.href = targetUrl;
             }

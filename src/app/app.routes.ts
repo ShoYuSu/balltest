@@ -13,14 +13,14 @@ export const routes: Routes = [
   },
 
   // 2. หน้าเปลี่ยนรหัสผ่าน (แยกอิสระ ไม่ซ้อนใน MainLayout เพื่อแสดงผลเต็มหน้าจอ)
-  {
-    path: 'change-password',
-    loadComponent: () =>
-      import('./pages/change-password/change-password').then(
-        (m) => m.ChangePasswordComponent
-      ),
-    canActivate: [authGuard],
-  },
+  // {
+  //   path: 'change-password',
+  //   loadComponent: () =>
+  //     import('./pages/change-password/change-password').then(
+  //       (m) => m.ChangePasswordComponent
+  //     ),
+  //   canActivate: [authGuard],
+  // },
 
   // 3. โครงสร้างหลักของระบบ (ต้องผ่าน authGuard)
   {

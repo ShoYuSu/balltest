@@ -11,19 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // 2. เช็กสถานะบังคับเปลี่ยนรหัสผ่านจาก LocalStorage
-  const userJson = localStorage.getItem('user');
-  if (userJson) {
-    const user = JSON.parse(userJson);
-    
-    if (user.must_change_password === 1) {
-      // ถ้ายังไม่เปลี่ยนรหัส และตอนนี้ไม่ได้อยู่หน้า change-password
-      if (!state.url.includes('change-password')) {
-        router.navigate(['/change-password']); // บังคับดึงกลับมาหน้านี้
-        return false;
-      }
-    }
-  }
-
+  // 🌟 ลบการบล็อก must_change_password ออกไปเลย ปล่อยให้นักศึกษาไปหน้า personal-data ได้อิสระ
+  
   return true;
 };

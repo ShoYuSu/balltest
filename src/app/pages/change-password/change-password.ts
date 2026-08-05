@@ -20,11 +20,12 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
 })
 export class ChangePasswordComponent implements OnInit {
   private http = inject(HttpClient);
-  private router = inject(Router);
+  public router = inject(Router); // 🌟 เปลี่ยนเป็น public เพื่อให้ HTML เรียกใช้ได้ด้วย
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   isFirstLogin = false;
+  hideCurrentPassword = true;
   hideNewPassword = true;
   hideConfirmPassword = true;
   loading = false;
@@ -33,6 +34,7 @@ export class ChangePasswordComponent implements OnInit {
 
   changePasswordForm = new FormGroup(
     {
+      currentPassword: new FormControl('', [Validators.required]),
       newPassword: new FormControl('', [Validators.required, Validators.minLength(8)]),
       confirmPassword: new FormControl('', [Validators.required]),
     },
@@ -40,15 +42,18 @@ export class ChangePasswordComponent implements OnInit {
   );
 
   ngOnInit() {
-    // 🌟 มาจากหน้า login ครั้งแรกไหม (?first=1) ใช้แสดงข้อความแจ้งเตือนเฉย ๆ
     this.route.queryParams.subscribe((params) => {
       this.isFirstLogin = params['first'] === '1';
     });
 
-    // ถ้าไม่มี token เลย (เข้าหน้านี้ตรง ๆ โดยไม่ได้ล็อกอิน) เด้งกลับไปหน้า login
     if (!localStorage.getItem('token')) {
       this.router.navigate(['/login']);
     }
+  }
+
+  // 🌟 ฟังก์ชันสำหรับกดข้าม/ยกเลิก เพื่อกลับไปหน้า personal-data
+  goBack() {
+    this.router.navigate(['/personal-data']);
   }
 
   onSubmit() {
@@ -60,7 +65,8 @@ export class ChangePasswordComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
-    const { newPassword, confirmPassword } = this.changePasswordForm.value;
+    
+    const { currentPassword, newPassword, confirmPassword } = this.changePasswordForm.value;
     const token = localStorage.getItem('token');
 
     const headers = new HttpHeaders({
@@ -71,6 +77,7 @@ export class ChangePasswordComponent implements OnInit {
       .post(
         `${environment.apiUrl}/change_password.php`,
         {
+          current_password: currentPassword,
           new_password: newPassword,
           confirm_password: confirmPassword,
         },
@@ -81,8 +88,18 @@ export class ChangePasswordComponent implements OnInit {
           this.loading = false;
           if (res.success) {
             this.successMessage = res.message || 'เปลี่ยนรหัสผ่านสำเร็จ';
+            
+            // 🌟 อัปเดต LocalStorage ว่าเปลี่ยนรหัสเรียบร้อย
+            localStorage.setItem('must_change_password', 'false');
+            const userJson = localStorage.getItem('user');
+            if (userJson) {
+              const user = JSON.parse(userJson);
+              user.must_change_password = 0;
+              localStorage.setItem('user', JSON.stringify(user));
+            }
+
             this.cdr.detectChanges();
-            // 🌟 เปลี่ยนสำเร็จแล้ว พาไปหน้าหลักของนักศึกษาต่อ
+            
             setTimeout(() => {
               this.router.navigate(['/personal-data']);
             }, 1200);
