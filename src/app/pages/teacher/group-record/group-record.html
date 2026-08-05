@@ -8,22 +8,30 @@
 
     <div class="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
 
-      <div class="flex w-full sm:w-auto flex-grow gap-4">
+      <div class="flex w-full sm:w-auto flex-grow gap-3 sm:gap-4">
+
+        <!-- 🌟 ส่วนค้นหา -->
         <div class="relative w-full sm:max-w-md group flex-grow">
           <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
+
+          <!-- แก้ไข: ใส่ h-12 แทน py-3 และแก้ border ให้เหลือแค่ border-gray-200 -->
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
                  placeholder="ค้นหาหัวข้อ, บันทึก หรือชื่อนักศึกษา..."
-                 class="w-full pl-12 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+                 class="w-full h-12 pl-12 pr-10 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm font-medium">
+
           @if (searchQuery()) {
-            <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
+            <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
               <span class="material-symbols-outlined text-sm">close</span>
             </button>
           }
         </div>
 
+        <!-- 🌟 ส่วน Dropdown -->
         <div class="relative min-w-[170px]">
+
+          <!-- แก้ไข: ใส่ h-12 เหมือนกัน และเอา py-3 ออก เพื่อให้ความสูงเท่ากันเป๊ะ -->
           <button (click)="toggleFilterDropdown($event)"
-                  class="w-full h-full flex items-center justify-between bg-gray-50/50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+                  class="w-full h-12 flex items-center justify-between bg-white border-2 border-gray-200 text-gray-700 px-4 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm font-medium">
             {{ selectedFilter() }}
             <span class="material-symbols-outlined text-gray-400 transition-transform duration-200" [class.rotate-180]="isFilterDropdownOpen()">expand_more</span>
           </button>
@@ -43,6 +51,7 @@
             </div>
           }
         </div>
+
       </div>
 
       <button (click)="exportToExcel()"
