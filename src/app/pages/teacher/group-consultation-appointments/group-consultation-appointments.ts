@@ -49,16 +49,30 @@ export class GroupConsultationAppointments implements OnInit {
   isLogModalOpen = signal(false);
   isConfirmCancelModalOpen = signal(false);
 
-  // 🌟 เพิ่ม Signal สำหรับระบบจัดการประเภท
+  // 🌟 เพิ่ม Signal สำหรับระบบจัดการประเภท และ Dropdown
   isManageTypesModalOpen = signal(false);
   isCreateTypeOpen = signal(false);
   isEditTypeOpen = signal(false);
+
+  isCreateSemesterOpen = signal(false); // 🌟 เปิด/ปิด Dropdown ภาคเรียน (สร้าง)
+  isEditSemesterOpen = signal(false); // 🌟 เปิด/ปิด Dropdown ภาคเรียน (แก้ไข)
+
   newTypeInput = signal('');
 
   activeDropdownId = signal<string | null>(null);
   isFilterDropdownOpen = signal(false);
 
-  newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
+  // 🌟 เพิ่ม academicYear และ semester
+  newApp = {
+    date: '',
+    time: '',
+    endTime: '',
+    type: 'วิชาการ',
+    topic: '',
+    details: '',
+    academicYear: '',
+    semester: '',
+  };
   editingApp: any = null;
   appointmentToCancelId = signal<string | null>(null);
 
@@ -113,6 +127,8 @@ export class GroupConsultationAppointments implements OnInit {
           type: app.type || '',
           status: app.status || 'นัดหมาย',
           note: app.note || '',
+          academicYear: app.academic_year || '', // 🌟 ดึงค่าปีการศึกษา
+          semester: app.semester || '', // 🌟 ดึงค่าภาคเรียน
           date: this.formatThaiDate(app.appointment_date),
           rawDate: app.appointment_date,
           time: this.formatTime(app.start_time, app.end_time),
@@ -241,7 +257,14 @@ export class GroupConsultationAppointments implements OnInit {
   // =====================================
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
-    if (this.selectedStudentIds().length < 2 || !this.newApp.topic || !this.newApp.date) {
+    // 🌟 ดักให้กรอกปีการศึกษาและภาคเรียนด้วย
+    if (
+      this.selectedStudentIds().length < 2 ||
+      !this.newApp.topic ||
+      !this.newApp.date ||
+      !this.newApp.academicYear ||
+      !this.newApp.semester
+    ) {
       alert('กรุณากรอกข้อมูลให้ครบและเลือกนักศึกษาอย่างน้อย 2 คน');
       return;
     }
@@ -253,6 +276,8 @@ export class GroupConsultationAppointments implements OnInit {
       time: this.newApp.time,
       end_time: this.newApp.endTime,
       type: this.newApp.type,
+      academic_year: this.newApp.academicYear, // 🌟 ส่งค่า
+      semester: this.newApp.semester, // 🌟 ส่งค่า
       student_ids: this.selectedStudentIds(),
     };
     this.http.post(`${environment.apiUrl}/create_appointment.php`, payload).subscribe({
@@ -267,7 +292,13 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   submitEditAppointment() {
-    if (!this.editingApp.topic || !this.editingApp.rawDate) {
+    // 🌟 ดักให้กรอกปีการศึกษาและภาคเรียนด้วย
+    if (
+      !this.editingApp.topic ||
+      !this.editingApp.rawDate ||
+      !this.editingApp.academicYear ||
+      !this.editingApp.semester
+    ) {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -279,6 +310,8 @@ export class GroupConsultationAppointments implements OnInit {
       time: this.editingApp.rawTime,
       end_time: this.editingApp.rawEndTime,
       type: this.editingApp.type,
+      academic_year: this.editingApp.academicYear, // 🌟 ส่งค่า
+      semester: this.editingApp.semester, // 🌟 ส่งค่า
       student_ids: this.selectedStudentIds(),
     };
     this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
@@ -385,6 +418,8 @@ export class GroupConsultationAppointments implements OnInit {
     this.isFilterDropdownOpen.set(false);
     this.isCreateTypeOpen.set(false);
     this.isEditTypeOpen.set(false);
+    this.isCreateSemesterOpen.set(false); // 🌟 ปิด dropdown
+    this.isEditSemesterOpen.set(false); // 🌟 ปิด dropdown
   }
 
   closeModals() {
@@ -395,10 +430,23 @@ export class GroupConsultationAppointments implements OnInit {
     this.isManageTypesModalOpen.set(false);
     this.isCreateTypeOpen.set(false);
     this.isEditTypeOpen.set(false);
+    this.isCreateSemesterOpen.set(false);
+    this.isEditSemesterOpen.set(false);
+
     this.editingApp = null;
     this.appointmentToCancelId.set(null);
     this.newTypeInput.set('');
-    this.newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
+    // 🌟 รีเซ็ต
+    this.newApp = {
+      date: '',
+      time: '',
+      endTime: '',
+      type: 'วิชาการ',
+      topic: '',
+      details: '',
+      academicYear: '',
+      semester: '',
+    };
     this.selectedStudentIds.set([]);
   }
 
@@ -480,15 +528,26 @@ export class GroupConsultationAppointments implements OnInit {
     link.setAttribute('download', 'ข้อมูลนัดหมายกลุ่ม.csv');
     link.click();
   }
+
   openCreateModal() {
     // รีเซ็ตค่าฟอร์มให้ว่าง
-    this.newApp = { date: '', time: '', endTime: '', type: 'วิชาการ', topic: '', details: '' };
+    this.newApp = {
+      date: '',
+      time: '',
+      endTime: '',
+      type: 'วิชาการ',
+      topic: '',
+      details: '',
+      academicYear: '',
+      semester: '',
+    };
     this.selectedStudentIds.set([]);
     this.selectionMode.set('group');
 
     // ปิด dropdown อื่นๆ ก่อนเปิด
     this.isCreateTypeOpen.set(false);
     this.isManageTypesModalOpen.set(false);
+    this.isCreateSemesterOpen.set(false);
     this.newTypeInput.set('');
 
     // เปิดหน้าต่าง Modal สร้างนัดหมาย

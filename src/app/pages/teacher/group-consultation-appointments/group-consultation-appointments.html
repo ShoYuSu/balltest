@@ -41,7 +41,7 @@
       }
     </div>
 
-    <!-- Action Buttons (Responsive Grid on Mobile, Flex on Desktop) -->
+    <!-- Action Buttons -->
     <div class="w-full lg:w-auto lg:ml-auto grid grid-cols-2 lg:flex gap-2">
       <button (click)="exportToExcel()"
               class="col-span-1 lg:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors shadow-sm text-[12px] sm:text-sm font-medium">
@@ -110,7 +110,7 @@
           </div>
         </div>
 
-        <!-- Student List (Footer of Card) -->
+        <!-- Student List -->
         <div class="pt-3 sm:pt-4 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <span class="text-xs sm:text-sm font-bold text-gray-700 shrink-0">นักศึกษาในกลุ่ม ({{ app.students.length }} คน):</span>
           <div class="flex items-center pl-2 sm:pl-0">
@@ -201,6 +201,42 @@
           <input type="date" [(ngModel)]="newApp.date" class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 text-sm sm:text-base">
         </div>
 
+        <!-- 🌟 ย้ายมาต่อจากวันที่ -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
+            <input type="text" [(ngModel)]="newApp.academicYear" placeholder="เช่น 2569"
+                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-gray-600 text-sm sm:text-base shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ภาคเรียน</label>
+            <div class="relative">
+              <button type="button" (click)="$event.stopPropagation(); isCreateSemesterOpen.update(v => !v)"
+                      class="w-full flex items-center justify-between p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all shadow-sm text-sm sm:text-base">
+                <span [ngClass]="newApp.semester ? 'text-gray-800 font-medium' : 'text-gray-400'">
+                  {{ newApp.semester === '3' ? '3 (ฤดูร้อน)' : (newApp.semester || 'เลือกภาคเรียน') }}
+                </span>
+                <span class="material-symbols-outlined text-gray-400 transition-transform duration-200 text-[20px]"
+                      [class.rotate-180]="isCreateSemesterOpen()">expand_more</span>
+              </button>
+              @if (isCreateSemesterOpen()) {
+                <div class="absolute w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-30 overflow-hidden animate-fadeIn py-1">
+                  @for (sem of ['1', '2', '3']; track sem) {
+                    <button type="button" (click)="newApp.semester = sem; isCreateSemesterOpen.set(false)"
+                            class="w-full text-left px-4 py-2.5 text-sm sm:text-base transition-colors flex items-center justify-between hover:bg-orange-50"
+                            [ngClass]="newApp.semester === sem ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-gray-700'">
+                      {{ sem === '3' ? '3 (ฤดูร้อน)' : sem }}
+                      @if (newApp.semester === sem) {
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">เวลาเริ่ม</label>
@@ -215,10 +251,6 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs sm:text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
-            <button (click)="openManageTypesModal($event)"
-                    class="text-[10px] sm:text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
-              <span class="material-symbols-outlined text-[14px] sm:text-sm">settings</span> จัดการประเภท
-            </button>
           </div>
           <div class="relative">
             <input type="text" [(ngModel)]="newApp.type"
@@ -237,29 +269,7 @@
                             [ngClass]="newApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
                       {{ t }}
                     </button>
-                    <div class="flex items-center pr-2 sm:pr-3 gap-1">
-                      @if (newApp.type === t) {
-                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
-                      }
-                      <button (click)="deleteType(t, $event)"
-                              class="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100">
-                        <span class="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </div>
                   </div>
-                }
-                @if (!availableTypes().includes(newApp.type) && newApp.type.trim() !== '') {
-                  <div (click)="addCreateType()"
-                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-xs sm:text-sm font-bold text-orange-600 border-t border-gray-100">
-                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                    สร้างประเภท "{{ newApp.type }}"
-                  </div>
-                }
-                @if (filteredCreateTypes.length === 0 && availableTypes().includes(newApp.type)) {
-                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ไม่พบประเภทที่ค้นหา</div>
-                }
-                @if (availableTypes().length === 0 && newApp.type.trim() === '') {
-                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
                 }
               </div>
             }
@@ -279,10 +289,9 @@
 
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 border-t border-gray-100 rounded-b-2xl sm:rounded-b-3xl">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
-
         <button (click)="submitCreateAppointment()"
-                [disabled]="selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details"
-                [ngClass]="(selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
+                [disabled]="selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details || !newApp.academicYear || !newApp.semester"
+                [ngClass]="(selectedStudentIds().length < 2 || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details || !newApp.academicYear || !newApp.semester) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
                 class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-xl transition-colors text-sm sm:text-base">
           สร้างนัดหมาย
         </button>
@@ -352,6 +361,42 @@
           <div class="hidden sm:block"></div>
         </div>
 
+        <!-- 🌟 ย้ายมาต่อจากวันที่ -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
+            <input type="text" [(ngModel)]="editingApp.academicYear" placeholder="เช่น 2569"
+                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-gray-600 text-sm sm:text-base shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ภาคเรียน</label>
+            <div class="relative">
+              <button type="button" (click)="$event.stopPropagation(); isEditSemesterOpen.update(v => !v)"
+                      class="w-full flex items-center justify-between p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all shadow-sm text-sm sm:text-base">
+                <span [ngClass]="editingApp.semester ? 'text-gray-800 font-medium' : 'text-gray-400'">
+                  {{ editingApp.semester === '3' ? '3 (ฤดูร้อน)' : (editingApp.semester || 'เลือกภาคเรียน') }}
+                </span>
+                <span class="material-symbols-outlined text-gray-400 transition-transform duration-200 text-[20px]"
+                      [class.rotate-180]="isEditSemesterOpen()">expand_more</span>
+              </button>
+              @if (isEditSemesterOpen()) {
+                <div class="absolute w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-30 overflow-hidden animate-fadeIn py-1">
+                  @for (sem of ['1', '2', '3']; track sem) {
+                    <button type="button" (click)="editingApp.semester = sem; isEditSemesterOpen.set(false)"
+                            class="w-full text-left px-4 py-2.5 text-sm sm:text-base transition-colors flex items-center justify-between hover:bg-orange-50"
+                            [ngClass]="editingApp.semester === sem ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-gray-700'">
+                      {{ sem === '3' ? '3 (ฤดูร้อน)' : sem }}
+                      @if (editingApp.semester === sem) {
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">เวลาเริ่ม</label>
@@ -366,10 +411,6 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs sm:text-sm font-bold text-gray-700">ประเภทหัวข้อ</label>
-            <button (click)="openManageTypesModal($event)"
-                    class="text-[10px] sm:text-xs text-orange-500 hover:text-orange-700 flex items-center gap-1 transition-colors">
-              <span class="material-symbols-outlined text-[14px] sm:text-sm">settings</span> จัดการประเภท
-            </button>
           </div>
           <div class="relative">
             <input type="text" [(ngModel)]="editingApp.type"
@@ -383,30 +424,10 @@
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="editingApp.type === t ? 'bg-orange-50' : ''">
                     <button (click)="selectEditType(t)"
-                            class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm"
-                            [ngClass]="editingApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
+                            class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm">
                       {{ t }}
                     </button>
-                    <div class="flex items-center pr-2 sm:pr-3 gap-1">
-                      @if (editingApp.type === t) {
-                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
-                      }
-                      <button (click)="deleteType(t, $event)"
-                              class="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100">
-                        <span class="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </div>
                   </div>
-                }
-                @if (!availableTypes().includes(editingApp.type) && editingApp.type?.trim() !== '') {
-                  <div (click)="addEditType()"
-                       class="flex items-center gap-2 px-4 py-2.5 hover:bg-orange-50 cursor-pointer text-xs sm:text-sm font-bold text-orange-600 border-t border-gray-100">
-                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                    สร้างประเภท "{{ editingApp.type }}"
-                  </div>
-                }
-                @if (availableTypes().length === 0) {
-                  <div class="px-4 py-3 text-xs sm:text-sm text-gray-400 text-center">ยังไม่มีประเภท — พิมพ์เพื่อเพิ่ม</div>
                 }
               </div>
             }
@@ -426,10 +447,9 @@
 
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 border-t border-gray-100 rounded-b-2xl sm:rounded-b-3xl">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
-
         <button (click)="submitEditAppointment()"
-                [disabled]="selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details"
-                [ngClass]="(selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
+                [disabled]="selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details || !editingApp.academicYear || !editingApp.semester"
+                [ngClass]="(selectedStudentIds().length < 2 || !editingApp.rawDate || !editingApp.rawTime || !editingApp.rawEndTime || !editingApp.type || !editingApp.topic || !editingApp.details || !editingApp.academicYear || !editingApp.semester) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'"
                 class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-xl transition-colors text-sm sm:text-base">
           บันทึกการแก้ไข
         </button>
@@ -454,6 +474,7 @@
             ระบบจะบันทึกประวัติทันที และนัดหมายนี้จะถูกย้ายไปแสดงในหน้า "บันทึกการปรึกษา"
           </p>
         </div>
+
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">หัวข้อ</label>
           <input type="text" [value]="editingApp.topic" readonly class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm sm:text-base">
@@ -468,6 +489,19 @@
             <input type="text" [value]="editingApp.time" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm sm:text-base" readonly>
           </div>
         </div>
+
+        <!-- 🌟 ย้ายมาต่อจากวันที่และเวลา -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ปีการศึกษา</label>
+            <input type="text" [value]="editingApp.academicYear" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm sm:text-base" readonly>
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ภาคเรียน</label>
+            <input type="text" [value]="editingApp.semester === '3' ? '3 (ฤดูร้อน)' : editingApp.semester" class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm sm:text-base" readonly>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1 text-orange-600">รายละเอียดผลการปรึกษา</label>
           <textarea [(ngModel)]="editingApp.note" placeholder="กรอกผลการให้คำปรึกษาสำหรับกลุ่มนี้..." rows="4" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none text-sm sm:text-base"></textarea>
@@ -476,79 +510,6 @@
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 border-t border-gray-100 rounded-b-2xl sm:rounded-b-3xl">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitConsultationLog()" class="w-full sm:w-auto px-8 py-2.5 sm:py-2 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors text-sm sm:text-base shadow-sm">บันทึกผล</button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (isConfirmCancelModalOpen()) {
-  <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl overflow-hidden p-6 sm:p-8 text-center">
-      <div class="w-14 h-14 sm:w-16 sm:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span class="material-symbols-outlined text-[32px] sm:text-4xl">warning</span>
-      </div>
-      <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">ยืนยันการยกเลิก</h2>
-      <p class="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายกลุ่มนี้? <br>การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <button (click)="closeModals()" class="w-full py-2.5 sm:py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base">กลับไป</button>
-        <button (click)="confirmCancel()" class="w-full py-2.5 sm:py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-sm text-sm sm:text-base">ใช่, ยกเลิกเลย</button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- 🌟 หน้าต่าง จัดการประเภท -->
-@if (isManageTypesModalOpen()) {
-  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
-          <span class="material-symbols-outlined text-orange-500 text-[24px]">category</span> จัดการประเภทหัวข้อ
-        </h2>
-        <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
-      </div>
-
-      <div class="p-4 sm:p-6 space-y-3 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
-        @if (availableTypes().length === 0) {
-          <div class="text-center py-8 text-gray-400">
-            <span class="material-symbols-outlined text-4xl mb-2 block text-gray-300">label_off</span>
-            <p class="text-sm">ยังไม่มีประเภทหัวข้อ</p>
-          </div>
-        }
-        @for (type of availableTypes(); track type) {
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-orange-200 transition-colors">
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-              <span class="material-symbols-outlined text-orange-400 text-[18px] shrink-0">label</span>
-              <div class="truncate">
-                <span class="font-medium text-gray-800 text-xs sm:text-sm">{{ type }}</span>
-                <span class="text-[10px] sm:text-xs text-gray-400 ml-1 sm:ml-2 whitespace-nowrap">
-                  ({{ typeUsageCount(type) }} นัดหมาย)
-                </span>
-              </div>
-            </div>
-            <button (click)="deleteType(type, $event)"
-                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100 shrink-0">
-              <span class="material-symbols-outlined text-[18px]">delete</span>
-            </button>
-          </div>
-        }
-      </div>
-
-      <div class="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 space-y-2 sm:space-y-3 shrink-0">
-        <label class="block text-xs sm:text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
-        <div class="flex gap-2">
-          <input type="text"
-                 [ngModel]="newTypeInput()"
-                 (ngModelChange)="newTypeInput.set($event)"
-                 (keydown.enter)="addNewTypeFromModal()"
-                 placeholder="ชื่อประเภทหัวข้อ..."
-                 class="flex-1 p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm">
-          <button (click)="addNewTypeFromModal()"
-                  class="px-4 py-2.5 bg-orange-500 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1 shrink-0">
-            <span class="material-symbols-outlined text-[18px]">add</span> <span class="hidden xs:inline">เพิ่ม</span>
-          </button>
-        </div>
-        <p class="text-[10px] sm:text-xs text-gray-400">การลบประเภทไม่กระทบข้อมูลนัดหมายที่มีอยู่แล้ว</p>
       </div>
     </div>
   </div>
