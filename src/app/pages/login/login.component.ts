@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
         localStorage.removeItem('token');
         localStorage.removeItem('img_profile');
         localStorage.removeItem('full_name');
-        localStorage.removeItem('must_change_password'); // ล้างสถานะเผื่อไว้
+        localStorage.removeItem('must_change_password'); 
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       this.loadSavedCredentials();
@@ -113,20 +113,26 @@ export class LoginComponent implements OnInit {
               localStorage.removeItem('savedPassword');
             }
 
-            // 🌟 1. ดักเก็บ LocalStorage สำหรับโปรเจกต์นี้ 
+            // บันทึกสถานะการเปลี่ยนรหัสผ่านลง LocalStorage
             if (res.must_change_password) {
               localStorage.setItem('must_change_password', 'true');
             } else {
               localStorage.removeItem('must_change_password');
             }
 
-            // 🌟 2. แนบ Parameter ข้ามโปรเจกต์ไปให้เพื่อน
+            // เช็คการนำทางแยกตาม Role และสถานะเปลี่ยนรหัสผ่าน
             if (role === 'student') {
-              this.router.navigate(['/personal-data']);
+              if (res.must_change_password) {
+                // 🌟 แก้ไขให้วิ่งมาที่หน้า change-password ตามที่ต้องการ
+                this.router.navigate(['/change-password']);
+              } else {
+                // ถ้าเปลี่ยนรหัสแล้ว ให้พาไปหน้าประวัติตามปกติ
+                this.router.navigate(['/personal-data']);
+              }
             } else {
               let targetUrl = `http://localhost:4201/dashboard?token=${tokenToSave}`;
               if (res.must_change_password) {
-                targetUrl += `&must_change_pwd=true`; // ส่งสัญญาณบังคับเปลี่ยนรหัส
+                targetUrl += `&must_change_pwd=true`; 
               }
               window.location.href = targetUrl;
             }

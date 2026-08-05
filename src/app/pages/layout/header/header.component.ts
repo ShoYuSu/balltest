@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { FontSizeService, FontSize } from '../../../shared/components/font-size.service';
+import { ProfileSettingsComponent } from '../../profile-settings/profile-settings';
 
 interface UpcomingAppointment {
   appointment_id: number;
@@ -18,7 +19,7 @@ interface UpcomingAppointment {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProfileSettingsComponent],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
@@ -34,6 +35,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isAdvisor: boolean = false;
   isDropdownOpen: boolean = false;
   isBellOpen: boolean = false;
+  isProfileSettingsOpen: boolean = false;
   userImageUrl: string | null = null;
 
   upcomingAppointments: UpcomingAppointment[] = [];
@@ -172,6 +174,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   goToRecord() {
     this.isBellOpen = false;
     this.router.navigate(['/advisor-record']);
+  }
+
+ goToProfileSettings() {
+    this.isDropdownOpen = false;
+    // ใช้ Router นำทางไปยัง Path ที่ตั้งไว้ใน app.routes.ts
+    this.router.navigate(['/profile-settings']); 
+  }
+
+  closeProfileSettings() {
+    this.isProfileSettingsOpen = false;
   }
 
   closeAll() {
