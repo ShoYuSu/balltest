@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { getAuthUser } from '../auth-user.util';
+import { ChangePasswordComponent } from '../../change-password/change-password';
+import { ActivatedRoute } from '@angular/router';
 
 interface StudentProfile {
   student_id: number;
@@ -29,7 +31,7 @@ interface StudentProfile {
 @Component({
   selector: 'app-personal-data',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, CommonModule],
+  imports: [DecimalPipe, FormsModule, CommonModule, ChangePasswordComponent],
   templateUrl: './personal-data.component.html',
   styleUrl: './personal-data.component.css',
 })
@@ -37,6 +39,8 @@ export class PersonalDataComponent implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  showPasswordModal = false;
 
   student: StudentProfile = {
     student_id: 0,
@@ -74,6 +78,10 @@ export class PersonalDataComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+    this.showPasswordModal = params['showPasswordModal'] === 'true';
+    this.cdr.detectChanges();
+  });
     const userId = getAuthUser().user_id;
     if (!userId) return;
 

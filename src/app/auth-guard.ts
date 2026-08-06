@@ -5,10 +5,13 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
+  // 1. ถ้าไม่มี Token ดีดกลับหน้า Login
   if (!token) {
-    // ถ้าไม่มีตั๋ว ดีดกลับไปหน้าล็อกอินแอปหลัก[cite: 1]
     router.navigate(['/login']);
     return false;
   }
+
+  // 🌟 ลบการบล็อก must_change_password ออกไปเลย ปล่อยให้นักศึกษาไปหน้า personal-data ได้อิสระ
+  
   return true;
 };
