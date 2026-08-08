@@ -37,6 +37,7 @@
             <div *ngIf="isSemesterDropdownOpen" class="absolute left-0 mt-1.5 w-full bg-white border border-gray-100 rounded-xl shadow-xl z-[100] py-1 animate-fade-in">
               <button (click)="selectSemester(1)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedSemester === 1">ภาคเรียนที่ 1</button>
               <button (click)="selectSemester(2)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedSemester === 2">ภาคเรียนที่ 2</button>
+              <button (click)="selectSemester(3)" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition" [class.bg-indigo-50]="selectedSemester === 3">ภาคเรียนที่ 3 (ภาคฤดูร้อน)</button>
             </div>
           </div>
 
@@ -81,8 +82,8 @@
         </div>
 
         <div class="w-full flex-1 overflow-x-auto overflow-y-hidden relative mt-4">
-          <div class="min-w-[600px] h-full relative flex items-center">
-            <svg viewBox="0 0 800 250" class="w-full h-auto drop-shadow-sm overflow-visible">
+          <div class="h-full relative flex items-center" [style.min-width.px]="chartViewBoxWidth">
+            <svg [attr.viewBox]="'0 0 ' + chartViewBoxWidth + ' 260'" class="w-full h-auto drop-shadow-sm overflow-visible">
               <defs>
                 <!-- แสงเงางามด้านบนแท่งกราฟ -->
                 <linearGradient id="barShine" x1="0" y1="0" x2="0" y2="1">
@@ -97,10 +98,10 @@
               </defs>
 
               <!-- เส้น grid แนวนอน -->
-              <line x1="40" y1="30" x2="760" y2="30" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
-              <line x1="40" y1="86" x2="760" y2="86" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
-              <line x1="40" y1="143" x2="760" y2="143" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="6"/>
-              <line x1="40" y1="200" x2="760" y2="200" stroke="#cbd5e1" stroke-width="2"/>
+              <line x1="40" y1="30" y2="30" [attr.x2]="chartGridRightX" stroke="#eef2f7" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="86" y2="86" [attr.x2]="chartGridRightX" stroke="#eef2f7" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="143" y2="143" [attr.x2]="chartGridRightX" stroke="#eef2f7" stroke-width="2" stroke-dasharray="6"/>
+              <line x1="40" y1="200" y2="200" [attr.x2]="chartGridRightX" stroke="#cbd5e1" stroke-width="2"/>
 
               <text x="30" y="34" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">100%</text>
               <text x="30" y="90" text-anchor="end" class="text-[12px] fill-gray-500 font-bold">66%</text>
@@ -121,12 +122,24 @@
                   fill="transparent"
                 />
 
+                <!-- แทร็กพื้นหลังโปร่งบางๆ ให้เห็นตำแหน่งคอลัมน์แม้ค่าจะใกล้ 0% -->
+                <rect
+                  [attr.x]="getBarX(i)"
+                  y="30"
+                  [attr.width]="barWidth"
+                  height="170"
+                  rx="12"
+                  fill="#f8fafc"
+                  stroke="#eef2f7"
+                  stroke-width="1"
+                />
+
                 <!-- แท่งกราฟ มุมโค้งมน + เงานุ่ม + ขอบเข้มเพิ่มความคมชัด -->
                 <rect
                   [attr.x]="getBarX(i)"
-                  [attr.y]="getPointY(item.advising_percentage)"
+                  [attr.y]="getBarTopY(item.advising_percentage)"
                   [attr.width]="barWidth"
-                  [attr.height]="getBarHeight(item.advising_percentage)"
+                  [attr.height]="getBarDisplayHeight(item.advising_percentage)"
                   rx="12"
                   [attr.fill]="item.colorHex || '#4f46e5'"
                   filter="url(#barShadow)"
@@ -139,9 +152,9 @@
                 <!-- ชั้นเงาวาว (shine) ทับบนแท่ง -->
                 <rect
                   [attr.x]="getBarX(i)"
-                  [attr.y]="getPointY(item.advising_percentage)"
+                  [attr.y]="getBarTopY(item.advising_percentage)"
                   [attr.width]="barWidth"
-                  [attr.height]="getBarHeight(item.advising_percentage)"
+                  [attr.height]="getBarDisplayHeight(item.advising_percentage)"
                   rx="12"
                   fill="url(#barShine)"
                   class="pointer-events-none"
@@ -150,13 +163,14 @@
                 <!-- ป้าย % แบบ pill ลอยเหนือแท่ง สีทึบ ชัดเจน -->
                 <rect
                   [attr.x]="getPointX(i) - 24"
-                  [attr.y]="getPointY(item.advising_percentage) - 32"
+                  [attr.y]="getBarTopY(item.advising_percentage) - 30"
                   width="48" height="22" rx="11"
                   [attr.fill]="item.colorHex || '#4f46e5'"
+                  filter="url(#barShadow)"
                 />
                 <text
                   [attr.x]="getPointX(i)"
-                  [attr.y]="getPointY(item.advising_percentage) - 16"
+                  [attr.y]="getBarTopY(item.advising_percentage) - 14"
                   text-anchor="middle"
                   fill="#ffffff"
                   class="text-[13px] font-black"
@@ -164,16 +178,16 @@
                   {{item.advising_percentage}}%
                 </text>
 
-                <!-- จุดสี + ชื่อสาขา -->
+                <!-- จุดสี + ชื่อสาขา (ตัดขึ้นบรรทัดใหม่ถ้ายาวเกินไป กันชื่อสาขาถูกตัด/มองไม่เห็น) -->
                 <circle [attr.cx]="getPointX(i) - 20" cy="221" r="3.5" [attr.fill]="item.colorHex || '#4f46e5'"/>
                 <text
                   [attr.x]="getPointX(i)" y="225" text-anchor="middle"
-                  class="text-[13px] font-bold fill-gray-700"
+                  class="text-[12px] font-bold fill-gray-700"
                 >
-                  {{item.major}}
+                  <tspan *ngFor="let line of getMajorNameLines(item.major); let li = index" [attr.x]="getPointX(i)" [attr.dy]="li === 0 ? 0 : 14">{{ line }}</tspan>
                 </text>
                 <text
-                  [attr.x]="getPointX(i)" y="240" text-anchor="middle"
+                  [attr.x]="getPointX(i)" [attr.y]="getCountTextY(item.major)" text-anchor="middle"
                   class="text-[11px] font-medium fill-gray-500"
                 >
                   ({{item.advised_students}}/{{item.total_students}} คน)

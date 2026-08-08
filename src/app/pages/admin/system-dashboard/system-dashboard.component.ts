@@ -111,16 +111,26 @@ export class SystemDashboardComponent implements OnInit {
     return JSON.parse(jsonPayload);
   }
 
+  // ปี พ.ศ. ปัจจุบัน (ปีการศึกษาปัจจุบัน) — ให้ขึ้นในตัวเลือกเสมอแม้ยังไม่มีข้อมูลบันทึกไว้
+  private getCurrentThaiYear(): number {
+    return new Date().getFullYear() + 543;
+  }
+
   loadAvailableYears() {
     this.http.get('http://localhost:8080/api/get_dashboard_stats.php?action=get_years').subscribe({
       next: (res: any) => {
-        this.availableYears = res;
-        this.selectedYear = this.availableYears?.length > 0 ? this.availableYears[0] : 2569;
+        const yearsFromApi: number[] = Array.isArray(res) ? res : [];
+        const currentYear = this.getCurrentThaiYear();
+        // 🔴 ปีปัจจุบันขึ้นเป็นอันดับแรกเสมอ ตามด้วยปีอื่นๆ เรียงจากล่าสุดไปเก่าสุด
+        const otherYears = Array.from(new Set(yearsFromApi.filter((y) => y !== currentYear))).sort((a, b) => b - a);
+        this.availableYears = [currentYear, ...otherYears];
+        this.selectedYear = currentYear;
         this.loadKpiData();
         this.cdr.detectChanges();
       },
       error: () => {
-        this.selectedYear = 2569;
+        this.availableYears = [this.getCurrentThaiYear()];
+        this.selectedYear = this.getCurrentThaiYear();
         this.loadKpiData();
       }
     });
@@ -262,17 +272,43 @@ export class SystemDashboardComponent implements OnInit {
 
   readonly barWidth = 48;
 
-  private calcX(index: number, count: number): number {
-    const minX = 60;
-    const maxX = 740;
-    const width = maxX - minX;
-    if (count === 0) return minX;
-    if (count === 1) return minX + width / 2;
-    return minX + index * (width / (count - 1));
+  // 🔴 ใช้ระยะห่างคงที่ต่อ 1 สาขา (slot) แทนการยืดแท่งให้เต็มความกว้างเสมอ
+  // เพื่อไม่ให้แท่ง/ป้ายชื่อสาขาถูกดันไปสุดขอบขวาจนมองไม่เห็นเวลามีสาขาน้อย
+  readonly barSlotWidth = 130;
+  readonly chartLeftMargin = 60;
+  readonly chartRightMargin = 60;
+  readonly chartMinWidth = 800;
+
+  // ความกว้าง viewBox ของกราฟ ขยายอัตโนมัติตามจำนวนสาขา (เลื่อนดูได้เมื่อมีเยอะ)
+  get chartViewBoxWidth(): number {
+    const count = this.advisingKpiData?.length || 0;
+    const needed = this.chartLeftMargin + this.chartRightMargin + count * this.barSlotWidth;
+    return Math.max(this.chartMinWidth, needed);
+  }
+
+  // ตำแหน่งเส้น grid แนวนอนฝั่งขวา ให้ยาวตามความกว้าง viewBox จริง
+  get chartGridRightX(): number {
+    return this.chartViewBoxWidth - 40;
+  }
+
+  // ถ้าจำนวนสาขาน้อยและมีพื้นที่ว่างเหลือ ให้จัดกึ่งกลางแทนการชิดซ้าย (ดูสวยขึ้น ไม่โล่งด้านขวา)
+  get chartContentWidth(): number {
+    const count = this.advisingKpiData?.length || 0;
+    return count * this.barSlotWidth;
+  }
+
+  get chartOffsetX(): number {
+    const available = this.chartViewBoxWidth - this.chartLeftMargin - this.chartRightMargin;
+    const content = this.chartContentWidth;
+    return content < available ? (available - content) / 2 : 0;
+  }
+
+  private calcX(index: number): number {
+    return this.chartLeftMargin + this.chartOffsetX + index * this.barSlotWidth + this.barSlotWidth / 2;
   }
 
   getPointX(index: number): number {
-    return this.calcX(index, this.advisingKpiData?.length || 0);
+    return this.calcX(index);
   }
 
   getPointY(percentage: number): number {
@@ -289,6 +325,41 @@ export class SystemDashboardComponent implements OnInit {
   getBarHeight(percentage: number): number {
     const baseline = 200;
     return baseline - this.getPointY(percentage);
+  }
+
+  // ความสูงแท่งขั้นต่ำที่มองเห็นได้ (กันแท่ง 0% หายไปจนดูเหมือนไม่มีข้อมูล)
+  private readonly minBarHeight = 6;
+
+  getBarDisplayHeight(percentage: number): number {
+    return Math.max(this.minBarHeight, this.getBarHeight(percentage));
+  }
+
+  // ตำแหน่งขอบบนของแท่ง โดยยึดฐาน (baseline) ไว้ที่เดิมเสมอ แม้ค่าความสูงจะถูกดันขึ้นขั้นต่ำ
+  getBarTopY(percentage: number): number {
+    const baseline = 200;
+    return baseline - this.getBarDisplayHeight(percentage);
+  }
+
+  // 🔴 ตัดชื่อสาขาที่ยาวให้ขึ้นบรรทัดใหม่ (สูงสุด 2 บรรทัด) แทนการปล่อยให้ยาวจนล้นออกนอกกรอบ
+  getMajorNameLines(major: string): string[] {
+    if (!major) return [''];
+    const maxCharsPerLine = 12;
+    if (major.length <= maxCharsPerLine) return [major];
+
+    const lines: string[] = [];
+    let remaining = major.trim();
+    while (remaining.length > maxCharsPerLine && lines.length < 1) {
+      lines.push(remaining.slice(0, maxCharsPerLine));
+      remaining = remaining.slice(maxCharsPerLine);
+    }
+    lines.push(remaining);
+    return lines;
+  }
+
+  // ตำแหน่ง y ของบรรทัด "(x/y คน)" ต้องขยับลงตามจำนวนบรรทัดของชื่อสาขา
+  getCountTextY(major: string): number {
+    const lineCount = this.getMajorNameLines(major).length;
+    return 225 + (lineCount - 1) * 14 + 14;
   }
 
   // ─── Tooltip Hover Handlers ───
