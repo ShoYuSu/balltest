@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { FontSizeService, FontSize } from '../../../shared/components/font-size.service';
-import { ProfileSettingsComponent } from '../../profile-settings/profile-settings';
 
 interface UpcomingAppointment {
   appointment_id: number;
@@ -19,7 +18,7 @@ interface UpcomingAppointment {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ProfileSettingsComponent],
+  imports: [CommonModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
