@@ -57,11 +57,22 @@ export class IndividualConsultationAppointments implements OnInit {
 
   newTypeInput = signal('');
 
-  // 🌟 มี endTime ในโมเดล
-  newApp = { studentId: '', date: '', time: '', endTime: '', type: '', topic: '', details: '' };
+  // 🌟 เพิ่ม academicYear และ semester ใน newApp
+  newApp = {
+    studentId: '',
+    date: '',
+    time: '',
+    endTime: '',
+    type: '',
+    topic: '',
+    details: '',
+    academicYear: '',
+    semester: '',
+  };
   selectedApp: any = null;
   appointmentToCancelId: string | null = null;
-
+  isCreateSemesterOpen = signal(false);
+  isEditSemesterOpen = signal(false);
   studentSearch = signal('');
 
   selectStudent(std: any) {
@@ -130,6 +141,8 @@ export class IndividualConsultationAppointments implements OnInit {
               rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
               details: app.description ?? '',
               note: app.note ?? '',
+              academicYear: app.academic_year ?? '', // 🌟 ดึงค่าปีการศึกษา
+              semester: app.semester ?? '', // 🌟 ดึงค่าภาคเรียน
               studentName: app.students[0].name,
               studentId: app.students[0].id,
               img: app.students[0].img
@@ -149,8 +162,15 @@ export class IndividualConsultationAppointments implements OnInit {
 
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
-    if (!this.newApp.studentId || !this.newApp.topic || !this.newApp.date || !this.newApp.type) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (
+      !this.newApp.studentId ||
+      !this.newApp.topic ||
+      !this.newApp.date ||
+      !this.newApp.type ||
+      !this.newApp.academicYear ||
+      !this.newApp.semester
+    ) {
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน รวมถึงปีการศึกษาและภาคเรียน');
       return;
     }
     const payload = {
@@ -161,6 +181,8 @@ export class IndividualConsultationAppointments implements OnInit {
       time: this.newApp.time,
       end_time: this.newApp.endTime,
       type: this.newApp.type,
+      academic_year: this.newApp.academicYear, // 🌟 ส่งไป PHP
+      semester: this.newApp.semester, // 🌟 ส่งไป PHP
       student_ids: [this.newApp.studentId],
     };
     this.http.post(`${environment.apiUrl}/create_appointment.php`, payload).subscribe({
@@ -177,8 +199,14 @@ export class IndividualConsultationAppointments implements OnInit {
   }
 
   submitEditAppointment() {
-    if (!this.selectedApp?.topic || !this.selectedApp?.rawDate || !this.selectedApp?.type) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (
+      !this.selectedApp?.topic ||
+      !this.selectedApp?.rawDate ||
+      !this.selectedApp?.type ||
+      !this.selectedApp?.academicYear ||
+      !this.selectedApp?.semester
+    ) {
+      alert('กรุณากรอกข้อมูลให้ครบถ้วน รวมถึงปีการศึกษาและภาคเรียน');
       return;
     }
     const payload = {
@@ -189,6 +217,8 @@ export class IndividualConsultationAppointments implements OnInit {
       time: this.selectedApp.rawTime,
       end_time: this.selectedApp.rawEndTime,
       type: this.selectedApp.type,
+      academic_year: this.selectedApp.academicYear, // 🌟 ส่งไป PHP
+      semester: this.selectedApp.semester, // 🌟 ส่งไป PHP
     };
     this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
       next: (res: any) => {
@@ -353,6 +383,8 @@ export class IndividualConsultationAppointments implements OnInit {
       type: '',
       topic: '',
       details: '',
+      academicYear: '', // 🌟 รีเซ็ต
+      semester: '', // 🌟 รีเซ็ต
     };
     this.studentSearch.set('');
     this.isStudentDropdownOpen.set(false);
@@ -404,6 +436,8 @@ export class IndividualConsultationAppointments implements OnInit {
       type: '',
       topic: '',
       details: '',
+      academicYear: '',
+      semester: '',
     };
     this.studentSearch.set('');
     this.isStudentDropdownOpen.set(false);

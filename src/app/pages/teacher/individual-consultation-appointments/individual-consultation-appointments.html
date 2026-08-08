@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen pb-20" (click)="closeDropdowns()">
+<div class="bg-gray-50 min-h-screen pt-4" (click)="closeDropdowns()">
   <!-- Header -->
   <div class="flex justify-between items-start mb-4 sm:mb-6">
     <div>
@@ -14,13 +14,13 @@
     <div class="relative w-full lg:flex-grow lg:max-w-md">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px] sm:text-[24px]">search</span>
       <input type="text" [(ngModel)]="searchQuery" placeholder="ค้นหาด้วยรหัส หรือชื่อ..."
-             class="w-full pl-10 pr-4 py-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm">
+             class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
     </div>
 
     <!-- Filter Dropdown -->
     <div class="relative w-full lg:w-auto lg:min-w-[170px]">
       <button (click)="toggleFilterDropdown($event)"
-              class="w-full flex items-center justify-between bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm text-sm sm:text-base font-medium">
+              class="w-full flex items-center justify-between bg-white border-2 border-gray-200 text-gray-700 py-2.5 px-4 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors shadow-sm text-sm sm:text-base font-medium">
         {{ selectedFilter() }}
         <span class="material-symbols-outlined text-gray-400 transition-transform duration-200"
               [class.rotate-180]="isFilterDropdownOpen()">expand_more</span>
@@ -151,7 +151,6 @@
 
       <div class="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
 
-        <!-- (โค้ด Input ด้านในเหมือนเดิม แค่ปรับ padding/text-size นิดหน่อย) -->
         <div class="relative">
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-2">เลือกนักศึกษา</label>
           <div class="relative">
@@ -191,6 +190,42 @@
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่</label>
           <input type="date" [(ngModel)]="newApp.date"
                  class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+        </div>
+
+        <!-- 🌟 ส่วน ปีการศึกษา และ ภาคเรียน -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
+            <input type="text" [(ngModel)]="newApp.academicYear" placeholder="เช่น 2569"
+                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-gray-600 text-sm sm:text-base shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ภาคเรียน</label>
+            <div class="relative">
+              <button type="button" (click)="$event.stopPropagation(); isCreateSemesterOpen.update(v => !v)"
+                      class="w-full flex items-center justify-between p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all shadow-sm text-sm sm:text-base">
+                <span [ngClass]="newApp.semester ? 'text-gray-800 font-medium' : 'text-gray-400'">
+                  {{ newApp.semester === '3' ? '3 (ฤดูร้อน)' : (newApp.semester || 'เลือกภาคเรียน') }}
+                </span>
+                <span class="material-symbols-outlined text-gray-400 transition-transform duration-200 text-[20px]"
+                      [class.rotate-180]="isCreateSemesterOpen()">expand_more</span>
+              </button>
+              @if (isCreateSemesterOpen()) {
+                <div class="absolute w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-30 overflow-hidden animate-fadeIn py-1">
+                  @for (sem of ['1', '2', '3']; track sem) {
+                    <button type="button" (click)="newApp.semester = sem; isCreateSemesterOpen.set(false)"
+                            class="w-full text-left px-4 py-2.5 text-sm sm:text-base transition-colors flex items-center justify-between hover:bg-orange-50"
+                            [ngClass]="newApp.semester === sem ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-gray-700'">
+                      {{ sem === '3' ? '3 (ฤดูร้อน)' : sem }}
+                      @if (newApp.semester === sem) {
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
@@ -272,9 +307,9 @@
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 rounded-b-2xl shrink-0">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitCreateAppointment()"
-                [disabled]="!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details"
+                [disabled]="!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details || !newApp.academicYear || !newApp.semester"
                 class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-lg transition-colors text-sm sm:text-base"
-                [ngClass]="(!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
+                [ngClass]="(!newApp.studentId || !newApp.date || !newApp.time || !newApp.endTime || !newApp.type || !newApp.topic || !newApp.details || !newApp.academicYear || !newApp.semester) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
           ตกลง
         </button>
       </div>
@@ -283,7 +318,6 @@
 }
 
 @if (isEditModalOpen() && selectedApp) {
-  <!-- การจัด Modal Edit ใช้หลักการเดียวกับ Create -->
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
        (click)="closeDropdowns()">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-visible flex flex-col max-h-[90vh]"
@@ -296,7 +330,6 @@
       </div>
 
       <div class="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
-        <!-- Content ด้านใน (เหมือนเดิม) -->
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">นักศึกษา</label>
           <input type="text" [value]="selectedApp.studentName" readonly
@@ -307,6 +340,43 @@
           <input type="date" [(ngModel)]="selectedApp.rawDate"
                  class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
         </div>
+
+        <!-- 🌟 ส่วน ปีการศึกษา และ ภาคเรียน (Edit Modal) -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
+            <input type="text" [(ngModel)]="selectedApp.academicYear" placeholder="เช่น 2569"
+                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-gray-600 text-sm sm:text-base shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ภาคเรียน</label>
+            <div class="relative">
+              <button type="button" (click)="$event.stopPropagation(); isEditSemesterOpen.update(v => !v)"
+                      class="w-full flex items-center justify-between p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition-all shadow-sm text-sm sm:text-base">
+                <span [ngClass]="selectedApp.semester ? 'text-gray-800 font-medium' : 'text-gray-400'">
+                  {{ selectedApp.semester === '3' ? '3 (ฤดูร้อน)' : (selectedApp.semester || 'เลือกภาคเรียน') }}
+                </span>
+                <span class="material-symbols-outlined text-gray-400 transition-transform duration-200 text-[20px]"
+                      [class.rotate-180]="isEditSemesterOpen()">expand_more</span>
+              </button>
+              @if (isEditSemesterOpen()) {
+                <div class="absolute w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-30 overflow-hidden animate-fadeIn py-1">
+                  @for (sem of ['1', '2', '3']; track sem) {
+                    <button type="button" (click)="selectedApp.semester = sem; isEditSemesterOpen.set(false)"
+                            class="w-full text-left px-4 py-2.5 text-sm sm:text-base transition-colors flex items-center justify-between hover:bg-orange-50"
+                            [ngClass]="selectedApp.semester === sem ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-gray-700'">
+                      {{ sem === '3' ? '3 (ฤดูร้อน)' : sem }}
+                      @if (selectedApp.semester === sem) {
+                        <span class="material-symbols-outlined text-orange-500 text-[18px]">check</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">เวลาเริ่ม</label>
@@ -380,12 +450,13 @@
         </div>
       </div>
 
+      <!-- 🌟 เช็คเงื่อนไข Disabled เพิ่มให้ครอบคลุม -->
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 rounded-b-2xl shrink-0">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitEditAppointment()"
-                [disabled]="!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details"
+                [disabled]="!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details || !selectedApp.academicYear || !selectedApp.semester"
                 class="w-full sm:w-auto px-8 py-2.5 sm:py-2 font-bold rounded-lg transition-colors text-sm sm:text-base"
-                [ngClass]="(!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
+                [ngClass]="(!selectedApp.rawDate || !selectedApp.rawTime || !selectedApp.rawEndTime || !selectedApp.type || !selectedApp.topic || !selectedApp.details || !selectedApp.academicYear || !selectedApp.semester) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary_hover shadow-sm'">
           บันทึกการแก้ไข
         </button>
       </div>
@@ -412,6 +483,21 @@
           <input type="text" [value]="selectedApp.studentName + ' (' + selectedApp.studentId + ')'" readonly
                  class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
         </div>
+
+        <!-- 🌟 ส่วน ปีการศึกษา และ ภาคเรียน (Log Modal) เป็น Readonly -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ปีการศึกษา</label>
+            <input type="text" [value]="selectedApp.academicYear" readonly
+                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ภาคเรียน</label>
+            <input type="text" [value]="selectedApp.semester === '3' ? '3 (ฤดูร้อน)' : selectedApp.semester" readonly
+                   class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm sm:text-base">
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่</label>

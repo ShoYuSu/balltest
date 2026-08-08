@@ -1,5 +1,5 @@
 <!-- 🌟 เปลี่ยนจาก grid-cols-1 เป็น grid-cols-2 และลดช่องว่าง (gap) บนมือถือ -->
-<div class="grid grid-cols-2 gap-3 sm:gap-4 p-0 sm:p-4"
+<div class="grid grid-cols-2 gap-3 sm:gap-4 pb-4"
      [ngClass]="stats.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'">
 
   <div *ngFor="let item of stats"

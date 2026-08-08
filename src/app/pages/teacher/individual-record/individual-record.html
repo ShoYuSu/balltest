@@ -1,4 +1,4 @@
-<div class="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeDropdowns()">
+<div class=" bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeDropdowns()">
 
   @if (!selectedStudent()) {
     <div class="max-w-6xl mx-auto animate-fadeIn">
@@ -13,7 +13,7 @@
           <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
                  placeholder="ค้นหาด้วยชื่อ หรือ รหัสนักศึกษา..."
-                 class="w-full pl-12 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+                 class="w-full pl-12 pr-10 py-3 bg-white  border-2 order border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
           @if (searchQuery()) {
             <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
               <span class="material-symbols-outlined text-sm">close</span>
