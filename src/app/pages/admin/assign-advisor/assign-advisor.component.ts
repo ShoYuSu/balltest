@@ -15,7 +15,7 @@ import { TableColumnModel } from '../../../shared/components/stat-cards/models/t
 export class AssignAdvisorComponent implements OnInit {
   
   // ข้อมูลหลักจาก API
-  major: string[] = ['ทุกสาขา']; 
+  major: string[] = ['ทุกหลักสูตร']; 
   advisors: any[] = [];
   students: any[] = [];
 
@@ -28,7 +28,7 @@ export class AssignAdvisorComponent implements OnInit {
 
   // ตัวแปรควบคุมหน้าจอฝั่งนักศึกษาและ Modal (คงเดิม)
   selectedAdvisors: any[] = [];
-  selectedBranch: string = 'ทุกสาขา';
+  selectedBranch: string = 'ทุกหลักสูตร';
   searchStudentText: string = '';
   filteredStudents: any[] = [];
   selectedStudents: number[] = [];
@@ -82,7 +82,7 @@ export class AssignAdvisorComponent implements OnInit {
   },
   {
     columnDef: 'major',
-    header: 'สาขาวิชา',
+    header: 'หลักสูตร',
     tag: 'text',
     display: true,
     cell: (el) => el.major,
@@ -142,7 +142,7 @@ export class AssignAdvisorComponent implements OnInit {
         }));
         
         this.departments = res.staff_departments || [];
-        this.major = ['ทุกสาขา', ...(res.student_majors || []).filter((d: any) => d != null)];
+        this.major = ['ทุกหลักสูตร', ...(res.student_majors || []).filter((d: any) => d != null)];
 
         // สร้างรายการชั้นปีจากข้อมูลนักศึกษาจริง (ไม่ hardcode)
         const uniqueYears = [...new Set(this.students.map((s: any) => s.year).filter((y: any) => y != null))]
@@ -227,7 +227,7 @@ export class AssignAdvisorComponent implements OnInit {
 
   filterStudents() {
     let result = this.students;
-    if (this.selectedBranch !== 'ทุกสาขา') {
+    if (this.selectedBranch !== 'ทุกหลักสูตร') {
       result = result.filter(s => s.major === this.selectedBranch);
     }
     if (this.selectedYear !== 'ทุกชั้นปี') {

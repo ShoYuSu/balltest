@@ -13,7 +13,7 @@
   </div>
 
   <div class="flex items-center gap-3 mb-4">
-    <span class="text-sm font-semibold text-slate-600">กรองตามสาขา:</span>
+    <span class="text-sm font-semibold text-slate-600">กรองตามหลักสูตร:</span>
     <div class="relative w-64">
       <button
         type="button"
@@ -156,7 +156,7 @@
           <input
             type="text"
             formControlName="curriculum_name"
-            placeholder="เช่น หลักสูตรวิทยาศาสตรบัณฑิต สาขา..."
+            placeholder="เช่น หลักสูตรวิทยาศาสตรบัณฑิต หลักสูตร..."
             class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
             [ngClass]="
               isInvalid(courseForm, 'curriculum_name')
@@ -197,7 +197,7 @@
         </div>
 
         <div class="relative w-full">
-          <label class="block text-sm font-semibold mb-2 text-slate-700">สาขา</label>
+          <label class="block text-sm font-semibold mb-2 text-slate-700">หลักสูตร</label>
           <button
             type="button"
             (click)="toggleMajorDropdown()"
@@ -226,7 +226,7 @@
                     </button>
                   </li>
                 } @empty {
-                  <li class="p-2.5 text-slate-400">ไม่พบข้อมูลสาขา</li>
+                  <li class="p-2.5 text-slate-400">ไม่พบข้อมูลหลักสูตร</li>
                 }
               </ul>
             </div>
@@ -234,7 +234,7 @@
           @if (isInvalid(courseForm, 'major_name')) {
             <p class="text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
               <span class="material-symbols-outlined text-sm">error</span>
-              กรุณาเลือกสาขา
+              กรุณาเลือกหลักสูตร
             </p>
           }
         </div>

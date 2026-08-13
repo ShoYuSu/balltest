@@ -95,7 +95,7 @@ export class PloComponent implements OnInit {
     },
     {
       columnDef: 'major',
-      header: 'สาขา',
+      header: 'หลักสูตร',
       tag: 'text',
       display: true,
       width: 'medium',
@@ -324,7 +324,7 @@ loadMajors() {
 
   getSelectedMajorName(): string {
     const selected = this.courseForm.get('major_name')?.value;
-    return selected || 'เลือกสาขา';
+    return selected || 'เลือกหลักสูตร';
   }
 
   openAddCourse() {

@@ -31,7 +31,7 @@
         class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-blue-200 transition-all shadow-sm"
       >
         <span class="material-symbols-outlined text-lg text-blue-600">add_circle</span>
-        เพิ่มสาขาใหม่
+        เพิ่มหลักสูตรใหม่
       </button>
 
       <app-main-button (btnClick)="openModal()"></app-main-button>
@@ -47,7 +47,7 @@
       type="text"
       [(ngModel)]="newMajorName"
       [ngModelOptions]="{ standalone: true }"
-      placeholder="ระบุชื่อสาขาใหม่..."
+      placeholder="ระบุชื่อหลักสูตรใหม่..."
       class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 bg-white"
     />
     <button
@@ -73,7 +73,7 @@
         (click)="toggleMajorDropdown()"
         class="flex items-center justify-between w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 font-medium shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
       >
-        <span>{{ selectedMajor || 'ทุกสาขา' }}</span>
+        <span>{{ selectedMajor || 'ทุกหลักสูตร' }}</span>
         <span
           class="material-symbols-outlined text-gray-400 text-lg transition-transform"
           [class.rotate-180]="isMajorDropdownOpen"
@@ -95,7 +95,7 @@
               [class.bg-blue-50]="selectedMajor === ''"
               [class.text-blue-600]="selectedMajor === ''"
             >
-              ทุกสาขา
+              ทุกหลักสูตร
             </button>
           </li>
           <li *ngFor="let major of uniqueMajors">
@@ -459,7 +459,7 @@
       </div>
 
       <div class="space-y-1 relative">
-        <label class="text-xs font-semibold text-gray-600 uppercase">สาขา</label>
+        <label class="text-xs font-semibold text-gray-600 uppercase">หลักสูตร</label>
 
         <div class="relative">
           <button
@@ -472,7 +472,7 @@
                 : 'border-gray-200 text-gray-700'
             "
           >
-            <span>{{ studentForm.get('major')?.value || 'เลือกสาขา' }}</span>
+            <span>{{ studentForm.get('major')?.value || 'เลือกหลักสูตร' }}</span>
             <span
               class="material-symbols-outlined text-gray-400"
               [class.rotate-180]="isFormMajorDropdownOpen"
@@ -530,13 +530,13 @@
                 </button>
               </li>
               <li *ngIf="!studentForm.get('major')?.value" class="p-2.5 text-gray-400">
-                กรุณาเลือกสาขาก่อน
+                กรุณาเลือกหลักสูตรก่อน
               </li>
               <li
                 *ngIf="studentForm.get('major')?.value && !filteredCurriculums.length"
                 class="p-2.5 text-gray-400"
               >
-                ไม่พบหลักสูตรสำหรับสาขานี้
+                ไม่พบหลักสูตรสำหรับหลักสูตรนี้
               </li>
             </ul>
           </div>
@@ -643,7 +643,7 @@
             >รหัส {{ selectedStudentForCurriculum?.student_code }}</span
           >
           <span>•</span>
-          <span>สาขา {{ selectedStudentForCurriculum?.major }}</span>
+          <span>หลักสูตร {{ selectedStudentForCurriculum?.major }}</span>
           <span>•</span>
           <span>ชั้นปีที่ {{ selectedStudentForCurriculum?.year }}</span>
         </div>

@@ -68,7 +68,7 @@ export class StudentsComponent implements OnInit {
     },
     {
       columnDef: 'faculty_major',
-      header: 'สาขา',
+      header: 'หลักสูตร',
       tag: 'text',
       display: true,
       width: 'large',
@@ -235,13 +235,13 @@ export class StudentsComponent implements OnInit {
         })
         .subscribe({
           next: (res: any) => {
-            if (res.success || res.message === 'มีสาขานี้อยู่แล้ว') {
+            if (res.success || res.message === 'มีหลักสูตรนี้อยู่แล้ว') {
               if (!this.majors.includes(trimmedMajor)) {
                 this.majors.push(trimmedMajor);
               }
               Swal.fire({
                 icon: 'success',
-                title: 'เพิ่มสาขาสำเร็จ',
+                title: 'เพิ่มหลักสูตรสำเร็จ',
                 text: `เพิ่ม "${trimmedMajor}" เข้าสู่ระบบเรียบร้อยแล้ว`,
                 timer: 1500,
                 showConfirmButton: false,
@@ -275,7 +275,7 @@ export class StudentsComponent implements OnInit {
           ];
         }
       },
-      error: (err) => console.error('โหลดสาขาล้มเหลว', err),
+      error: (err) => console.error('โหลดหลักสูตรล้มเหลว', err),
     });
   }
 
