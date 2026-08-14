@@ -70,6 +70,7 @@ export class GroupConsultationAppointments implements OnInit {
     type: 'วิชาการ',
     topic: '',
     details: '',
+    location: '',
     academicYear: '',
     semester: '',
   };
@@ -135,6 +136,7 @@ export class GroupConsultationAppointments implements OnInit {
           rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
           rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
           details: app.description || '',
+          location: app.location || '',
           students: (app.students || []).map((s: any) => ({
             id: s.id,
             name: s.name,
@@ -276,6 +278,7 @@ export class GroupConsultationAppointments implements OnInit {
       time: this.newApp.time,
       end_time: this.newApp.endTime,
       type: this.newApp.type,
+      location: this.newApp.location,
       academic_year: this.newApp.academicYear, // 🌟 ส่งค่า
       semester: this.newApp.semester, // 🌟 ส่งค่า
       student_ids: this.selectedStudentIds(),
@@ -310,6 +313,7 @@ export class GroupConsultationAppointments implements OnInit {
       time: this.editingApp.rawTime,
       end_time: this.editingApp.rawEndTime,
       type: this.editingApp.type,
+      location: this.editingApp.location,
       academic_year: this.editingApp.academicYear, // 🌟 ส่งค่า
       semester: this.editingApp.semester, // 🌟 ส่งค่า
       student_ids: this.selectedStudentIds(),
@@ -444,6 +448,7 @@ export class GroupConsultationAppointments implements OnInit {
       type: 'วิชาการ',
       topic: '',
       details: '',
+      location: '',
       academicYear: '',
       semester: '',
     };
@@ -538,6 +543,7 @@ export class GroupConsultationAppointments implements OnInit {
       type: 'วิชาการ',
       topic: '',
       details: '',
+      location: '',
       academicYear: '',
       semester: '',
     };

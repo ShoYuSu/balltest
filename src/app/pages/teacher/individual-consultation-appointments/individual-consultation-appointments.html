@@ -297,6 +297,11 @@
                  class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
         </div>
         <div>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">สถานที่</label>
+          <input type="text" [(ngModel)]="newApp.location" placeholder="ระบุสถานที่นัดหมาย..."
+                 class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500">
+        </div>
+        <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
           <textarea [(ngModel)]="newApp.details" placeholder="กรอกรายละเอียด..." rows="3"
                     class="w-full p-2.5 text-sm sm:text-base border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 resize-none"></textarea>
@@ -441,6 +446,11 @@
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">หัวข้อการปรึกษา</label>
           <input type="text" [(ngModel)]="selectedApp.topic"
+                 class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
+        </div>
+        <div>
+          <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">สถานที่</label>
+          <input type="text" [(ngModel)]="selectedApp.location" placeholder="ระบุสถานที่นัดหมาย..."
                  class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 text-sm sm:text-base">
         </div>
         <div>

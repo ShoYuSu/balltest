@@ -66,6 +66,7 @@ export class IndividualConsultationAppointments implements OnInit {
     type: '',
     topic: '',
     details: '',
+    location: '',
     academicYear: '',
     semester: '',
   };
@@ -140,6 +141,7 @@ export class IndividualConsultationAppointments implements OnInit {
               rawTime: app.start_time ? app.start_time.substring(0, 5) : '',
               rawEndTime: app.end_time ? app.end_time.substring(0, 5) : '',
               details: app.description ?? '',
+              location: app.location ?? '',
               note: app.note ?? '',
               academicYear: app.academic_year ?? '', // 🌟 ดึงค่าปีการศึกษา
               semester: app.semester ?? '', // 🌟 ดึงค่าภาคเรียน
@@ -181,6 +183,7 @@ export class IndividualConsultationAppointments implements OnInit {
       time: this.newApp.time,
       end_time: this.newApp.endTime,
       type: this.newApp.type,
+      location: this.newApp.location,
       academic_year: this.newApp.academicYear, // 🌟 ส่งไป PHP
       semester: this.newApp.semester, // 🌟 ส่งไป PHP
       student_ids: [this.newApp.studentId],
@@ -217,6 +220,7 @@ export class IndividualConsultationAppointments implements OnInit {
       time: this.selectedApp.rawTime,
       end_time: this.selectedApp.rawEndTime,
       type: this.selectedApp.type,
+      location: this.selectedApp.location,
       academic_year: this.selectedApp.academicYear, // 🌟 ส่งไป PHP
       semester: this.selectedApp.semester, // 🌟 ส่งไป PHP
     };
@@ -383,6 +387,7 @@ export class IndividualConsultationAppointments implements OnInit {
       type: '',
       topic: '',
       details: '',
+      location: '',
       academicYear: '', // 🌟 รีเซ็ต
       semester: '', // 🌟 รีเซ็ต
     };
@@ -436,6 +441,7 @@ export class IndividualConsultationAppointments implements OnInit {
       type: '',
       topic: '',
       details: '',
+      location: '',
       academicYear: '',
       semester: '',
     };
