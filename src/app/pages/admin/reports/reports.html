@@ -31,7 +31,7 @@
           </div>
         </button>
 
-         <button
+        <button
           (click)="switchTab('individual')"
           [ngClass]="activeTab === 'individual' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
           class="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
@@ -57,8 +57,6 @@
           </div>
         </button>
 
-       
-
         <button
           (click)="switchTab('timeline')"
           [ngClass]="activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
@@ -83,9 +81,30 @@
           <h2 class="text-xl font-bold text-slate-800">รายงานการนัดหมาย</h2>
           <p class="text-sm text-slate-500 mt-1">ภาพรวมการนัดหมายและกลุ่มนักศึกษา</p>
         </div>
-        <div class="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl">
-          <span class="text-xs text-blue-600"> จำนวนรายการ </span>
-          <span class="ml-2 font-bold text-blue-700">{{ groupReports.length }}</span>
+        
+        <div class="flex items-center gap-3">
+          <!-- ปุ่มสลับเรียง วันที่ ใหม่ / เก่า -->
+          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+            <button
+              (click)="sortGroupReports('desc')"
+              [ngClass]="groupSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬇️</span> ใหม่ล่าสุด
+            </button>
+            <button
+              (click)="sortGroupReports('asc')"
+              [ngClass]="groupSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬆️</span> เก่าสุด
+            </button>
+          </div>
+
+          <div class="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0">
+            <span class="text-xs text-blue-600"> จำนวนรายการ </span>
+            <span class="ml-2 font-bold text-blue-700">{{ groupReports.length }}</span>
+          </div>
         </div>
       </div>
 
@@ -165,7 +184,6 @@
             </div>
 
             <div *ngIf="group.students?.length > 0" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-              <!-- คลิกที่รายชื่อเพื่อไปแท็บ Timeline ของนักศึกษาคนนั้น -->
               <div
                 *ngFor="let student of group.students"
                 (click)="viewStudent(student.student_code)"
@@ -197,9 +215,30 @@
           <h2 class="text-xl font-bold text-slate-800">รายงานกิจกรรม</h2>
           <p class="text-sm text-slate-500 mt-1">กิจกรรมของนักศึกษาแต่ละคน</p>
         </div>
-        <div class="px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl">
-          <span class="text-xs text-amber-600"> จำนวนรายการ </span>
-          <span class="ml-2 font-bold text-amber-700">{{ activityReports.length }}</span>
+
+        <div class="flex items-center gap-3">
+          <!-- ปุ่มสลับเรียง วันที่ กิจกรรม -->
+          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+            <button
+              (click)="sortActivityReports('desc')"
+              [ngClass]="activitySortOrder === 'desc' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬇️</span> ใหม่ล่าสุด
+            </button>
+            <button
+              (click)="sortActivityReports('asc')"
+              [ngClass]="activitySortOrder === 'asc' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬆️</span> เก่าสุด
+            </button>
+          </div>
+
+          <div class="px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl shrink-0">
+            <span class="text-xs text-amber-600"> จำนวนรายการ </span>
+            <span class="ml-2 font-bold text-amber-700">{{ activityReports.length }}</span>
+          </div>
         </div>
       </div>
 
@@ -262,7 +301,6 @@
               </span>
             </div>
             <div *ngIf="act.students?.length > 0" class="space-y-2">
-              <!-- คลิกที่รายชื่อเพื่อไปแท็บ Timeline ของนักศึกษาคนนั้น -->
               <div
                 *ngFor="let student of act.students"
                 (click)="viewStudent(student.student_code)"
@@ -289,36 +327,118 @@
     <!-- แท็บ 3: รายบุคคล (ค้นหา) -->
     <!-- ================================================= -->
     <div *ngIf="activeTab === 'individual'" class="space-y-6">
-      <div>
-        <h2 class="text-xl font-bold text-slate-800">รายงานรายบุคคล</h2>
-        <p class="text-sm text-slate-500 mt-1">ค้นหานักศึกษาด้วยรหัสนักศึกษา เพื่อดู Timeline การนัดหมายและกิจกรรม</p>
-      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">รายงานรายบุคคล</h2>
+          <p class="text-sm text-slate-500 mt-1">การนัดหมายรายบุคคล</p>
+        </div>
 
-      <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-        <div class="max-w-md mx-auto text-center">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center">
-            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.15a7.5 7.5 0 006.15-3.5z" />
-            </svg>
-          </div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">รหัสนักศึกษา</label>
-          <div class="flex gap-2">
-            <input
-              type="text"
-              [(ngModel)]="searchStudentId"
-              (keyup.enter)="searchIndividual()"
-              placeholder="เช่น 6504800006"
-              class="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <div class="flex items-center gap-3">
+          <!-- ปุ่มสลับเรียง รายบุคคล -->
+          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
             <button
-              (click)="searchIndividual()"
-              class="px-5 py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
+              (click)="sortIndividualReports('desc')"
+              [ngClass]="individualSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              ค้นหา
+              <span>⬇️</span> ใหม่ล่าสุด
+            </button>
+            <button
+              (click)="sortIndividualReports('asc')"
+              [ngClass]="individualSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬆️</span> เก่าสุด
             </button>
           </div>
-          <p *ngIf="individualError" class="text-sm text-amber-600 mt-3">{{ individualError }}</p>
-          <p class="text-xs text-slate-400 mt-4">หรือกดที่ชื่อนักศึกษาจากแท็บ "รายงานแบบกลุ่ม" / "กิจกรรม" เพื่อไปที่ Timeline โดยตรง</p>
+
+          <div class="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0">
+            <span class="text-xs text-blue-600"> จำนวนรายการ </span>
+            <span class="ml-2 font-bold text-blue-700">{{ individualReports.length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="groupError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
+            <span class="text-red-600 font-bold"> ! </span>
+          </div>
+          <span class="text-sm text-red-700">{{ groupError }}</span>
+        </div>
+        <button (click)="fetchGroupReport()" class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer">ลองใหม่</button>
+      </div>
+
+      <div *ngIf="!groupError && individualReports.length === 0" class="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+        <p class="text-sm text-slate-400">ยังไม่มีการนัดหมายรายบุคคล</p>
+      </div>
+
+      <div *ngIf="!groupError && individualReports.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div *ngFor="let item of individualReports" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+          <div class="px-5 py-4 bg-gradient-to-r from-blue-50 to-white border-b border-slate-100">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-blue-600 mb-1">การนัดหมาย</p>
+                <h3 class="font-bold text-slate-800 truncate" [title]="item.title">{{ item.title }}</h3>
+              </div>
+              <div class="shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
+                <p class="text-xs text-slate-400">วันที่</p>
+                <p class="text-xs font-bold text-slate-700">{{ item.date | date: 'dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5">
+            <div class="space-y-3 mb-5">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">สถานที่</p>
+                  <p class="text-sm font-medium text-slate-700">{{ item.location || 'ไม่ได้ระบุ' }}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">อาจารย์ที่ปรึกษา</p>
+                  <p class="text-sm font-medium text-slate-700">{{ item.advisor_name || 'ไม่ได้ระบุ' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-bold text-slate-700">รายชื่อนักศึกษา</h4>
+              <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">รายบุคคล</span>
+            </div>
+
+            <div *ngIf="item.students?.length > 0" class="space-y-2">
+              <div
+                *ngFor="let student of item.students"
+                (click)="viewStudent(student.student_code)"
+                class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-colors cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+                  {{ student.student_name?.charAt(0) || '?' }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-slate-700">{{ student.student_code }}</p>
+                  <p class="text-xs text-slate-500 truncate">{{ student.student_name }}</p>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!item.students || item.students.length === 0" class="py-6 text-center">
+              <p class="text-xs text-slate-400">ไม่มีนักศึกษาผูกกับการนัดหมายนี้</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -327,17 +447,38 @@
     <!-- แท็บ 4: Timeline -->
     <!-- ================================================= -->
     <div *ngIf="activeTab === 'timeline'" class="space-y-6">
-      <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 class="text-xl font-bold text-slate-800">Timeline นักศึกษา</h2>
           <p class="text-sm text-slate-500 mt-1" *ngIf="timelineStudentLabel">รหัสนักศึกษา: {{ timelineStudentLabel }}</p>
         </div>
-        <button
-          (click)="backToIndividualSearch()"
-          class="px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
-        >
-          ← ค้นหาคนอื่น
-        </button>
+        
+        <div class="flex items-center gap-3">
+          <!-- ปุ่มสลับเรียง Timeline -->
+          <div *ngIf="individualTimeline.length > 0" class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+            <button
+              (click)="sortTimeline('desc')"
+              [ngClass]="timelineSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬇️</span> ใหม่ล่าสุด
+            </button>
+            <button
+              (click)="sortTimeline('asc')"
+              [ngClass]="timelineSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
+            >
+              <span>⬆️</span> เก่าสุด
+            </button>
+          </div>
+
+          <button
+            (click)="backToIndividualSearch()"
+            class="px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
+          >
+            ← ค้นหาคนอื่น
+          </button>
+        </div>
       </div>
 
       <div *ngIf="individualError" class="bg-amber-50 border border-amber-200 rounded-xl p-4">
