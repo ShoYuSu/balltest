@@ -6,15 +6,10 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    HttpClientModule
-  ],
-  templateUrl: './reports.html'
+  imports: [CommonModule, FormsModule, HttpClientModule],
+  templateUrl: './reports.html',
 })
 export class ReportsComponent implements OnInit {
-
   private apiUrl: string = 'http://localhost:8080/api';
 
   // แท็บปัจจุบัน: 'group' | 'activity' | 'individual' | 'timeline'
@@ -22,9 +17,9 @@ export class ReportsComponent implements OnInit {
 
   private allGroupData: any[] = [];
 
-  groupReports: any[] = [];       // การนัดหมายที่มีนักศึกษา > 1 คน (กลุ่ม)
-  individualReports: any[] = [];  // การนัดหมายที่มีนักศึกษา 1 คน
-  activityReports: any[] = [];    // กิจกรรมทั้งหมด (record_type === 'activity')
+  groupReports: any[] = []; // การนัดหมายที่มีนักศึกษา > 1 คน (กลุ่ม)
+  individualReports: any[] = []; // การนัดหมายที่มีนักศึกษา 1 คน
+  activityReports: any[] = []; // กิจกรรมทั้งหมด (record_type === 'activity')
 
   individualTimeline: any[] = [];
   timelineStudentLabel: string = '';
@@ -47,7 +42,7 @@ export class ReportsComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -106,16 +101,20 @@ export class ReportsComponent implements OnInit {
           this.allGroupData = res.data || [];
 
           // แยกประเภทตามข้อมูลจริงที่ PHP ส่งมา
-          const appointments = this.allGroupData.filter(item => item.record_type === 'appointment');
-          
+          const appointments = this.allGroupData.filter(
+            (item) => item.record_type === 'appointment',
+          );
+
           // การนัดหมายกลุ่ม (นักศึกษา > 1 คน)
-          this.groupReports = appointments.filter(item => this.isGroup(item));
-          
+          this.groupReports = appointments.filter((item) => this.isGroup(item));
+
           // การนัดหมายรายบุคคล (นักศึกษา <= 1 คน)
-          this.individualReports = appointments.filter(item => !this.isGroup(item));
+          this.individualReports = appointments.filter((item) => !this.isGroup(item));
 
           // กิจกรรม
-          this.activityReports = this.allGroupData.filter(item => item.record_type === 'activity');
+          this.activityReports = this.allGroupData.filter(
+            (item) => item.record_type === 'activity',
+          );
 
           // จัดเรียงข้อมูลทันทีหลังจากดึงข้อมูลมาแล้ว
           this.sortGroupReports(this.groupSortOrder);
@@ -139,7 +138,7 @@ export class ReportsComponent implements OnInit {
           this.activityError = this.groupError;
         }
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -166,62 +165,51 @@ export class ReportsComponent implements OnInit {
     sessionStorage.setItem('reports_active_tab', 'timeline');
     sessionStorage.setItem('reports_student_id', studentId);
 
-    this.http.get<any>(`${this.apiUrl}/get_individual_timeline.php?student_id=${studentId}`).subscribe({
-      next: (res) => {
-        this.isLoadingTimeline = false;
-        if (res.success) {
-          this.individualTimeline = res.data || [];
-          if (this.individualTimeline.length === 0) {
-            this.individualError = res.message || 'ไม่พบประวัติข้อมูลของนักศึกษาคนนี้';
+    this.http
+      .get<any>(`${this.apiUrl}/get_individual_timeline.php?student_id=${studentId}`)
+      .subscribe({
+        next: (res) => {
+          this.isLoadingTimeline = false;
+          if (res.success) {
+            this.individualTimeline = res.data || [];
+            if (this.individualTimeline.length === 0) {
+              this.individualError = res.message || 'ไม่พบประวัติข้อมูลของนักศึกษาคนนี้';
+            } else {
+              // จัดเรียง Timeline เมื่อโหลดสำเร็จ
+              this.sortTimeline(this.timelineSortOrder);
+            }
           } else {
-            // จัดเรียง Timeline เมื่อโหลดสำเร็จ
-            this.sortTimeline(this.timelineSortOrder);
+            this.individualTimeline = [];
+            this.individualError = res.message || 'ไม่พบข้อมูล';
           }
-        } else {
-          this.individualTimeline = [];
-          this.individualError = res.message || 'ไม่พบข้อมูล';
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoadingTimeline = false;
-        console.error('Error fetching individual report:', err);
-        if (retryCount < 1) {
-          setTimeout(() => {
-            this.fetchIndividualReport(retryCount + 1);
-          }, 500);
-        } else {
-          this.individualTimeline = [];
-          this.individualError = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
-        }
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  backToIndividualSearch(): void {
-    this.activeTab = 'individual';
-    sessionStorage.setItem('reports_active_tab', 'individual');
-    this.cdr.detectChanges();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.isLoadingTimeline = false;
+          console.error('Error fetching individual report:', err);
+          if (retryCount < 1) {
+            setTimeout(() => {
+              this.fetchIndividualReport(retryCount + 1);
+            }, 500);
+          } else {
+            this.individualTimeline = [];
+            this.individualError = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
+          }
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   getTotalStudents(): number {
-    return this.groupReports.reduce(
-      (total, group) => total + (group.students?.length || 0),
-      0
-    );
+    return this.groupReports.reduce((total, group) => total + (group.students?.length || 0), 0);
   }
 
   getTotalAppointments(): number {
-    return this.individualTimeline.filter(
-      item => item.record_type === 'appointment'
-    ).length;
+    return this.individualTimeline.filter((item) => item.record_type === 'appointment').length;
   }
 
   getTotalActivities(): number {
-    return this.individualTimeline.filter(
-      item => item.record_type === 'activity'
-    ).length;
+    return this.individualTimeline.filter((item) => item.record_type === 'activity').length;
   }
 
   // ตัดสินว่าเป็นกลุ่มเมื่อมีนักศึกษานัดหมายมากกว่า 1 คน
@@ -234,9 +222,14 @@ export class ReportsComponent implements OnInit {
   // ==========================================
 
   private sortByDate(list: any[], dateKey: string, order: 'asc' | 'desc'): any[] {
+    const toTimestamp = (item: any): number => {
+      if (!item[dateKey]) return 0;
+      const time = item['start_time'] || '00:00:00';
+      return new Date(`${item[dateKey]} ${time}`).getTime();
+    };
     return list.sort((a, b) => {
-      const dateA = new Date(a[dateKey] || 0).getTime();
-      const dateB = new Date(b[dateKey] || 0).getTime();
+      const dateA = toTimestamp(a);
+      const dateB = toTimestamp(b);
       return order === 'desc' ? dateB - dateA : dateA - dateB;
     });
   }

@@ -1,71 +1,98 @@
 <div class="min-h-screen bg-slate-50">
   <div class="max-w-6xl mx-auto px-6 py-8">
     <!-- ================= HEADER ================= -->
-    <div class="mb-8">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2z" />
-          </svg>
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div
+          class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/20"
+        >
+          <span class="material-symbols-outlined text-white text-[24px]">bar_chart</span>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-slate-800">รายงานและสถิติ</h1>
-          <p class="text-sm text-slate-500">ติดตามข้อมูลการนัดหมายและกิจกรรมของนักศึกษา</p>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">รายงานและสถิติ</h1>
+          <p class="text-sm text-slate-500 mt-0.5">ติดตามข้อมูลการนัดหมายและกิจกรรมของนักศึกษา</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <div
+          class="flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 rounded-xl shadow-sm"
+        >
+          <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          <span class="text-xs font-semibold text-slate-500">นัดหมาย</span>
+          <span class="text-xs font-bold text-slate-800">{{
+            groupReports.length + individualReports.length
+          }}</span>
+        </div>
+        <div
+          class="flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 rounded-xl shadow-sm"
+        >
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span class="text-xs font-semibold text-slate-500">กิจกรรม</span>
+          <span class="text-xs font-bold text-slate-800">{{ activityReports.length }}</span>
         </div>
       </div>
     </div>
 
     <!-- ================= TABS (4 อัน) ================= -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-2 mb-7 shadow-sm">
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div class="bg-white rounded-2xl border border-slate-200 p-1.5 mb-7 shadow-sm">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
         <button
           (click)="switchTab('group')"
-          [ngClass]="activeTab === 'group' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
+          [ngClass]="
+            activeTab === 'group'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+          "
           class="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
         >
           <div class="flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+            <span class="material-symbols-outlined text-[19px]">group</span>
             รายงานแบบกลุ่ม
           </div>
         </button>
 
         <button
           (click)="switchTab('individual')"
-          [ngClass]="activeTab === 'individual' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
+          [ngClass]="
+            activeTab === 'individual'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+          "
           class="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
         >
           <div class="flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 7a3 3 0 11-6 0 3 3 0 016 0zM12 21a9 9 0 100-18 9 9 0 000 18z" />
-            </svg>
+            <span class="material-symbols-outlined text-[19px]">person</span>
             รายบุคคล
           </div>
         </button>
 
         <button
           (click)="switchTab('activity')"
-          [ngClass]="activeTab === 'activity' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
+          [ngClass]="
+            activeTab === 'activity'
+              ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+          "
           class="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
         >
           <div class="flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <span class="material-symbols-outlined text-[19px]">bolt</span>
             กิจกรรม
           </div>
         </button>
 
         <button
           (click)="switchTab('timeline')"
-          [ngClass]="activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'"
+          [ngClass]="
+            activeTab === 'timeline'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+          "
           class="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
         >
           <div class="flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <span class="material-symbols-outlined text-[19px]">schedule</span>
             Timeline
           </div>
         </button>
@@ -78,67 +105,106 @@
     <div *ngIf="activeTab === 'group'" class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
+          <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">การนัดหมาย</p>
           <h2 class="text-xl font-bold text-slate-800">รายงานการนัดหมาย</h2>
           <p class="text-sm text-slate-500 mt-1">ภาพรวมการนัดหมายและกลุ่มนักศึกษา</p>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <!-- ปุ่มสลับเรียง วันที่ ใหม่ / เก่า -->
-          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
             <button
               (click)="sortGroupReports('desc')"
-              [ngClass]="groupSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                groupSortOrder === 'desc'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬇️</span> ใหม่ล่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_more</span> ใหม่ล่าสุด
             </button>
             <button
               (click)="sortGroupReports('asc')"
-              [ngClass]="groupSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                groupSortOrder === 'asc'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬆️</span> เก่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_less</span> เก่าสุด
             </button>
           </div>
 
-          <div class="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0">
-            <span class="text-xs text-blue-600"> จำนวนรายการ </span>
-            <span class="ml-2 font-bold text-blue-700">{{ groupReports.length }}</span>
+          <div
+            class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0"
+          >
+            <span class="text-xs text-blue-600 font-medium">จำนวนรายการ</span>
+            <span class="font-bold text-blue-700 tabular-nums">{{ groupReports.length }}</span>
           </div>
         </div>
       </div>
 
-      <div *ngIf="groupError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+      <div
+        *ngIf="groupError"
+        class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
-            <span class="text-red-600 font-bold"> ! </span>
+          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-red-600 text-[20px]">error</span>
           </div>
           <span class="text-sm text-red-700">{{ groupError }}</span>
         </div>
-        <button (click)="fetchGroupReport()" class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer">ลองใหม่</button>
+        <button
+          (click)="fetchGroupReport()"
+          class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer shrink-0 ml-3"
+        >
+          ลองใหม่
+        </button>
       </div>
 
-      <div *ngIf="!groupError && groupReports.length === 0" class="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
-          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2z" />
-          </svg>
+      <div
+        *ngIf="!groupError && groupReports.length === 0"
+        class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center"
+      >
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-400 text-[32px]">bar_chart</span>
         </div>
         <p class="font-semibold text-slate-600">ยังไม่มีข้อมูลการนัดหมาย</p>
         <p class="text-sm text-slate-400 mt-1">เมื่อมีการนัดหมาย ข้อมูลจะแสดงที่นี่</p>
       </div>
 
-      <div *ngIf="!groupError && groupReports.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <div *ngFor="let group of groupReports" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-          <div class="px-5 py-4 bg-gradient-to-r from-blue-50 to-white border-b border-slate-100">
+      <div
+        *ngIf="!groupError && groupReports.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+      >
+        <div
+          *ngFor="let group of groupReports"
+          class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+        >
+          <div class="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div class="px-5 py-4 border-b border-slate-100">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs font-medium text-blue-600 mb-1">การนัดหมาย</p>
-                <h3 class="font-bold text-slate-800 truncate" [title]="group.title">{{ group.title }}</h3>
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">
+                  การนัดหมาย
+                </p>
+                <h3 class="font-bold text-slate-800 truncate" [title]="group.title">
+                  {{ group.title }}
+                </h3>
               </div>
-              <div class="shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                <p class="text-xs text-slate-400">วันที่</p>
-                <p class="text-xs font-bold text-slate-700">{{ group.date | date: 'dd/MM/yyyy' }}</p>
+              <div
+                class="shrink-0 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center"
+              >
+                <p class="text-[10px] text-slate-400 leading-tight">วันที่</p>
+                <p class="text-xs font-bold text-slate-700">
+                  {{ group.date | date: 'dd/MM/yyyy' }}
+                </p>
+                <p *ngIf="group.start_time" class="text-[11px] font-semibold text-blue-600 mt-0.5">
+                  {{ group.start_time.slice(0, 5)
+                  }}<span *ngIf="group.end_time"> - {{ group.end_time.slice(0, 5) }}</span> น.
+                </p>
               </div>
             </div>
           </div>
@@ -146,26 +212,44 @@
           <div class="p-5">
             <div class="space-y-3 mb-5">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >location_on</span
+                  >
                 </div>
-                <div>
+                <div class="min-w-0">
                   <p class="text-xs text-slate-400">สถานที่</p>
-                  <p class="text-sm font-medium text-slate-700">{{ group.location || 'ไม่ได้ระบุ' }}</p>
+                  <p class="text-sm font-medium text-slate-700">
+                    {{ group.location || 'ไม่ได้ระบุ' }}
+                  </p>
+                </div>
+              </div>
+              <div *ngIf="group.description" class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >description</span
+                  >
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs text-slate-400">รายละเอียด</p>
+                  <p class="text-sm font-medium text-slate-700">{{ group.description }}</p>
                 </div>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]">person</span>
                 </div>
-                <div>
+                <div class="min-w-0">
                   <p class="text-xs text-slate-400">อาจารย์ที่ปรึกษา</p>
-                  <p class="text-sm font-medium text-slate-700">{{ group.advisor_name || 'ไม่ได้ระบุ' }}</p>
+                  <p class="text-sm font-medium text-slate-700">
+                    {{ group.advisor_name || 'ไม่ได้ระบุ' }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -175,11 +259,15 @@
               <div class="flex items-center gap-2">
                 <span
                   class="px-2.5 py-1 rounded-full text-xs font-bold"
-                  [ngClass]="isGroup(group) ? 'bg-indigo-50 text-indigo-700' : 'bg-blue-50 text-blue-700'"
+                  [ngClass]="
+                    isGroup(group) ? 'bg-indigo-50 text-indigo-700' : 'bg-blue-50 text-blue-700'
+                  "
                 >
                   {{ isGroup(group) ? 'กลุ่ม' : 'รายบุคคล' }}
                 </span>
-                <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">{{ group.students?.length || 0 }} คน</span>
+                <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold"
+                  >{{ group.students?.length || 0 }} คน</span
+                >
               </div>
             </div>
 
@@ -189,7 +277,9 @@
                 (click)="viewStudent(student.student_code)"
                 class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-colors cursor-pointer"
               >
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                >
                   {{ student.student_name?.charAt(0) || '?' }}
                 </div>
                 <div class="min-w-0">
@@ -212,82 +302,133 @@
     <div *ngIf="activeTab === 'activity'" class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
+          <p class="text-xs font-bold text-amber-600 uppercase tracking-wide mb-1">กิจกรรม</p>
           <h2 class="text-xl font-bold text-slate-800">รายงานกิจกรรม</h2>
           <p class="text-sm text-slate-500 mt-1">กิจกรรมของนักศึกษาแต่ละคน</p>
         </div>
 
         <div class="flex items-center gap-3">
           <!-- ปุ่มสลับเรียง วันที่ กิจกรรม -->
-          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
             <button
               (click)="sortActivityReports('desc')"
-              [ngClass]="activitySortOrder === 'desc' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                activitySortOrder === 'desc'
+                  ? 'bg-white text-amber-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬇️</span> ใหม่ล่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_more</span> ใหม่ล่าสุด
             </button>
             <button
               (click)="sortActivityReports('asc')"
-              [ngClass]="activitySortOrder === 'asc' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                activitySortOrder === 'asc'
+                  ? 'bg-white text-amber-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬆️</span> เก่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_less</span> เก่าสุด
             </button>
           </div>
 
-          <div class="px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl shrink-0">
-            <span class="text-xs text-amber-600"> จำนวนรายการ </span>
-            <span class="ml-2 font-bold text-amber-700">{{ activityReports.length }}</span>
+          <div
+            class="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl shrink-0"
+          >
+            <span class="text-xs text-amber-600 font-medium">จำนวนรายการ</span>
+            <span class="font-bold text-amber-700 tabular-nums">{{ activityReports.length }}</span>
           </div>
         </div>
       </div>
 
-      <div *ngIf="activityError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+      <div
+        *ngIf="activityError"
+        class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
-            <span class="text-red-600 font-bold"> ! </span>
+          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-red-600 text-[20px]">error</span>
           </div>
           <span class="text-sm text-red-700">{{ activityError }}</span>
         </div>
-        <button (click)="fetchGroupReport()" class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer">ลองใหม่</button>
+        <button
+          (click)="fetchGroupReport()"
+          class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer shrink-0 ml-3"
+        >
+          ลองใหม่
+        </button>
       </div>
 
-      <div *ngIf="!activityError && activityReports.length === 0" class="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 flex items-center justify-center">
-          <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+      <div
+        *ngIf="!activityError && activityReports.length === 0"
+        class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center"
+      >
+        <div
+          class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 flex items-center justify-center"
+        >
+          <span class="material-symbols-outlined text-amber-400 text-[32px]">bolt</span>
         </div>
         <p class="font-semibold text-slate-600">ยังไม่มีข้อมูลกิจกรรม</p>
         <p class="text-sm text-slate-400 mt-1">เมื่อมีการบันทึกกิจกรรม ข้อมูลจะแสดงที่นี่</p>
       </div>
 
-      <div *ngIf="!activityError && activityReports.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <div *ngFor="let act of activityReports" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-          <div class="px-5 py-4 bg-gradient-to-r from-amber-50 to-white border-b border-slate-100">
+      <div
+        *ngIf="!activityError && activityReports.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+      >
+        <div
+          *ngFor="let act of activityReports"
+          class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+        >
+          <div class="h-1 bg-gradient-to-r from-amber-400 to-orange-400"></div>
+          <div class="px-5 py-4 border-b border-slate-100">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs font-medium text-amber-600 mb-1">กิจกรรม</p>
-                <h3 class="font-bold text-slate-800 truncate" [title]="act.title">{{ act.title }}</h3>
+                <p class="text-xs font-bold text-amber-600 uppercase tracking-wide mb-1">กิจกรรม</p>
+                <h3 class="font-bold text-slate-800 truncate" [title]="act.title">
+                  {{ act.title }}
+                </h3>
               </div>
-              <div class="shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                <p class="text-xs text-slate-400">วันที่</p>
+              <div
+                class="shrink-0 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center"
+              >
+                <p class="text-[10px] text-slate-400 leading-tight">วันที่</p>
                 <p class="text-xs font-bold text-slate-700">{{ act.date | date: 'dd/MM/yyyy' }}</p>
               </div>
             </div>
           </div>
 
           <div class="p-5">
-            <div class="flex items-start gap-3 mb-5">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+            <div class="space-y-3 mb-5">
+              <div class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >location_on</span
+                  >
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs text-slate-400">สถานที่</p>
+                  <p class="text-sm font-medium text-slate-700">
+                    {{ act.location || 'ไม่ได้ระบุ' }}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-slate-400">สถานที่</p>
-                <p class="text-sm font-medium text-slate-700">{{ act.location || 'ไม่ได้ระบุ' }}</p>
+              <div *ngIf="act.description" class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >description</span
+                  >
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs text-slate-400">รายละเอียด</p>
+                  <p class="text-sm font-medium text-slate-700">{{ act.description }}</p>
+                </div>
               </div>
             </div>
 
@@ -295,7 +436,9 @@
               <h4 class="text-sm font-bold text-slate-700">นักศึกษา</h4>
               <span
                 class="px-2.5 py-1 rounded-full text-xs font-bold"
-                [ngClass]="isGroup(act) ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'"
+                [ngClass]="
+                  isGroup(act) ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
+                "
               >
                 {{ isGroup(act) ? 'กลุ่ม' : 'รายบุคคล' }}
               </span>
@@ -306,7 +449,9 @@
                 (click)="viewStudent(student.student_code)"
                 class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-amber-50 hover:border-amber-100 transition-colors cursor-pointer"
               >
-                <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                >
                   {{ student.student_name?.charAt(0) || '?' }}
                 </div>
                 <div class="min-w-0">
@@ -329,61 +474,104 @@
     <div *ngIf="activeTab === 'individual'" class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
+          <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">รายบุคคล</p>
           <h2 class="text-xl font-bold text-slate-800">รายงานรายบุคคล</h2>
           <p class="text-sm text-slate-500 mt-1">การนัดหมายรายบุคคล</p>
         </div>
 
         <div class="flex items-center gap-3">
           <!-- ปุ่มสลับเรียง รายบุคคล -->
-          <div class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
             <button
               (click)="sortIndividualReports('desc')"
-              [ngClass]="individualSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                individualSortOrder === 'desc'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬇️</span> ใหม่ล่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_more</span> ใหม่ล่าสุด
             </button>
             <button
               (click)="sortIndividualReports('asc')"
-              [ngClass]="individualSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                individualSortOrder === 'asc'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬆️</span> เก่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_less</span> เก่าสุด
             </button>
           </div>
 
-          <div class="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0">
-            <span class="text-xs text-blue-600"> จำนวนรายการ </span>
-            <span class="ml-2 font-bold text-blue-700">{{ individualReports.length }}</span>
+          <div
+            class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl shrink-0"
+          >
+            <span class="text-xs text-blue-600 font-medium">จำนวนรายการ</span>
+            <span class="font-bold text-blue-700 tabular-nums">{{ individualReports.length }}</span>
           </div>
         </div>
       </div>
 
-      <div *ngIf="groupError" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+      <div
+        *ngIf="groupError"
+        class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
-            <span class="text-red-600 font-bold"> ! </span>
+          <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-red-600 text-[20px]">error</span>
           </div>
           <span class="text-sm text-red-700">{{ groupError }}</span>
         </div>
-        <button (click)="fetchGroupReport()" class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer">ลองใหม่</button>
+        <button
+          (click)="fetchGroupReport()"
+          class="text-sm font-semibold text-red-700 hover:text-red-900 underline cursor-pointer shrink-0 ml-3"
+        >
+          ลองใหม่
+        </button>
       </div>
 
-      <div *ngIf="!groupError && individualReports.length === 0" class="bg-white border border-slate-200 rounded-2xl p-8 text-center">
-        <p class="text-sm text-slate-400">ยังไม่มีการนัดหมายรายบุคคล</p>
+      <div
+        *ngIf="!groupError && individualReports.length === 0"
+        class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center"
+      >
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-blue-400 text-[32px]">person</span>
+        </div>
+        <p class="font-semibold text-slate-600">ยังไม่มีการนัดหมายรายบุคคล</p>
+        <p class="text-sm text-slate-400 mt-1">เมื่อมีการนัดหมาย ข้อมูลจะแสดงที่นี่</p>
       </div>
 
-      <div *ngIf="!groupError && individualReports.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <div *ngFor="let item of individualReports" class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-          <div class="px-5 py-4 bg-gradient-to-r from-blue-50 to-white border-b border-slate-100">
+      <div
+        *ngIf="!groupError && individualReports.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+      >
+        <div
+          *ngFor="let item of individualReports"
+          class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+        >
+          <div class="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div class="px-5 py-4 border-b border-slate-100">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs font-medium text-blue-600 mb-1">การนัดหมาย</p>
-                <h3 class="font-bold text-slate-800 truncate" [title]="item.title">{{ item.title }}</h3>
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">
+                  การนัดหมาย
+                </p>
+                <h3 class="font-bold text-slate-800 truncate" [title]="item.title">
+                  {{ item.title }}
+                </h3>
               </div>
-              <div class="shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
-                <p class="text-xs text-slate-400">วันที่</p>
+              <div
+                class="shrink-0 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center"
+              >
+                <p class="text-[10px] text-slate-400 leading-tight">วันที่</p>
                 <p class="text-xs font-bold text-slate-700">{{ item.date | date: 'dd/MM/yyyy' }}</p>
+                <p *ngIf="item.start_time" class="text-[11px] font-semibold text-blue-600 mt-0.5">
+                  {{ item.start_time.slice(0, 5)
+                  }}<span *ngIf="item.end_time"> - {{ item.end_time.slice(0, 5) }}</span> น.
+                </p>
               </div>
             </div>
           </div>
@@ -391,33 +579,53 @@
           <div class="p-5">
             <div class="space-y-3 mb-5">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >location_on</span
+                  >
                 </div>
-                <div>
+                <div class="min-w-0">
                   <p class="text-xs text-slate-400">สถานที่</p>
-                  <p class="text-sm font-medium text-slate-700">{{ item.location || 'ไม่ได้ระบุ' }}</p>
+                  <p class="text-sm font-medium text-slate-700">
+                    {{ item.location || 'ไม่ได้ระบุ' }}
+                  </p>
+                </div>
+              </div>
+              <div *ngIf="item.description" class="flex items-start gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]"
+                    >description</span
+                  >
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs text-slate-400">รายละเอียด</p>
+                  <p class="text-sm font-medium text-slate-700">{{ item.description }}</p>
                 </div>
               </div>
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 019 16h6a4 4 0 013.879 1.804M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                <div
+                  class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-slate-500 text-[16px]">person</span>
                 </div>
-                <div>
+                <div class="min-w-0">
                   <p class="text-xs text-slate-400">อาจารย์ที่ปรึกษา</p>
-                  <p class="text-sm font-medium text-slate-700">{{ item.advisor_name || 'ไม่ได้ระบุ' }}</p>
+                  <p class="text-sm font-medium text-slate-700">
+                    {{ item.advisor_name || 'ไม่ได้ระบุ' }}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div class="flex items-center justify-between mb-3">
               <h4 class="text-sm font-bold text-slate-700">รายชื่อนักศึกษา</h4>
-              <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">รายบุคคล</span>
+              <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold"
+                >รายบุคคล</span
+              >
             </div>
 
             <div *ngIf="item.students?.length > 0" class="space-y-2">
@@ -426,7 +634,9 @@
                 (click)="viewStudent(student.student_code)"
                 class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-colors cursor-pointer"
               >
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+                <div
+                  class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                >
                   {{ student.student_name?.charAt(0) || '?' }}
                 </div>
                 <div class="min-w-0">
@@ -449,44 +659,50 @@
     <div *ngIf="activeTab === 'timeline'" class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
+          <p class="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-1">Timeline</p>
           <h2 class="text-xl font-bold text-slate-800">Timeline นักศึกษา</h2>
-          <p class="text-sm text-slate-500 mt-1" *ngIf="timelineStudentLabel">รหัสนักศึกษา: {{ timelineStudentLabel }}</p>
+          <p class="text-sm text-slate-500 mt-1" *ngIf="timelineStudentLabel">
+            รหัสนักศึกษา:
+            <span class="font-semibold text-slate-700">{{ timelineStudentLabel }}</span>
+          </p>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <!-- ปุ่มสลับเรียง Timeline -->
-          <div *ngIf="individualTimeline.length > 0" class="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-semibold">
+          <div
+            *ngIf="individualTimeline.length > 0"
+            class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold"
+          >
             <button
               (click)="sortTimeline('desc')"
-              [ngClass]="timelineSortOrder === 'desc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                timelineSortOrder === 'desc'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬇️</span> ใหม่ล่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_more</span> ใหม่ล่าสุด
             </button>
             <button
               (click)="sortTimeline('asc')"
-              [ngClass]="timelineSortOrder === 'asc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+              [ngClass]="
+                timelineSortOrder === 'asc'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800'
+              "
               class="px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-1"
             >
-              <span>⬆️</span> เก่าสุด
+              <span class="material-symbols-outlined text-[18px]">expand_less</span> เก่าสุด
             </button>
           </div>
-
-          <button
-            (click)="backToIndividualSearch()"
-            class="px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
-          >
-            ← ค้นหาคนอื่น
-          </button>
         </div>
       </div>
 
       <div *ngIf="individualError" class="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
-            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3a9 9 0 110 18 9 9 0 010-18z" />
-            </svg>
+          <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-amber-600 text-[20px]">info</span>
           </div>
           <p class="text-sm text-amber-700">{{ individualError }}</p>
         </div>
@@ -494,23 +710,41 @@
 
       <div *ngIf="individualTimeline.length > 0" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <p class="text-xs text-slate-400 mb-2">รายการทั้งหมด</p>
-          <p class="text-2xl font-bold text-slate-800">{{ individualTimeline.length }}</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs text-slate-400">รายการทั้งหมด</p>
+            <span class="material-symbols-outlined text-slate-300 text-[18px]">event_note</span>
+          </div>
+          <p class="text-2xl font-extrabold text-slate-800 tabular-nums">
+            {{ individualTimeline.length }}
+          </p>
           <p class="text-xs text-slate-400 mt-1">รายการ</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <p class="text-xs text-slate-400 mb-2">การนัดหมาย</p>
-          <p class="text-2xl font-bold text-blue-600">{{ getTotalAppointments() }}</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs text-slate-400">การนัดหมาย</p>
+            <span class="material-symbols-outlined text-blue-300 text-[18px]">event</span>
+          </div>
+          <p class="text-2xl font-extrabold text-blue-600 tabular-nums">
+            {{ getTotalAppointments() }}
+          </p>
           <p class="text-xs text-slate-400 mt-1">รายการ</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <p class="text-xs text-slate-400 mb-2">กิจกรรม</p>
-          <p class="text-2xl font-bold text-amber-500">{{ getTotalActivities() }}</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs text-slate-400">กิจกรรม</p>
+            <span class="material-symbols-outlined text-amber-300 text-[18px]">bolt</span>
+          </div>
+          <p class="text-2xl font-extrabold text-amber-500 tabular-nums">
+            {{ getTotalActivities() }}
+          </p>
           <p class="text-xs text-slate-400 mt-1">รายการ</p>
         </div>
       </div>
 
-      <div *ngIf="individualTimeline.length > 0" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <div
+        *ngIf="individualTimeline.length > 0"
+        class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6"
+      >
         <div class="mb-6">
           <h3 class="text-lg font-bold text-slate-800">ประวัติการเข้าร่วม</h3>
           <p class="text-xs text-slate-400 mt-1">Timeline การนัดหมายและกิจกรรมของนักศึกษา</p>
@@ -518,40 +752,93 @@
         <div class="relative">
           <div class="absolute left-[15px] top-3 bottom-3 w-px bg-slate-200"></div>
           <div *ngFor="let item of individualTimeline" class="relative flex gap-5 pb-8 last:pb-0">
-            <div class="relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0" [ngClass]="item.record_type === 'appointment' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'">
-              <svg *ngIf="item.record_type === 'appointment'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <svg *ngIf="item.record_type === 'activity'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+            <div
+              class="relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ring-4 ring-white"
+              [ngClass]="
+                item.record_type === 'appointment'
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'bg-amber-100 text-amber-600'
+              "
+            >
+              <span
+                *ngIf="item.record_type === 'appointment'"
+                class="material-symbols-outlined text-[16px]"
+                >event</span
+              >
+              <span
+                *ngIf="item.record_type === 'activity'"
+                class="material-symbols-outlined text-[16px]"
+                >bolt</span
+              >
             </div>
-            <div class="flex-1 bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all">
+            <div
+              class="flex-1 bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all"
+            >
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                <span class="text-xs text-slate-400 font-medium">{{ item.date | date: 'dd/MM/yyyy HH:mm' }}</span>
-                <span [ngClass]="item.record_type === 'appointment' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'" class="w-fit px-2.5 py-1 rounded-full text-xs font-semibold">
-                  {{ item.record_type === 'activity' ? 'กิจกรรม' : 'การนัดหมาย' }}
+                <span class="text-xs text-slate-400 font-medium">
+                  {{ item.date | date: 'dd/MM/yyyy' }}
+                  <span *ngIf="item.start_time" class="text-slate-600 font-semibold">
+                    · {{ item.start_time.slice(0, 5)
+                    }}<span *ngIf="item.end_time">-{{ item.end_time.slice(0, 5) }}</span> น.
+                  </span>
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span
+                    [ngClass]="
+                      item.record_type === 'appointment'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-amber-100 text-amber-700'
+                    "
+                    class="w-fit px-2.5 py-1 rounded-full text-xs font-semibold"
+                  >
+                    {{ item.record_type === 'activity' ? 'กิจกรรม' : 'การนัดหมาย' }}
+                  </span>
+                  <span
+                    *ngIf="item.record_type === 'appointment'"
+                    [ngClass]="
+                      item.student_count > 1
+                        ? 'bg-indigo-100 text-indigo-700'
+                        : 'bg-slate-100 text-slate-600'
+                    "
+                    class="w-fit px-2.5 py-1 rounded-full text-xs font-semibold"
+                  >
+                    {{ item.student_count > 1 ? 'กลุ่ม' : 'รายบุคคล' }}
+                  </span>
                 </span>
               </div>
               <h4 class="text-base font-bold text-slate-800 mb-3">{{ item.title }}</h4>
               <div class="space-y-2 text-sm text-slate-600">
-                <p *ngIf="item.description"><span class="font-semibold text-slate-700"> รายละเอียด: </span>{{ item.description }}</p>
-                <p><span class="font-semibold text-slate-700"> สถานที่: </span>{{ item.location || 'ไม่ได้ระบุ' }}</p>
-                <p *ngIf="item.record_type === 'appointment'"><span class="font-semibold text-slate-700"> อาจารย์: </span>{{ item.advisor_name || 'ไม่ได้ระบุ' }}</p>
+                <p>
+                  <span class="font-semibold text-slate-700"> สถานที่: </span
+                  >{{ item.location || 'ไม่ได้ระบุ' }}
+                </p>
+                <p *ngIf="item.description">
+                  <span class="font-semibold text-slate-700"> รายละเอียด: </span
+                  >{{ item.description }}
+                </p>
+                <p *ngIf="item.record_type === 'appointment'">
+                  <span class="font-semibold text-slate-700"> อาจารย์: </span
+                  >{{ item.advisor_name || 'ไม่ได้ระบุ' }}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div *ngIf="individualTimeline.length === 0 && !individualError" class="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 flex items-center justify-center">
-          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18.15a7.5 7.5 0 006.15-3.5z" />
-          </svg>
+      <div
+        *ngIf="individualTimeline.length === 0 && !individualError"
+        class="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center"
+      >
+        <div
+          class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-50 flex items-center justify-center"
+        >
+          <span class="material-symbols-outlined text-indigo-400 text-[32px]">search</span>
         </div>
         <h3 class="font-bold text-slate-700 mb-1">ยังไม่มีข้อมูล</h3>
-        <p class="text-sm text-slate-400">กรุณาเลือกนักศึกษาจากแท็บ "รายงานแบบกลุ่ม" หรือค้นหาจากแท็บ "รายบุคคล"</p>
+        <p class="text-sm text-slate-400">
+          กรุณาเลือกนักศึกษาจากแท็บ "รายงานแบบกลุ่ม" หรือค้นหาจากแท็บ "รายบุคคล"
+        </p>
       </div>
     </div>
   </div>
