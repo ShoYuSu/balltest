@@ -75,8 +75,6 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   loadData() {
-    // ✅ ไม่ต้องดึง advisor_id จาก localStorage แล้ว
-    // ✅ ลบ advisor_id ออกจาก URL Interceptor จะจัดการ Token ให้เอง
     this.http
       .get<any[]>(`${environment.apiUrl}/get_plo_assessments.php?t=${Date.now()}`)
       .subscribe({
@@ -144,7 +142,6 @@ export class PloAssessmentComponent implements OnInit {
     this.isLoadingEval.set(true);
     this.evalPLOs.set([]);
 
-    // ✅ ไฟล์นี้ใช้ student_id ส่งไปถูกแล้ว ไม่ต้องแก้
     this.http
       .get<any>(
         `${environment.apiUrl}/get_student_eval_structure.php?student_id=${student.id}&t=${Date.now()}`,
@@ -203,7 +200,7 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   toggleYloStatus(
-    targetYloId: number, // 🌟 เปลี่ยนรับค่า ID เข้ามาแทน
+    targetYloId: number,
     currentStatus: string | null,
     newStatusToSet: 'passed' | 'failed',
   ) {
@@ -213,11 +210,11 @@ export class PloAssessmentComponent implements OnInit {
     plos.forEach((plo) => {
       plo.sub_plos?.forEach((sub) => {
         sub.ylos?.forEach((ylo) => {
-          if (ylo.ylo_id === targetYloId) ylo.status = newStatus; // 🌟 ติ๊กเฉพาะ ID ที่ตรงกันเป๊ะๆ
+          if (ylo.ylo_id === targetYloId) ylo.status = newStatus;
         });
       });
       plo.direct_ylos?.forEach((ylo) => {
-        if (ylo.ylo_id === targetYloId) ylo.status = newStatus; // 🌟 ติ๊กเฉพาะ ID ที่ตรงกันเป๊ะๆ
+        if (ylo.ylo_id === targetYloId) ylo.status = newStatus;
       });
     });
 
@@ -274,7 +271,6 @@ export class PloAssessmentComponent implements OnInit {
       });
     });
 
-    // ✅ ไม่ต้องแพ็ค advisor_id ส่งไปใน payload แล้ว ให้ PHP ดึงจาก Token ได้เลย
     const payload = {
       student_id: student.id,
       plos: evaluatedPLOs,
@@ -296,6 +292,37 @@ export class PloAssessmentComponent implements OnInit {
         this.isSaving.set(false);
       },
     });
+  }
+
+  // 🌟 ฟังก์ชันโหลด Excel รายบุคคล 
+  exportStudentToExcel(student: StudentAssessment, event: Event) {
+    event.stopPropagation(); // หยุดการกระทำไม่ให้คลิกทะลุไปเปิดหน้าประเมิน
+    
+    if (!student.plos || student.plos.length === 0) {
+      alert('ไม่พบข้อมูลคะแนนสำหรับ Export');
+      return;
+    }
+
+    const bom = '\uFEFF';
+    let csvContent = bom;
+    
+    csvContent += `ข้อมูลคะแนน PLO รายบุคคล\n`;
+    csvContent += `ชื่อ-สกุล:, "${student.name}"\n`;
+    csvContent += `รหัสนักศึกษา:, "${student.studentId}"\n`;
+    csvContent += `คะแนนเฉลี่ยรวม:, "${student.average !== null && student.average !== undefined ? student.average + '%' : '-'}"\n`;
+    csvContent += `สถานะ:, "${student.statusText}"\n\n`;
+
+    csvContent += `หัวข้อ PLO,คะแนนที่ได้ (%)\n`;
+
+    student.plos.forEach((plo) => {
+      csvContent += `"${plo.label}","${plo.score}%"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `คะแนน_PLO_${student.studentId}_${student.name}.csv`;
+    link.click();
   }
 
   filteredStudents = computed(() => {
