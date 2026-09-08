@@ -4,6 +4,21 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import { getAuthUser } from '../auth-user.util';
 
+interface YloItem {
+  ylo_id: number;
+  ylo_name: string;
+  description: string;
+  level: number | null;
+}
+
+interface SubPloItem {
+  sub_plo_id: number;
+  sub_plo_name: string;
+  description: string;
+  ylo_count: number;
+  ylos: YloItem[];
+}
+
 interface PloItem {
   plo_id: number;
   plo_name: string;
@@ -12,6 +27,9 @@ interface PloItem {
   status: 'passed' | 'in_progress' | 'not_assessed';
   assessment_date: string | null;
   advisor_name: string | null;
+  sub_plo_count: number;
+  ylo_count: number;
+  sub_plos: SubPloItem[];
 }
 
 interface PloResponse {
@@ -35,6 +53,8 @@ export class PloEvaluationComponent implements OnInit {
   total = 0;
   passed = 0;
   plos: PloItem[] = [];
+
+  private expandedPlos = new Set<number>();
 
   get overallPercent(): number {
     return this.total > 0 ? Math.round((this.passed / this.total) * 100) : 0;
@@ -94,10 +114,23 @@ export class PloEvaluationComponent implements OnInit {
     if (status === 'in_progress') return 'bg-yellow-100 text-yellow-600';
     return 'bg-gray-100 text-gray-500';
   }
+  
 
   formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
     return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  isExpanded(ploId: number): boolean {
+    return this.expandedPlos.has(ploId);
+  }
+
+  toggleExpand(ploId: number): void {
+    if (this.expandedPlos.has(ploId)) {
+      this.expandedPlos.delete(ploId);
+    } else {
+      this.expandedPlos.add(ploId);
+    }
   }
 }

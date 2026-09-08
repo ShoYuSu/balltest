@@ -12,6 +12,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ChangeDetectorRef } from '@angular/core';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 @Component({
   standalone: true,
@@ -93,15 +94,15 @@ export class PloComponent implements OnInit {
         return dept ? dept.dept_name_th : '-';
       },
     },
-    {
-      columnDef: 'major',
-      header: 'หลักสูตร',
-      tag: 'text',
-      display: true,
-      width: 'medium',
-      align: 'left',
-      cell: (el) => el.major_name || '-',
-    },
+    // {
+    //   columnDef: 'major',
+    //   header: 'หลักสูตร',
+    //   tag: 'text',
+    //   display: true,
+    //   width: 'medium',
+    //   align: 'left',
+    //   cell: (el) => el.major_name || '-',
+    // },
     {
       columnDef: 'year',
       header: 'ปี พ.ศ.',
@@ -169,6 +170,87 @@ export class PloComponent implements OnInit {
 
   toggleMajorFilterDropdown() {
     this.isMajorFilterDropdownOpen = !this.isMajorFilterDropdownOpen;
+  }
+
+  exportToExcel(courses: any[], fileNameBase: string = 'PLO_YLO'): void {
+    if (!courses || !courses.length) {
+      Swal.fire({
+        icon: 'info',
+        title: 'ไม่มีข้อมูล',
+        text: 'ไม่มีข้อมูลหลักสูตรให้ส่งออกในขณะนี้',
+        confirmButtonColor: '#6366f1',
+      });
+      return;
+    }
+
+    const courseRows: any[] = [];
+    const ploRows: any[] = [];
+    const subPloRows: any[] = [];
+    const yloRows: any[] = [];
+
+    courses.forEach((course: any) => {
+      const deptName =
+        course.dept_name_th ||
+        this.departmentsList.find((d) => Number(d.dept_id) === Number(course.dept_id))
+          ?.dept_name_th ||
+        '-';
+
+      courseRows.push({
+        ชื่อหลักสูตร: course.curriculum_name,
+        ภาควิชา: deptName,
+        หลักสูตรย่อย: course.major_name || '-',
+        'ปี พ.ศ.': course.year,
+      });
+
+      (course.ploDetails || []).forEach((plo: any) => {
+        ploRows.push({
+          ชื่อหลักสูตร: course.curriculum_name,
+          รหัสPLO: plo.plo_name,
+          รายละเอียดPLO: plo.description,
+        });
+
+        (plo.sub_plos || []).forEach((sub: any) => {
+          subPloRows.push({
+            ชื่อหลักสูตร: course.curriculum_name,
+            รหัสPLO: plo.plo_name,
+            รหัสSubPLO: sub.sub_plo_name,
+            รายละเอียดSubPLO: sub.description,
+          });
+
+          (sub.ylos || []).forEach((ylo: any) => {
+            yloRows.push({
+              ชื่อหลักสูตร: course.curriculum_name,
+              รหัสPLO: plo.plo_name,
+              รหัสSubPLO: sub.sub_plo_name,
+              รหัสYLO: ylo.ylo_name,
+              ชั้นปี: ylo.level ?? ylo.year,
+              รายละเอียดYLO: ylo.description,
+            });
+          });
+        });
+
+        (plo.ylos || []).forEach((ylo: any) => {
+          yloRows.push({
+            ชื่อหลักสูตร: course.curriculum_name,
+            รหัสPLO: plo.plo_name,
+            รหัสSubPLO: '-',
+            รหัสYLO: ylo.ylo_name,
+            ชั้นปี: ylo.level ?? ylo.year,
+            รายละเอียดYLO: ylo.description,
+          });
+        });
+      });
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(courseRows), 'หลักสูตร');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ploRows), 'PLO');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(subPloRows), 'SubPLO');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(yloRows), 'YLO');
+
+    const today = new Date().toISOString().slice(0, 10);
+    const safeBase = (fileNameBase || 'PLO_YLO').replace(/[\\/:*?"<>|]/g, '_');
+    XLSX.writeFile(wb, `${safeBase}_${today}.xlsx`);
   }
 
   loadDepartments() {
