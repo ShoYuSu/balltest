@@ -80,7 +80,7 @@ export class AdvisorHistoryComponent implements OnInit {
     },
     {
       columnDef: 'department',
-      header: 'สาขา',
+      header: 'หลักสูตร',
       tag: 'text',
       align: 'center',
       display: true,

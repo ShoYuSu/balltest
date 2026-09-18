@@ -178,6 +178,11 @@ export class StudentsComponent implements OnInit {
   isAddingNewMajor = false;
   isCurriculumModalOpen = false;
 
+  // 🌟 รายการหลักสูตรแบบเต็ม (มี major_id) ใช้สำหรับแก้ไขชื่อหลักสูตรที่มีอยู่แล้ว
+  majorsList: { major_id: number; major_name: string; faculty_name?: string }[] = [];
+  editingMajorId: number | null = null;
+  editMajorName: string = '';
+
   currentPage: number = 1;
   pageSize: number = 5;
 
@@ -239,6 +244,10 @@ export class StudentsComponent implements OnInit {
               if (!this.majors.includes(trimmedMajor)) {
                 this.majors.push(trimmedMajor);
               }
+              // 🌟 เติมลง majorsList ด้วย เพื่อให้แก้ไขได้ทันทีโดยไม่ต้องโหลดหน้าใหม่
+              if (res.success && res.major_id && !this.majorsList.some((x) => x.major_id === res.major_id)) {
+                this.majorsList.push({ major_id: res.major_id, major_name: trimmedMajor });
+              }
               Swal.fire({
                 icon: 'success',
                 title: 'เพิ่มหลักสูตรสำเร็จ',
@@ -274,9 +283,80 @@ export class StudentsComponent implements OnInit {
             ...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors]),
           ];
         }
+        // 🌟 majors_full มี major_id ด้วย ใช้เป็นแหล่งข้อมูลสำหรับแก้ไขหลักสูตร
+        if (res && res.success && Array.isArray(res.majors_full)) {
+          this.majorsList = res.majors_full;
+        }
       },
       error: (err) => console.error('โหลดหลักสูตรล้มเหลว', err),
     });
+  }
+
+  startEditMajor(m: { major_id: number; major_name: string }) {
+    this.editingMajorId = m.major_id;
+    this.editMajorName = m.major_name;
+  }
+
+  cancelEditMajor() {
+    this.editingMajorId = null;
+    this.editMajorName = '';
+  }
+
+  saveEditMajor(m: { major_id: number; major_name: string }) {
+    const trimmedName = this.editMajorName.trim();
+    if (!trimmedName || this.editingMajorId === null) return;
+
+    const oldName = m.major_name;
+
+    this.http
+      .post(`${environment.apiUrl}/update_major.php`, {
+        major_id: m.major_id,
+        major_name: trimmedName,
+      })
+      .subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            // อัปเดตชื่อในรายการที่ใช้แสดง/กรอง ให้ตรงกับชื่อใหม่ทันที
+            const listIdx = this.majorsList.findIndex((x) => x.major_id === m.major_id);
+            if (listIdx > -1) this.majorsList[listIdx].major_name = trimmedName;
+
+            const nameIdx = this.majors.indexOf(oldName);
+            if (nameIdx > -1) this.majors[nameIdx] = trimmedName;
+
+            if (this.selectedMajor === oldName) this.selectedMajor = trimmedName;
+
+            // ฝั่งเซิร์ฟเวอร์ sync student_profiles.major ให้แล้ว อัปเดต state ในหน้านี้ให้ตรงด้วย
+            this.students.forEach((s) => {
+              if (s.major === oldName) s.major = trimmedName;
+            });
+
+            Swal.fire({
+              icon: 'success',
+              title: 'แก้ไขหลักสูตรสำเร็จ',
+              text: `เปลี่ยนเป็น "${trimmedName}" เรียบร้อยแล้ว`,
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            this.cancelEditMajor();
+            this.cdr.detectChanges();
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: res.message,
+              confirmButtonColor: '#3085d6',
+            });
+          }
+        },
+        error: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถแก้ไขหลักสูตรได้',
+            confirmButtonColor: '#3085d6',
+          });
+        },
+      });
   }
 
   // 🌟 โหลดรายการหลักสูตรทั้งหมดจากฐานข้อมูล (แทนการ hardcode curriculum_id/year)

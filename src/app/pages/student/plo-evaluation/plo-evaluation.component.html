@@ -59,18 +59,18 @@
     </div>
   }
 
-  <!-- ===== GRID ===== -->
+  <!-- ===== LIST (1 คอลัมน์ เพราะเนื้อหาเต็มยาว) ===== -->
   @if (plos.length > 0) {
-    <div class="grid grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 gap-5">
 
       @for (p of plos; track p.plo_id) {
-        <div class="card group hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+        <div class="card group transition-all duration-200">
 
-          <!-- PLO name + description -->
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex-1 pr-3">
+          <!-- PLO name + description (เต็ม ไม่ตัด) -->
+          <div class="flex justify-between items-start mb-3 gap-3">
+            <div class="flex-1">
               <p class="font-semibold text-gray-800 text-sm">{{ p.plo_name }}</p>
-              <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">{{ p.description }}</p>
+              <p class="text-xs text-gray-500 mt-0.5 leading-relaxed whitespace-pre-line">{{ p.description }}</p>
             </div>
             <span class="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
                   [ngClass]="getStatusColor(p.status)">
@@ -86,6 +86,59 @@
             </div>
           </div>
           <p class="text-xs text-gray-400 text-right mb-3">{{ p.score | number:'1.0-1' }}%</p>
+
+          <!-- Sub PLO / YLO count toggle -->
+          <button type="button"
+                  class="flex items-center justify-between w-full text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 mb-1 transition-colors"
+                  (click)="toggleExpand(p.plo_id)">
+            <span class="flex items-center gap-3">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size:14px">layers</span>
+                Sub PLO {{ p.sub_plo_count }} ข้อ
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size:14px">flag</span>
+                YLO {{ p.ylo_count }} ข้อ
+              </span>
+            </span>
+            <span class="material-symbols-outlined transition-transform duration-200"
+                  style="font-size:16px"
+                  [style.transform]="isExpanded(p.plo_id) ? 'rotate(180deg)' : 'rotate(0deg)'">
+              expand_more
+            </span>
+          </button>
+
+          <!-- Sub PLO + YLO เต็ม (expandable) -->
+          @if (isExpanded(p.plo_id)) {
+            <div class="mb-2 space-y-3">
+              @if (p.sub_plos.length === 0) {
+                <p class="text-[11px] text-gray-400 px-3 py-1">ยังไม่มี Sub PLO สำหรับข้อนี้</p>
+              }
+              @for (sp of p.sub_plos; track sp.sub_plo_id) {
+                <div class="bg-blue-50/60 rounded-xl px-3 py-2.5">
+                  <div class="flex justify-between items-start gap-2 mb-1">
+                    <p class="text-xs font-semibold text-blue-700">{{ sp.sub_plo_name }}</p>
+                    <span class="text-[10px] text-blue-500 font-medium shrink-0 mt-0.5">YLO {{ sp.ylo_count }}</span>
+                  </div>
+                  <p class="text-[11px] text-gray-600 leading-relaxed whitespace-pre-line mb-2">{{ sp.description }}</p>
+
+                  @if (sp.ylos.length > 0) {
+                    <div class="space-y-1.5 pl-3 border-l-2 border-blue-200">
+                      @for (y of sp.ylos; track y.ylo_id) {
+                        <div>
+                          <p class="text-[11px] font-medium text-gray-700">
+                            {{ y.ylo_name }}
+                            @if (y.level) { <span class="text-gray-400 font-normal">(ระดับ {{ y.level }})</span> }
+                          </p>
+                          <p class="text-[11px] text-gray-500 leading-relaxed whitespace-pre-line">{{ y.description }}</p>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
 
           <!-- hint for non-passing PLOs -->
           @if (p.status === 'in_progress') {

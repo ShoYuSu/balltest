@@ -41,29 +41,70 @@
   <!-- 🌟 ฟอร์มเพิ่มสาขาใหม่ อยู่นอกโมดัลเพิ่มนักศึกษา แสดงตรงนี้เมื่อกดปุ่มด้านบน -->
   <div
     *ngIf="isAddingNewMajor"
-    class="flex items-center gap-2 mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-2xl max-w-md"
+    class="flex flex-col gap-2 mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-2xl max-w-md"
   >
-    <input
-      type="text"
-      [(ngModel)]="newMajorName"
-      [ngModelOptions]="{ standalone: true }"
-      placeholder="ระบุชื่อหลักสูตรใหม่..."
-      class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 bg-white"
-    />
-    <button
-      type="button"
-      (click)="addNewMajor()"
-      class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
-    >
-      บันทึก
-    </button>
-    <button
-      type="button"
-      (click)="toggleAddNewMajor()"
-      class="px-3 py-2 text-gray-500 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
-    >
-      ยกเลิก
-    </button>
+    <!-- 🌟 รายการหลักสูตรที่มีอยู่แล้ว แก้ไขชื่อได้ทีละรายการ -->
+    <ul *ngIf="majorsList.length" class="flex flex-col divide-y divide-blue-100/70 mb-1">
+      <li *ngFor="let m of majorsList" class="flex items-center gap-2 py-1.5">
+        <ng-container *ngIf="editingMajorId === m.major_id; else viewMajorRow">
+          <input
+            type="text"
+            [(ngModel)]="editMajorName"
+            [ngModelOptions]="{ standalone: true }"
+            class="flex-1 px-2 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 bg-white"
+          />
+          <button
+            type="button"
+            (click)="saveEditMajor(m)"
+            class="px-2 py-1 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            บันทึก
+          </button>
+          <button
+            type="button"
+            (click)="cancelEditMajor()"
+            class="px-2 py-1 text-gray-400 text-xs font-medium rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            ยกเลิก
+          </button>
+        </ng-container>
+        <ng-template #viewMajorRow>
+          <span class="flex-1 text-sm text-gray-700">{{ m.major_name }}</span>
+          <button
+            type="button"
+            (click)="startEditMajor(m)"
+            class="p-1 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            title="แก้ไขชื่อหลักสูตร"
+          >
+            <span class="material-symbols-outlined text-base">edit</span>
+          </button>
+        </ng-template>
+      </li>
+    </ul>
+
+    <div class="flex items-center gap-2">
+      <input
+        type="text"
+        [(ngModel)]="newMajorName"
+        [ngModelOptions]="{ standalone: true }"
+        placeholder="ระบุชื่อหลักสูตรใหม่..."
+        class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-400 bg-white"
+      />
+      <button
+        type="button"
+        (click)="addNewMajor()"
+        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+      >
+        บันทึก
+      </button>
+      <button
+        type="button"
+        (click)="toggleAddNewMajor()"
+        class="px-3 py-2 text-gray-500 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
+      >
+        ยกเลิก
+      </button>
+    </div>
   </div>
 
   <div class="flex flex-wrap gap-3 mt-6 mb-4">
