@@ -258,7 +258,7 @@
                    (focus)="isCreateTypeOpen.set(true)"
                    (input)="isCreateTypeOpen.set(true)"
                    placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
-                   class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
+                   class="w-full pl-3 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
             @if (isCreateTypeOpen()) {
               <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
                 @for (t of filteredCreateTypes; track t) {
@@ -536,6 +536,78 @@
       <div class="p-4 sm:p-6 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 border-t border-gray-100 rounded-b-2xl sm:rounded-b-3xl">
         <button (click)="closeModals()" class="w-full sm:w-auto px-6 py-2.5 sm:py-2 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
         <button (click)="submitConsultationLog()" class="w-full sm:w-auto px-8 py-2.5 sm:py-2 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors text-sm sm:text-base shadow-sm">บันทึกผล</button>
+      </div>
+    </div>
+  </div>
+}
+@if (isConfirmCancelModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 sm:p-8 text-center">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-[32px] sm:text-4xl">warning</span>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">ยืนยันการยกเลิก</h2>
+      <p class="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการนัดหมายนี้?<br>การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <button (click)="closeModals()" class="w-full py-2.5 sm:py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base">กลับไป</button>
+        <button (click)="confirmCancel()" class="w-full py-2.5 sm:py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors text-sm sm:text-base">ใช่, ยกเลิกเลย</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ================= Modal จัดการประเภทหัวข้อ ================= -->
+@if (isManageTypesModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-gray-800">
+          <span class="material-symbols-outlined text-yellow-500 text-[24px]">category</span> จัดการประเภทหัวข้อ
+        </h2>
+        <button (click)="isManageTypesModalOpen.set(false)" class="material-symbols-outlined text-gray-400 hover:text-gray-600">close</button>
+      </div>
+
+      <div class="p-4 sm:p-6 space-y-3 overflow-y-auto overscroll-contain flex-grow custom-scrollbar">
+        @if (availableTypes().length === 0) {
+          <div class="text-center py-8 text-gray-400">
+            <span class="material-symbols-outlined text-4xl mb-2 block text-gray-300">label_off</span>
+            <p class="text-sm">ยังไม่มีประเภทหัวข้อ</p>
+          </div>
+        }
+        @for (type of availableTypes(); track type) {
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-orange-200 transition-colors">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+              <span class="material-symbols-outlined text-orange-400 text-[18px] shrink-0">label</span>
+              <div class="truncate">
+                <span class="font-medium text-gray-800 text-xs sm:text-sm">{{ type }}</span>
+                <span class="text-[10px] sm:text-xs text-gray-400 ml-1 sm:ml-2 whitespace-nowrap">
+                  ({{ typeUsageCount(type) }} นัดหมาย)
+                </span>
+              </div>
+            </div>
+            <button (click)="deleteType(type, $event)"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors sm:opacity-0 group-hover:opacity-100 shrink-0">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 space-y-2 sm:space-y-3 shrink-0">
+        <label class="block text-xs sm:text-sm font-bold text-gray-700">เพิ่มประเภทใหม่</label>
+        <div class="flex gap-2">
+          <input type="text"
+                 [ngModel]="newTypeInput()"
+                 (ngModelChange)="newTypeInput.set($event)"
+                 (keydown.enter)="addNewTypeFromModal()"
+                 placeholder="ชื่อประเภทหัวข้อ..."
+                 class="flex-1 p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm">
+          <button (click)="addNewTypeFromModal()"
+                  class="px-4 py-2.5 bg-orange-500 text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-1 shrink-0">
+            <span class="material-symbols-outlined text-[18px]">add</span> <span class="hidden xs:inline">เพิ่ม</span>
+          </button>
+        </div>
+        <p class="text-[10px] sm:text-xs text-gray-400">การลบประเภทไม่กระทบข้อมูลนัดหมายที่มีอยู่แล้ว</p>
       </div>
     </div>
   </div>

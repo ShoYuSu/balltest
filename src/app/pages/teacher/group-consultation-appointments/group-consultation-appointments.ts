@@ -119,7 +119,11 @@ export class GroupConsultationAppointments implements OnInit {
             groupApps.map((item: any) => item.type).filter((t: any) => t && t.trim() !== ''),
           ),
         ] as string[];
-        const mergedTypes = [...new Set([...this.availableTypes(), ...typesFromDb])];
+        
+        // 🌟 ดึงค่าจาก Local Storage มารวมด้วย
+        const localTypes = JSON.parse(localStorage.getItem('saved_appointment_types') || '[]');
+        const mergedTypes = [...new Set([...this.availableTypes(), ...localTypes, ...typesFromDb])];
+        
         this.availableTypes.set(mergedTypes);
 
         const formattedApps = groupApps.map((app: any) => ({
@@ -201,7 +205,12 @@ export class GroupConsultationAppointments implements OnInit {
   addCreateType() {
     const val = this.newApp.type.trim();
     if (val && !this.availableTypes().includes(val)) {
-      this.availableTypes.update((t) => [...t, val]);
+      // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
+      this.availableTypes.update((t) => {
+        const updated = [...t, val];
+        localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
+        return updated;
+      });
     }
     this.isCreateTypeOpen.set(false);
   }
@@ -209,7 +218,12 @@ export class GroupConsultationAppointments implements OnInit {
   addEditType() {
     const val = this.editingApp?.type?.trim();
     if (val && !this.availableTypes().includes(val)) {
-      this.availableTypes.update((t) => [...t, val]);
+      // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
+      this.availableTypes.update((t) => {
+        const updated = [...t, val];
+        localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
+        return updated;
+      });
     }
     this.isEditTypeOpen.set(false);
   }
@@ -225,7 +239,13 @@ export class GroupConsultationAppointments implements OnInit {
       )
         return;
     }
-    this.availableTypes.update((t) => t.filter((x) => x !== type));
+    // 🌟 แก้ตรงนี้ให้อัปเดต Local Storage ตอนลบ
+    this.availableTypes.update((t) => {
+      const updated = t.filter((x) => x !== type);
+      localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
+      return updated;
+    });
+
     if (this.newApp.type === type) this.newApp.type = '';
     if (this.editingApp?.type === type) this.editingApp.type = '';
     if (this.selectedFilter() === type) this.selectedFilter.set('ทั้งหมด');
@@ -238,7 +258,12 @@ export class GroupConsultationAppointments implements OnInit {
       alert(`ประเภท "${val}" มีอยู่แล้ว`);
       return;
     }
-    this.availableTypes.update((t) => [...t, val]);
+    // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
+    this.availableTypes.update((t) => {
+      const updated = [...t, val];
+      localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
+      return updated;
+    });
     this.newTypeInput.set('');
   }
 
