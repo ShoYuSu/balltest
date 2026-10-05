@@ -27,9 +27,11 @@ export class StudentResultModalComponent implements OnInit {
 
   @ViewChild('dropdownRef') dropdownRef?: ElementRef;
 
+  apiUrl = environment.apiUrl; // 🌟 เพิ่ม apiUrl เพื่อให้ HTML เรียกแสดงรูปภาพได้
+
   student: any = this.router.getCurrentNavigation()?.extras?.state?.['student'] ?? null;
 
-  activeTab: 'result' | 'credit' = 'result';
+  activeTab: 'result' | 'credit' | 'portfolio' = 'result'; // 🌟 เพิ่มแท็บ portfolio
   isDropdownOpen = false;
   isLoading = signal(true);
 
@@ -42,6 +44,10 @@ export class StudentResultModalComponent implements OnInit {
   selectedTerm = signal('');
   allSubjects = signal<any[]>([]);
   creditSummary = signal<any[]>([]);
+
+  // 🌟 เพิ่ม Signal สำหรับเก็บข้อมูลกิจกรรมและใบรับรอง
+  activities = signal<any[]>([]);
+  certificates = signal<any[]>([]);
 
   displayedSubjects = computed(() =>
     this.allSubjects().filter((s) => s.term === this.selectedTerm()),
@@ -94,7 +100,10 @@ export class StudentResultModalComponent implements OnInit {
     }, 50);
 
     const studentCode = this.route.snapshot.paramMap.get('studentCode');
-    if (studentCode) this.loadResults(studentCode);
+    if (studentCode) {
+      this.loadResults(studentCode);
+      this.loadPortfolio(studentCode); // 🌟 สั่งเรียกโหลดข้อมูล e-Portfolio
+    }
   }
 
   loadResults(studentCode: string) {
@@ -123,6 +132,19 @@ export class StudentResultModalComponent implements OnInit {
       });
   }
 
+  // 🌟 ฟังก์ชันใหม่สำหรับโหลด e-Portfolio จาก API ที่เราเพิ่งสร้าง
+  loadPortfolio(studentCode: string) {
+    this.http.get<any>(`${environment.apiUrl}/get_student_portfolio.php?student_code=${studentCode}`).subscribe({
+      next: (res) => {
+        if (!res.error) {
+          this.activities.set(res.activities || []);
+          this.certificates.set(res.certificates || []);
+        }
+      },
+      error: (err) => console.error('โหลด Portfolio ไม่สำเร็จ', err)
+    });
+  }
+
   selectTerm(term: string) {
     this.selectedTerm.set(term);
     this.isDropdownOpen = false;
@@ -132,13 +154,11 @@ export class StudentResultModalComponent implements OnInit {
     this.location.back();
   }
 
-  // 🎯 ฟังก์ชันใหม่: พาไปหน้าประเมิน PLO
-  // 🎯 ฟังก์ชันใหม่: พาไปหน้าประเมิน PLO และสั่งเปิดหน้าต่างประเมินทันที
   goToEvaluation() {
     this.router.navigate(['/plo-assessment'], {
       state: {
         autoOpenEval: true,
-        targetStudentId: this.student.id, // ส่งรหัสเด็กพ่วงไปด้วย
+        targetStudentId: this.student.id,
       },
     });
   }

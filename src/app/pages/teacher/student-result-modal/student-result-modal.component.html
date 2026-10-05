@@ -44,7 +44,7 @@
 
     @if (!student) {
       <div>
-        <h1 class="text-xl md:text-2xl font-extrabold text-gray-900">ผลการศึกษา</h1>
+        <h1 class="text-xl md:text-2xl font-extrabold text-gray-900">ผลการศึกษาและผลงาน</h1>
         <p class="text-sm text-gray-500 mt-0.5">ข้อมูลนักศึกษา</p>
       </div>
     }
@@ -53,7 +53,7 @@
   @if (isLoading()) {
     <div class="flex flex-col items-center justify-center py-32 gap-4">
       <div class="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
-      <p class="text-sm text-gray-400 font-medium">กำลังโหลดผลการศึกษา...</p>
+      <p class="text-sm text-gray-400 font-medium">กำลังโหลดข้อมูล...</p>
     </div>
   }
 
@@ -93,29 +93,35 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-gray-100 p-2 md:p-3 flex flex-col md:flex-row justify-between items-center shadow-sm gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-gray-100 p-2 md:p-3 flex flex-col xl:flex-row justify-between items-center shadow-sm gap-4 mb-6">
 
-      <div class="flex bg-gray-50/80 rounded-xl p-1 w-full md:w-auto border border-gray-100">
+      <div class="flex flex-col md:flex-row bg-gray-50/80 rounded-xl p-1 w-full xl:w-auto border border-gray-100 gap-1 md:gap-0">
         <button
           (click)="activeTab='result'"
-          class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
+          class="flex-1 px-4 lg:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
           [ngClass]="activeTab === 'result' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
           <span class="material-symbols-outlined text-[18px]">history_edu</span> ผลการเรียน
         </button>
         <button
           (click)="activeTab='credit'"
-          class="flex-1 md:flex-none px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
+          class="flex-1 px-4 lg:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
           [ngClass]="activeTab === 'credit' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
           <span class="material-symbols-outlined text-[18px]">rule</span> เช็คหน่วยกิต
+        </button>
+        <button
+          (click)="activeTab='portfolio'"
+          class="flex-1 px-4 lg:px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2"
+          [ngClass]="activeTab === 'portfolio' ? 'bg-white text-orange-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+          <span class="material-symbols-outlined text-[18px]">emoji_events</span> ผลงาน/กิจกรรม
         </button>
       </div>
 
       @if (activeTab === 'result' && terms().length > 0) {
-        <div class="relative w-full md:w-auto" #dropdownRef>
+        <div class="relative w-full xl:w-auto" #dropdownRef>
           <button
             type="button"
             (click)="isDropdownOpen = !isDropdownOpen"
-            class="w-full md:w-auto flex items-center gap-2.5 pl-10 pr-4 py-2.5 bg-white border-[1.5px] rounded-[14px] text-sm font-bold text-gray-700 shadow-sm transition-all duration-200 relative"
+            class="w-full xl:w-auto flex items-center gap-2.5 pl-10 pr-4 py-2.5 bg-white border-[1.5px] rounded-[14px] text-sm font-bold text-gray-700 shadow-sm transition-all duration-200 relative"
             [ngClass]="isDropdownOpen ? 'border-orange-500' : 'border-gray-200 hover:border-orange-500/50'">
             <span
               class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] pointer-events-none transition-colors"
@@ -156,7 +162,7 @@
     </div>
 
     @if (activeTab === 'result') {
-      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-fadeIn">
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left">
             <thead class="bg-gray-50/80 border-b border-gray-100 text-gray-500 text-[11px] uppercase tracking-wider">
@@ -213,7 +219,7 @@
     }
 
     @if (activeTab === 'credit') {
-      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-fadeIn">
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left">
             <thead class="bg-gray-50/80 border-b border-gray-100 text-gray-500 text-[11px] uppercase tracking-wider">
@@ -256,6 +262,98 @@
             </tfoot>
           </table>
         </div>
+      </div>
+    }
+
+    <!-- 🌟 แท็บใหม่: ผลงานและกิจกรรม (e-Portfolio) -->
+    @if (activeTab === 'portfolio') {
+      <div class="space-y-6 animate-fadeIn">
+        
+        <!-- ส่วนแสดง Certificates -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-6">
+            <span class="material-symbols-outlined text-orange-500 text-[24px]">workspace_premium</span> ใบรับรอง (Certificates)
+          </h3>
+          
+          @if (certificates().length === 0) {
+            <div class="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400">
+              <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">description</span>
+              <p class="font-medium">นักศึกษายังไม่ได้อัปโหลดใบรับรอง</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              @for (cert of certificates(); track cert.certificate_id) {
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-orange-200 transition-all duration-300 group">
+                  @if (cert.file_url) {
+                    <!-- เช็กว่าเป็น PDF หรือไม่ ถ้าใช่ให้โชว์ไอคอน PDF แทนรูป -->
+                    @if (cert.file_url.toLowerCase().endsWith('.pdf')) {
+                      <div class="w-full h-40 bg-red-50 flex flex-col items-center justify-center text-red-400 group-hover:bg-red-100 transition-colors">
+                        <span class="material-symbols-outlined text-[48px] mb-2">picture_as_pdf</span>
+                        <a [href]="cert.file_url" target="_blank" class="text-sm font-bold text-red-500 hover:underline">ดูไฟล์ PDF</a>
+                      </div>
+                    } @else {
+                      <img [src]="apiUrl + '/' + cert.file_url" class="w-full h-40 object-cover bg-gray-100" alt="Certificate">
+                    }
+                  } @else {
+                    <div class="w-full h-40 bg-gray-50 flex items-center justify-center text-gray-400">
+                      <span class="material-symbols-outlined text-[32px]">image_not_supported</span>
+                    </div>
+                  }
+                  <div class="p-4 border-t border-gray-50">
+                    <p class="font-bold text-gray-800 text-sm line-clamp-2" [title]="cert.title">{{ cert.title }}</p>
+                    <div class="flex items-center gap-1.5 mt-2 text-xs font-medium text-gray-500">
+                      <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                      {{ cert.issue_date }}
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- ส่วนแสดงกิจกรรม Activities -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-6">
+            <span class="material-symbols-outlined text-blue-500 text-[24px]">local_activity</span> ประวัติการเข้าร่วมกิจกรรม
+          </h3>
+          
+          @if (activities().length === 0) {
+            <div class="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400">
+              <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
+              <p class="font-medium">นักศึกษายังไม่มีประวัติกิจกรรม</p>
+            </div>
+          } @else {
+            <div class="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-blue-200 before:to-transparent">
+              @for (act of activities(); track act.activity_id) {
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                  <!-- วงกลมตรงกลาง Timeline -->
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 transition-colors group-hover:bg-blue-500 group-hover:text-white">
+                    <span class="material-symbols-outlined text-[18px]">event</span>
+                  </div>
+                  
+                  <!-- กล่องเนื้อหา -->
+                  <div class="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-extrabold rounded-lg">{{ act.activity_date }}</span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-sm sm:text-base">{{ act.title }}</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1.5 leading-relaxed">{{ act.description || 'ไม่มีรายละเอียดเพิ่มเติม' }}</p>
+                    
+                    @if (act.file_url) {
+                      <div class="mt-3 pt-3 border-t border-gray-50">
+                        <a [href]="apiUrl + '/' + act.file_url" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-700 transition-colors">
+                          <span class="material-symbols-outlined text-[16px]">attachment</span> ดูรูปภาพประกอบ
+                        </a>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
       </div>
     }
 
