@@ -121,6 +121,7 @@
               </span>
               <button
                 (click)="selectedCatId = cat.category_id; isAddModuleModal = true"
+                [title]="'เพิ่ม' + getModuleLabel(cat)"
                 class="text-gray-400 hover:text-green-600 p-1 rounded-lg transition-colors cursor-pointer flex items-center border-none bg-transparent outline-none"
               >
                 <span class="material-symbols-outlined text-xl">add</span>
@@ -142,12 +143,12 @@
               *ngIf="!cat.modules || cat.modules.length === 0"
               class="text-center py-4 text-xs text-gray-400 font-medium"
             >
-              ยังไม่มีกลุ่มวิชา —
+              ยังไม่มี{{ getModuleLabel(cat) }} —
               <button
                 (click)="selectedCatId = cat.category_id; isAddModuleModal = true"
                 class="text-blue-600 hover:underline cursor-pointer font-bold border-none bg-transparent outline-none"
               >
-                เพิ่มกลุ่มวิชา
+                เพิ่ม{{ getModuleLabel(cat) }}
               </button>
             </div>
 
@@ -365,11 +366,11 @@
       <span class="material-symbols-outlined text-lg">close</span>
     </button>
     <h4 class="text-lg font-bold text-gray-800 mb-4">
-      {{ isEditModuleMode ? 'แก้ไขกลุ่มวิชา' : 'เพิ่มกลุ่มวิชา' }}
+      {{ isEditModuleMode ? 'แก้ไข' : 'เพิ่ม' }}{{ getModuleLabel(selectedCategory) }}
     </h4>
     <form [formGroup]="moduleForm" (ngSubmit)="saveModule()" class="space-y-4">
       <div class="space-y-1 text-left">
-        <label class="text-xs font-bold text-gray-500">ชื่อกลุ่ม</label>
+        <label class="text-xs font-bold text-gray-500">ชื่อ{{ getModuleLabel(selectedCategory) }}</label>
         <input
           type="text"
           formControlName="module_name"
@@ -403,7 +404,7 @@
           type="submit"
           class="flex-1 py-2.5 text-sm font-bold bg-blue-500 text-white rounded-xl hover:bg-blue-600 shadow-md cursor-pointer border-none outline-none"
         >
-          เพิ่มกลุ่ม
+          {{ isEditModuleMode ? 'บันทึก' : 'เพิ่ม' }}
         </button>
       </div>
     </form>

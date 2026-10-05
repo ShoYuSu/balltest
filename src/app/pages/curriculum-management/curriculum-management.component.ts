@@ -336,6 +336,17 @@ export class CurriculumManagementComponent implements OnInit {
 
     this.isAddCategoryModal = true;
   }
+  // ตัดคำนำหน้า "หมวด" ออก เพื่อใช้เป็นชื่อเรียกของสิ่งที่เพิ่มในหมวดนั้น
+  // เช่น "หมวดวิชาศึกษาทั่วไป" -> "วิชาศึกษาทั่วไป" (ถ้าไม่มีชื่อหมวดให้ใช้ "กลุ่มวิชา")
+  getModuleLabel(cat?: any): string {
+    const name = (cat?.category_name || '').trim().replace(/^หมวด\s*/, '');
+    return name || 'กลุ่มวิชา';
+  }
+
+  get selectedCategory(): any {
+    return this.curriculumData.find((c) => c.category_id === this.selectedCatId);
+  }
+
   editModule(mod: any, catId: number) {
     this.isEditModuleMode = true;
     this.selectedEditModuleId = mod.module_id;
