@@ -241,6 +241,7 @@ export class GroupRecord implements OnInit {
   exportToExcel() {
     const data = this.filteredAppointments();
     if (!data.length) return alert('ไม่มีข้อมูลสำหรับ Export');
+
     const headers = [
       'หัวข้อ',
       'ประเภท',
@@ -250,21 +251,24 @@ export class GroupRecord implements OnInit {
       'บันทึกผลการปรึกษา',
       'จำนวนนักศึกษา(คน)',
     ];
+
     const csvRows = data.map((app) =>
       [
         `"${app.topic}"`,
         `"${app.type}"`,
-        `"${app.date}"`,
+        `"=""${app.date}"""`, // 🌟 บังคับให้วันที่เป็นข้อความ ป้องกันการแสดงผล ###### ใน Excel
         `"${app.time}"`,
         `"${app.details}"`,
         `"${app.note}"`,
         `"${app.students.length}"`,
       ].join(','),
     );
+
     const bom = '\uFEFF';
     const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
       type: 'text/csv;charset=utf-8;',
     });
+
     const link = document.createElement('a');
     link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', 'ประวัติการให้คำปรึกษากลุ่ม.csv');

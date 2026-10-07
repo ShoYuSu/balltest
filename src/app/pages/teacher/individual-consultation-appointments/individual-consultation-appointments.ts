@@ -507,21 +507,24 @@ export class IndividualConsultationAppointments implements OnInit {
     const data = this.filteredAppointments();
     if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
     const headers = ['ชื่อนักศึกษา', 'รหัสนักศึกษา', 'ประเภท', 'สถานะ', 'หัวข้อ', 'วันที่', 'เวลา'];
+
     const csvRows = data.map((app) =>
       [
         `"${app.studentName}"`,
-        `"${app.studentId}"`,
+        `"=""${app.studentId}"""`, // 🌟 บังคับให้รหัสนักศึกษาเป็นข้อความ ป้องกันเลข E+
         `"${app.type}"`,
         `"${app.status}"`,
         `"${app.topic}"`,
-        `"${app.date}"`,
+        `"=""${app.date}"""`, // 🌟 บังคับให้วันที่เป็นข้อความ ป้องกันการแสดงผล ######
         `"${app.time}"`,
       ].join(','),
     );
+
     const bom = '\uFEFF';
     const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
       type: 'text/csv;charset=utf-8;',
     });
+
     const link = document.createElement('a');
     link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', 'ข้อมูลนัดหมายรายบุคคล.csv');

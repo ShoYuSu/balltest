@@ -1,5 +1,4 @@
 <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100">
-
   <div class="mb-8">
     <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">นักศึกษาทั้งหมดในความดูแล</h2>
     <p class="text-sm text-gray-500 mt-1">รายชื่อข้อมูลนักศึกษาและสถานะการประเมิน PLO</p>
@@ -7,15 +6,24 @@
 
   <div class="flex flex-col sm:flex-row gap-4 mb-6 items-center justify-between">
     <div class="relative w-full sm:max-w-md group">
-      <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
+      <span
+        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300"
+        >search</span
+      >
 
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
-             placeholder="ค้นหานักศึกษา ด้วยชื่อ, รหัส, หรืออีเมล..."
-             class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
-
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="currentPage.set(1)"
+        placeholder="ค้นหานักศึกษา ด้วยชื่อ, รหัส, หรืออีเมล..."
+        class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400"
+      />
     </div>
 
-    <button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 hover:shadow-sm transition-all font-bold text-sm border border-green-100">
+    <button
+      (click)="exportToExcel()"
+      class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 hover:shadow-sm transition-all font-bold text-sm border border-green-100"
+    >
       <span class="material-symbols-outlined text-lg">description</span>
       <span>Export Excel</span>
     </button>
@@ -23,37 +31,64 @@
 
   <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
     <table class="w-full text-sm text-left border-collapse">
-      <thead class="bg-gray-50/80 text-gray-500 border-b border-gray-100 text-xs uppercase tracking-wider">
-      <tr>
-        <th class="py-4 px-6 font-bold whitespace-nowrap">ชื่อนักศึกษา</th>
-        <th class="py-4 px-6 font-bold whitespace-nowrap">อีเมล</th>
-        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">รหัสนักศึกษา</th>
-        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">ชั้นปี</th>
-        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">GPA</th>
-        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">หน่วยกิต</th>
-        <th class="py-4 px-6 font-bold text-center whitespace-nowrap">สถานะ PLO</th>
-      </tr>
+      <thead
+        class="bg-gray-50/80 text-gray-500 border-b border-gray-100 text-xs uppercase tracking-wider"
+      >
+        <tr>
+          <th class="py-4 px-6 font-bold whitespace-nowrap">ชื่อนักศึกษา</th>
+          <th class="py-4 px-6 font-bold whitespace-nowrap">อีเมล</th>
+          <th class="py-4 px-6 font-bold text-center whitespace-nowrap">รหัสนักศึกษา</th>
+          <th class="py-4 px-6 font-bold text-center whitespace-nowrap">ชั้นปี</th>
+          <th class="py-4 px-6 font-bold text-center whitespace-nowrap">GPA</th>
+          <th class="py-4 px-6 font-bold text-center whitespace-nowrap">หน่วยกิต</th>
+          <th class="py-4 px-6 font-bold text-center whitespace-nowrap">สถานะ PLO</th>
+        </tr>
       </thead>
       <tbody class="divide-y divide-gray-50 bg-white">
         @for (s of paginatedStudents(); track s.id) {
-          <tr (click)="goToStudentResult(s)" class="hover:bg-orange-50/30 transition-colors duration-200 cursor-pointer group">
+          <tr
+            (click)="goToStudentResult(s)"
+            class="hover:bg-orange-50/30 transition-colors duration-200 cursor-pointer group"
+          >
             <td class="py-4 px-6 whitespace-nowrap">
               <div class="flex items-center gap-4">
-                <img [src]="s.img" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm group-hover:border-orange-200 transition-colors" alt="avatar">
-                <span class="text-gray-900 font-bold group-hover:text-orange-600 transition-colors">{{ s.name }}</span>
+                <img
+                  [src]="s.img"
+                  class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm group-hover:border-orange-200 transition-colors"
+                  alt="avatar"
+                />
+                <span
+                  class="text-gray-900 font-bold group-hover:text-orange-600 transition-colors"
+                  >{{ s.name }}</span
+                >
               </div>
             </td>
-            <td class="py-4 px-6 text-gray-500 text-xs font-medium whitespace-nowrap">{{ s.email }}</td>
+            <td class="py-4 px-6 text-gray-500 text-xs font-medium whitespace-nowrap">
+              {{ s.email }}
+            </td>
             <td class="py-4 px-6 text-gray-600 font-medium text-center whitespace-nowrap">
-              <span class="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100">{{ s.id }}</span>
+              <span class="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100">{{
+                s.id
+              }}</span>
             </td>
             <td class="py-4 px-6 text-gray-600 text-center whitespace-nowrap">ปี {{ s.year }}</td>
-            <td class="py-4 px-6 text-gray-900 font-bold text-center whitespace-nowrap">{{ s.gpa }}</td>
-            <td class="py-4 px-6 text-gray-600 font-medium text-center whitespace-nowrap">{{ s.credits }}</td>
+            <td class="py-4 px-6 text-gray-900 font-bold text-center whitespace-nowrap">
+              {{ s.gpa }}
+            </td>
+            <td class="py-4 px-6 text-gray-600 font-medium text-center whitespace-nowrap">
+              {{ s.credits }}
+            </td>
             <td class="py-4 px-6 text-center whitespace-nowrap">
-              <span class="inline-flex items-center justify-center px-3 py-1 text-[11px] font-extrabold rounded-full border"
-                    [class]="s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน' ? 'bg-green-50 text-green-700 border-green-200' :
-                             (s.ploStatus === 'รอประเมิน' || s.ploStatus === 'PLO รอประเมิน' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200')">
+              <span
+                class="inline-flex items-center justify-center px-3 py-1 text-[11px] font-extrabold rounded-full border"
+                [class]="
+                  s.ploStatus === 'ผ่าน' || s.ploStatus === 'PLO ผ่าน'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : s.ploStatus === 'รอประเมิน' || s.ploStatus === 'PLO รอประเมิน'
+                      ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                      : 'bg-red-50 text-red-700 border-red-200'
+                "
+              >
                 {{ s.ploStatus }}
               </span>
             </td>
@@ -71,38 +106,51 @@
   </div>
 
   @if (totalItems() > 0) {
-    <div class=" flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-50">
-      <p class="text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-        แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }}-{{ (currentPage() * itemsPerPage) > totalItems() ? totalItems() : (currentPage() * itemsPerPage) }}
+    <div
+      class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-50"
+    >
+      <p
+        class="text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100"
+      >
+        แสดง {{ (currentPage() - 1) * itemsPerPage + 1 }}-{{
+          currentPage() * itemsPerPage > totalItems() ? totalItems() : currentPage() * itemsPerPage
+        }}
         จาก {{ totalItems() }} รายการ
       </p>
 
       <div class="flex items-center bg-white p-1 rounded-full shadow-sm border border-gray-100">
-
-        <button (click)="prevPage()" [disabled]="currentPage() === 1"
-                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+        <button
+          (click)="prevPage()"
+          [disabled]="currentPage() === 1"
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all"
+        >
           <span class="material-symbols-outlined text-sm">chevron_left</span>
         </button>
 
         <div class="flex px-1 gap-1">
           @for (page of pageNumbers(); track page) {
-            <button (click)="goToPage(page)"
-                    class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all"
-                    [class]="currentPage() === page
-            ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-            : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'">
+            <button
+              (click)="goToPage(page)"
+              class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all"
+              [class]="
+                currentPage() === page
+                  ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
+                  : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
+              "
+            >
               {{ page }}
             </button>
           }
         </div>
 
-        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
-                class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all">
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage() === totalPages()"
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-30 transition-all"
+        >
           <span class="material-symbols-outlined text-sm">chevron_right</span>
         </button>
-
       </div>
     </div>
   }
-
 </div>

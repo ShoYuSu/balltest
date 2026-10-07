@@ -35,7 +35,7 @@ export class IndividualRecord implements OnInit {
   });
 
   paginatedStudents = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
+    const start = (this.currentPage() - 1) * this.pageSize(); // 🌟 แก้ไขโค้ดที่บรรทัดขาดให้สมบูรณ์
     return this.filteredStudents().slice(start, start + this.pageSize());
   });
 
@@ -242,9 +242,11 @@ export class IndividualRecord implements OnInit {
     const data = this.filteredStudents();
     if (!data.length) return alert('ไม่มีข้อมูล');
     const headers = ['รหัสนักศึกษา', 'ชื่อ-สกุล', 'ชั้นปี', 'จำนวนรายการที่ปรึกษา', 'ปรึกษาล่าสุด'];
+
     const csvRows = data.map(
       (s) =>
-        `"${s.student_code}","${s.full_name}","${s.year}","${s.total_records}","${s.formattedLatestDate}"`,
+        // 🌟 บังคับรหัสนักศึกษาและวันที่ให้เป็นข้อความ
+        `"=""${s.student_code}""","${s.full_name}","${s.year}","${s.total_records}","=""${s.formattedLatestDate}"""`,
     );
     this.downloadCSV(headers, csvRows, 'สรุปประวัติการปรึกษารวม.csv');
   }
@@ -253,15 +255,19 @@ export class IndividualRecord implements OnInit {
     const data = this.sortedLogs();
     const student = this.selectedStudent();
     if (!data.length) return alert('ไม่มีข้อมูล');
+
     const headers = ['วันที่', 'เวลา', 'ประเภท', 'รูปแบบ', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
     const csvRows = data.map((l) => {
-      // 🌟 เพิ่ม logic ให้รวม end_time ลงในไฟล์ Excel ด้วย
       const startTime = l.time ? l.time.substring(0, 5) : '';
       const endTime = l.end_time ? l.end_time.substring(0, 5) : '';
+
+      // 🌟 แก้ไขโค้ดที่บรรทัดขาดให้สมบูรณ์ (ใช้ขีดกลางคั่นเวลา)
       const timeDisplay = endTime ? `${startTime} - ${endTime}` : startTime;
 
-      return `"${this.formatThaiDate(l.date)}","${timeDisplay}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`;
+      // 🌟 บังคับวันที่ให้เป็นข้อความ
+      return `"=""${this.formatThaiDate(l.date)}""","${timeDisplay}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`;
     });
+
     this.downloadCSV(headers, csvRows, `ประวัติการปรึกษา_${student.student_code}.csv`);
   }
 

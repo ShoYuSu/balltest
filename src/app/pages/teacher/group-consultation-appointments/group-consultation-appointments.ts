@@ -119,11 +119,11 @@ export class GroupConsultationAppointments implements OnInit {
             groupApps.map((item: any) => item.type).filter((t: any) => t && t.trim() !== ''),
           ),
         ] as string[];
-        
+
         // 🌟 ดึงค่าจาก Local Storage มารวมด้วย
         const localTypes = JSON.parse(localStorage.getItem('saved_appointment_types') || '[]');
         const mergedTypes = [...new Set([...this.availableTypes(), ...localTypes, ...typesFromDb])];
-        
+
         this.availableTypes.set(mergedTypes);
 
         const formattedApps = groupApps.map((app: any) => ({
@@ -529,6 +529,7 @@ export class GroupConsultationAppointments implements OnInit {
   exportToExcel() {
     const data = this.filteredAppointments();
     if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
+
     const headers = [
       'หัวข้อ',
       'ประเภท',
@@ -538,21 +539,24 @@ export class GroupConsultationAppointments implements OnInit {
       'รายละเอียด',
       'จำนวนนักศึกษา(คน)',
     ];
+
     const csvRows = data.map((app) =>
       [
         `"${app.topic}"`,
         `"${app.type}"`,
         `"${app.status}"`,
-        `"${app.date}"`,
+        `"=""${app.date}"""`, // 🌟 บังคับให้วันที่เป็นข้อความ ป้องกันการแสดงผล ######
         `"${app.time}"`,
         `"${app.details}"`,
         `"${app.students.length}"`,
       ].join(','),
     );
+
     const bom = '\uFEFF';
     const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
       type: 'text/csv;charset=utf-8;',
     });
+
     const link = document.createElement('a');
     link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', 'ข้อมูลนัดหมายกลุ่ม.csv');

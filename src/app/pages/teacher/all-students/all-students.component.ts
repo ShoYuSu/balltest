@@ -64,7 +64,6 @@ export class AllStudentsComponent implements OnInit {
   }
 
   ngOnInit() {
-    // ✅ ลบการเช็ค localStorage และลบ ?advisor_id=... ออกจาก URL แล้วยิง API ตรงๆ ได้เลย!
     this.http.get<any[]>(`${environment.apiUrl}/get_advisor_students.php`).subscribe({
       next: (data) => {
         const formattedStudents = data.map((student: any) => ({
@@ -86,5 +85,55 @@ export class AllStudentsComponent implements OnInit {
         console.error('ไม่สามารถดึงข้อมูลนักศึกษาได้:', error.message);
       },
     });
+  }
+  exportToExcel() {
+    // 1. นำข้อมูลที่ผ่านการค้นหาแล้วมาใช้ (หรือจะใช้ this.studentsInCare() ถ้าต้องการทั้งหมด)
+    const data = this.filteredStudents();
+
+    if (data.length === 0) {
+      alert('ไม่มีข้อมูลนักศึกษาสำหรับส่งออก');
+      return;
+    }
+
+    // 2. กำหนดหัวคอลัมน์
+    const headers = [
+      'ชื่อนักศึกษา',
+      'อีเมล',
+      'รหัสนักศึกษา',
+      'ชั้นปี',
+      'GPA',
+      'หน่วยกิต',
+      'สถานะ PLO',
+    ];
+
+    // 3. แมปข้อมูลให้ตรงกับหัวคอลัมน์
+    const csvRows = [headers.join(',')];
+
+    data.forEach((student) => {
+      const row = [
+        `"${student.name}"`,
+        `"${student.email}"`,
+        `"=""${student.id}"""`, // ใช้ Trick ="" เพื่อป้องกัน Excel แปลงรหัสนักศึกษาเป็นตัวเลขทางวิทยาศาสตร์
+        `"${student.year}"`,
+        `"${student.gpa}"`,
+        `"${student.credits}"`,
+        `"${student.ploStatus}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    // 4. ใส่รหัส \uFEFF (UTF-8 BOM) เพื่อให้ Excel อ่านภาษาไทยได้ไม่เพี้ยน
+    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    // 5. สร้างลิงก์จำลองและสั่งคลิกเพื่อดาวน์โหลด
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'รายชื่อนักศึกษา.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 }
