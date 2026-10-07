@@ -1,149 +1,164 @@
-<div class="bg-[#EEF2F6] rounded-[28px] p-5">
-
+<div class="bg-[#EEF2F6] rounded-[28px] p-4 sm:p-5">
   <!-- PROFILE CARD -->
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
-
+  <div
+    class="bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
+  >
     <!-- HEADER -->
-    <div class="bg-gradient-to-r from-[#7B4A1E] to-[#A0622A] px-8 py-6 flex justify-between items-start">
-
-      <div class="flex gap-5 items-center">
-        <div class="relative group/avatar">
-          <img [src]="profileImageUrl"
-            class="w-20 h-20 rounded-full border-4 border-white/80 shadow-lg object-cover transition-transform duration-300 group-hover/avatar:scale-105"/>
+    <div
+      class="bg-gradient-to-r from-[#7B4A1E] to-[#A0622A] px-5 sm:px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-5 md:gap-0"
+    >
+      <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start sm:items-center w-full">
+        <div class="relative group/avatar shrink-0">
+          <img
+            [src]="profileImageUrl"
+            class="w-20 h-20 rounded-full border-4 border-white/80 shadow-lg object-cover transition-transform duration-300 group-hover/avatar:scale-105"
+          />
           <div class="absolute inset-0 rounded-full ring-2 ring-white/30 ring-offset-1"></div>
         </div>
 
-        <div class="text-white">
-          <h2 class="text-lg font-semibold tracking-wide">{{ student.full_name }}</h2>
+        <div class="text-white w-full">
+          <h2 class="text-lg font-semibold tracking-wide truncate">{{ student.full_name }}</h2>
           <p class="text-sm opacity-80 mt-0.5">รหัสนักศึกษา : {{ student.student_code }}</p>
-          <p class="text-sm opacity-80">คณะ : {{ student.faculty }} &nbsp;|&nbsp; สาขา : {{ student.major }}</p>
+          <p class="text-sm opacity-80">
+            คณะ : {{ student.faculty }} &nbsp;|&nbsp; สาขา : {{ student.major }}
+          </p>
           <p class="text-sm opacity-80">ชั้นปี : {{ student.year }}</p>
-          <p class="text-sm opacity-80">อาจารย์ที่ปรึกษา : {{ student.advisor_name }}</p>
+          <p class="text-sm opacity-80 truncate">อาจารย์ที่ปรึกษา : {{ student.advisor_name }}</p>
         </div>
       </div>
 
-      <button (click)="openModal()"
-        class="group/btn bg-white text-gray-700 px-4 py-2 text-sm rounded-xl shadow
-               transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-50
-               flex items-center gap-2 border border-white/60">
-        <span class="material-symbols-outlined text-[18px] text-[#7B4A1E] transition-transform duration-200 group-hover/btn:rotate-12">edit</span>
+      <button
+        (click)="openModal()"
+        class="w-full md:w-auto justify-center group/btn bg-white text-gray-700 px-4 py-2 text-sm rounded-xl shadow transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:bg-gray-50 flex items-center gap-2 border border-white/60 shrink-0"
+      >
+        <span
+          class="material-symbols-outlined text-[18px] text-[#7B4A1E] transition-transform duration-200 group-hover/btn:rotate-12"
+          >edit</span
+        >
         แก้ไขข้อมูลส่วนตัว
       </button>
-
     </div>
 
     <!-- CONTACT BAR -->
-    <div class="bg-[#F3F6F9] px-8 py-4 flex gap-8 border-t border-gray-100">
-
+    <div
+      class="bg-[#F3F6F9] px-5 sm:px-8 py-4 flex flex-col sm:flex-row gap-4 sm:gap-8 border-t border-gray-100"
+    >
       <div class="flex items-center gap-3 group/contact cursor-default">
-        <div class="bg-blue-100 text-blue-500 p-3 rounded-xl transition-all duration-200
-                    group-hover/contact:bg-blue-500 group-hover/contact:text-white
-                    group-hover/contact:shadow-md group-hover/contact:scale-110">
+        <div
+          class="bg-blue-100 text-blue-500 p-3 rounded-xl transition-all duration-200 group-hover/contact:bg-blue-500 group-hover/contact:text-white group-hover/contact:shadow-md group-hover/contact:scale-110 shrink-0"
+        >
           <span class="material-symbols-outlined text-[20px]">mail</span>
         </div>
-        <div>
+        <div class="min-w-0">
           <p class="text-xs text-gray-400">อีเมล</p>
-          <p class="text-sm font-medium text-gray-700">{{ student.email || '-' }}</p>
+          <p class="text-sm font-medium text-gray-700 truncate">{{ student.email || '-' }}</p>
         </div>
       </div>
 
-      <div class="w-px bg-gray-200 self-stretch"></div>
+      <!-- เส้นกั้น (ซ่อนในมือถือ แสดงในแท็บเล็ตขึ้นไป) -->
+      <div class="hidden sm:block w-px bg-gray-200 self-stretch"></div>
 
       <div class="flex items-center gap-3 group/contact cursor-default">
-        <div class="bg-green-100 text-green-500 p-3 rounded-xl transition-all duration-200
-                    group-hover/contact:bg-green-500 group-hover/contact:text-white
-                    group-hover/contact:shadow-md group-hover/contact:scale-110">
+        <div
+          class="bg-green-100 text-green-500 p-3 rounded-xl transition-all duration-200 group-hover/contact:bg-green-500 group-hover/contact:text-white group-hover/contact:shadow-md group-hover/contact:scale-110 shrink-0"
+        >
           <span class="material-symbols-outlined text-[20px]">call</span>
         </div>
-        <div>
+        <div class="min-w-0">
           <p class="text-xs text-gray-400">เบอร์โทรศัพท์</p>
-          <p class="text-sm font-medium text-gray-700">{{ student.phone || '-' }}</p>
+          <p class="text-sm font-medium text-gray-700 truncate">{{ student.phone || '-' }}</p>
         </div>
       </div>
-
     </div>
-
   </div>
 
   <!-- STATS -->
-  <div class="grid grid-cols-4 gap-4 mt-6">
-
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
     <!-- GPA -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center
-                border border-transparent transition-all duration-200
-                hover:-translate-y-1 hover:shadow-md hover:border-green-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-green-200 cursor-default"
+    >
       <div>
         <p class="text-xs text-gray-400">เกรดเฉลี่ยสะสม</p>
-        <p class="text-2xl font-bold mt-1 text-gray-800">{{ student.gpa | number:'1.2-2' }}</p>
+        <p class="text-2xl font-bold mt-1 text-gray-800">{{ student.gpa | number: '1.2-2' }}</p>
       </div>
-      <div class="bg-green-50 text-green-500 p-3 rounded-xl transition-all duration-200
-                  group-hover:bg-green-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110">
+      <div
+        class="bg-green-50 text-green-500 p-3 rounded-xl transition-all duration-200 group-hover:bg-green-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110 shrink-0"
+      >
         <span class="material-symbols-outlined">trending_up</span>
       </div>
     </div>
 
     <!-- กิจกรรม -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center
-                border border-transparent transition-all duration-200
-                hover:-translate-y-1 hover:shadow-md hover:border-red-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-red-200 cursor-default"
+    >
       <div>
         <p class="text-xs text-gray-400">จำนวนกิจกรรม</p>
         <p class="text-2xl font-bold mt-1 text-gray-800">{{ student.activity_count }}</p>
       </div>
-      <div class="bg-red-50 text-red-400 p-3 rounded-xl transition-all duration-200
-                  group-hover:bg-red-400 group-hover:text-white group-hover:shadow-md group-hover:scale-110">
+      <div
+        class="bg-red-50 text-red-400 p-3 rounded-xl transition-all duration-200 group-hover:bg-red-400 group-hover:text-white group-hover:shadow-md group-hover:scale-110 shrink-0"
+      >
         <span class="material-symbols-outlined">event</span>
       </div>
     </div>
 
     <!-- ใบรับรอง -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center
-                border border-transparent transition-all duration-200
-                hover:-translate-y-1 hover:shadow-md hover:border-emerald-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-emerald-200 cursor-default"
+    >
       <div>
         <p class="text-xs text-gray-400">ใบรับรอง</p>
         <p class="text-2xl font-bold mt-1 text-gray-800">{{ student.certificate_count }}</p>
       </div>
-      <div class="bg-emerald-50 text-emerald-500 p-3 rounded-xl transition-all duration-200
-                  group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110">
+      <div
+        class="bg-emerald-50 text-emerald-500 p-3 rounded-xl transition-all duration-200 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110 shrink-0"
+      >
         <span class="material-symbols-outlined">badge</span>
       </div>
     </div>
 
     <!-- หน่วยกิต -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center
-                border border-transparent transition-all duration-200
-                hover:-translate-y-1 hover:shadow-md hover:border-blue-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 flex justify-between items-center border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-blue-200 cursor-default"
+    >
       <div>
         <p class="text-xs text-gray-400">หน่วยกิตสะสม</p>
-        <p class="text-2xl font-bold mt-1 text-gray-800">{{ student.credits_earned }}<span class="text-base font-normal text-gray-400">/{{ student.credits_total }}</span></p>
+        <p class="text-2xl font-bold mt-1 text-gray-800">
+          {{ student.credits_earned
+          }}<span class="text-base font-normal text-gray-400">/{{ student.credits_total }}</span>
+        </p>
       </div>
-      <div class="bg-blue-50 text-blue-500 p-3 rounded-xl transition-all duration-200
-                  group-hover:bg-blue-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110">
+      <div
+        class="bg-blue-50 text-blue-500 p-3 rounded-xl transition-all duration-200 group-hover:bg-blue-500 group-hover:text-white group-hover:shadow-md group-hover:scale-110 shrink-0"
+      >
         <span class="material-symbols-outlined">star</span>
       </div>
     </div>
-
   </div>
 
   <!-- UPCOMING APPOINTMENTS WIDGET -->
-  <div class="bg-white rounded-2xl shadow-sm mt-6 overflow-hidden border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-orange-200">
-
-    <div class="flex justify-between items-center px-5 py-4 border-b border-gray-50">
+  <div
+    class="bg-white rounded-2xl shadow-sm mt-6 overflow-hidden border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-orange-200"
+  >
+    <div class="flex justify-between items-center px-4 sm:px-5 py-4 border-b border-gray-50">
       <div class="flex items-center gap-2">
-        <div class="bg-orange-50 text-orange-500 p-2 rounded-lg">
+        <div class="bg-orange-50 text-orange-500 p-2 rounded-lg shrink-0">
           <span class="material-symbols-outlined text-[18px]">calendar_month</span>
         </div>
         <p class="font-semibold text-gray-700 text-sm">นัดหมายที่กำลังจะมาถึง</p>
       </div>
-      <button (click)="goToRecord()"
-        class="text-xs text-orange-500 hover:text-orange-600 font-medium transition">
+      <button
+        (click)="goToRecord()"
+        class="text-xs text-orange-500 hover:text-orange-600 font-medium transition shrink-0 whitespace-nowrap"
+      >
         ดูทั้งหมด →
       </button>
     </div>
 
     @if (upcomingAppointments.length === 0) {
-      <div class="flex flex-col items-center justify-center py-8 text-center">
+      <div class="flex flex-col items-center justify-center py-8 text-center px-4">
         <span class="material-symbols-outlined text-gray-300 text-3xl mb-2">event_available</span>
         <p class="text-sm text-gray-400">ไม่มีนัดหมายที่กำลังจะมาถึง</p>
       </div>
@@ -152,46 +167,54 @@
     @if (upcomingAppointments.length > 0) {
       <div class="divide-y divide-gray-50">
         @for (a of upcomingAppointments; track a.appointment_id) {
-          <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition cursor-pointer"
-               (click)="goToRecord()">
-
-            <div class="flex flex-col items-center justify-center bg-orange-50 text-orange-600
-                        rounded-xl px-3 py-2 min-w-[48px] shrink-0">
-              <span class="text-lg font-bold leading-none">{{ a.appointment_date | date:'d' }}</span>
+          <div
+            class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 hover:bg-gray-50 transition cursor-pointer"
+            (click)="goToRecord()"
+          >
+            <div
+              class="flex flex-col items-center justify-center bg-orange-50 text-orange-600 rounded-xl px-2 sm:px-3 py-2 min-w-[48px] shrink-0"
+            >
+              <span class="text-lg font-bold leading-none">{{
+                a.appointment_date | date: 'd'
+              }}</span>
               <span class="text-[10px] font-medium">{{ formatThaiMonth(a.appointment_date) }}</span>
             </div>
 
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800 truncate">{{ a.title }}</p>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span class="text-xs text-gray-400">
+              <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                <span class="text-xs text-gray-400 shrink-0">
                   <span class="material-symbols-outlined text-[12px] align-middle">schedule</span>
                   {{ formatApptTime(a.start_time) }} น.
                 </span>
-                <span class="text-xs px-2 py-0.5 rounded-full font-medium" [ngClass]="getTypeColor(a.type)">
+                <span
+                  class="text-xs px-2 py-0.5 rounded-full font-medium truncate"
+                  [ngClass]="getTypeColor(a.type)"
+                >
                   {{ a.type }}
                 </span>
               </div>
             </div>
 
-            <span class="material-symbols-outlined text-gray-300 shrink-0">chevron_right</span>
-
+            <span class="material-symbols-outlined text-gray-300 shrink-0 hidden sm:block"
+              >chevron_right</span
+            >
           </div>
         }
       </div>
     }
-
   </div>
 
   <!-- LOWER SECTION -->
-  <div class="grid grid-cols-2 gap-4 mt-4">
-
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
     <!-- PLO Summary -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 border border-transparent
-                transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-violet-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-violet-200 cursor-default"
+    >
       <div class="flex items-center gap-2 mb-2">
-        <div class="bg-violet-50 text-violet-500 p-2 rounded-lg transition-all duration-200
-                    group-hover:bg-violet-500 group-hover:text-white group-hover:scale-110">
+        <div
+          class="bg-violet-50 text-violet-500 p-2 rounded-lg transition-all duration-200 group-hover:bg-violet-500 group-hover:text-white group-hover:scale-110 shrink-0"
+        >
           <span class="material-symbols-outlined text-[18px]">donut_large</span>
         </div>
         <p class="text-xs text-gray-400">PLO Summary</p>
@@ -204,11 +227,13 @@
     </div>
 
     <!-- สิ่งที่ต้องดำเนินการ -->
-    <div class="group bg-white rounded-2xl shadow-sm p-5 border border-transparent
-                transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-orange-200 cursor-default">
+    <div
+      class="group bg-white rounded-2xl shadow-sm p-5 border border-transparent transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-orange-200 cursor-default"
+    >
       <div class="flex items-center gap-2 mb-2">
-        <div class="bg-orange-50 text-orange-500 p-2 rounded-lg transition-all duration-200
-                    group-hover:bg-orange-500 group-hover:text-white group-hover:scale-110">
+        <div
+          class="bg-orange-50 text-orange-500 p-2 rounded-lg transition-all duration-200 group-hover:bg-orange-500 group-hover:text-white group-hover:scale-110 shrink-0"
+        >
           <span class="material-symbols-outlined text-[18px]">checklist</span>
         </div>
         <p class="text-xs text-gray-400">สิ่งที่ต้องดำเนินการ</p>
@@ -217,73 +242,83 @@
         @if (student.plo_total - student.plo_passed > 0) {
           <li class="flex items-center gap-2 text-gray-600">
             <span class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>
-            PLO ยังไม่บรรลุ {{ student.plo_total - student.plo_passed }} ข้อ
+            <span class="truncate"
+              >PLO ยังไม่บรรลุ {{ student.plo_total - student.plo_passed }} ข้อ</span
+            >
           </li>
         }
         @if (student.credits_total - student.credits_earned > 0) {
           <li class="flex items-center gap-2 text-gray-600">
             <span class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>
-            หน่วยกิตคงเหลือ {{ student.credits_total - student.credits_earned }} หน่วยกิต
+            <span class="truncate"
+              >หน่วยกิตคงเหลือ {{ student.credits_total - student.credits_earned }} หน่วยกิต</span
+            >
           </li>
         }
-        @if (student.plo_total > 0 && student.plo_total - student.plo_passed === 0 && student.credits_total - student.credits_earned === 0) {
+        @if (
+          student.plo_total > 0 &&
+          student.plo_total - student.plo_passed === 0 &&
+          student.credits_total - student.credits_earned === 0
+        ) {
           <li class="flex items-center gap-2 text-green-600">
             <span class="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0"></span>
-            ไม่มีรายการที่ต้องดำเนินการ
+            <span class="truncate">ไม่มีรายการที่ต้องดำเนินการ</span>
           </li>
         }
       </ul>
     </div>
-
   </div>
-
 </div>
 
 <!-- MODAL -->
 @if (showModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center">
-
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/40" (click)="closeModal()"></div>
 
     <!-- Modal Card -->
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden
-                animate-in fade-in zoom-in duration-200">
-
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col"
+    >
       <!-- Modal Header -->
-      <div class="bg-gradient-to-r from-[#7B4A1E] to-[#A0622A] px-6 py-4 flex items-center gap-3">
+      <div
+        class="bg-gradient-to-r from-[#7B4A1E] to-[#A0622A] px-6 py-4 flex items-center gap-3 shrink-0"
+      >
         <div class="bg-white/20 p-2 rounded-lg">
           <span class="material-symbols-outlined text-white text-[20px]">manage_accounts</span>
         </div>
         <h3 class="text-white font-semibold">แก้ไขข้อมูลส่วนตัว</h3>
       </div>
 
-      <div class="p-6 space-y-4">
-
+      <!-- Modal Body (ใส่ Scrollbar กรณีจอมือถือเตี้ย) -->
+      <div class="p-6 space-y-4 overflow-y-auto">
         <!-- ชื่อ (แก้ไขได้) -->
         <div>
           <label class="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1">
             <span class="material-symbols-outlined text-[14px] text-[#7B4A1E]">person</span>
             ชื่อ-นามสกุล
           </label>
-          <input [(ngModel)]="editForm.full_name" type="text"
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E]
-                   transition-all duration-200"/>
+          <input
+            [(ngModel)]="editForm.full_name"
+            type="text"
+            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E] transition-all duration-200"
+          />
         </div>
 
         <!-- แถว 2 คอลัมน์ -->
-        <div class="grid grid-cols-2 gap-3">
-
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- รหัสนักศึกษา -->
           <div>
             <label class="text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1">
               <span class="material-symbols-outlined text-[14px]">badge</span>
               รหัสนักศึกษา
             </label>
-            <input [value]="student.student_code" type="text" readonly
-              class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm
-                     bg-gray-100 text-gray-400 cursor-not-allowed"/>
+            <input
+              [value]="student.student_code"
+              type="text"
+              readonly
+              class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
+            />
           </div>
 
           <!-- ชั้นปี -->
@@ -292,11 +327,13 @@
               <span class="material-symbols-outlined text-[14px]">school</span>
               ชั้นปี
             </label>
-            <input [value]="student.year" type="text" readonly
-              class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm
-                     bg-gray-100 text-gray-400 cursor-not-allowed"/>
+            <input
+              [value]="student.year"
+              type="text"
+              readonly
+              class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
+            />
           </div>
-
         </div>
 
         <!-- คณะ -->
@@ -305,9 +342,12 @@
             <span class="material-symbols-outlined text-[14px]">domain</span>
             คณะ
           </label>
-          <input [value]="student.faculty" type="text" readonly
-            class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm
-                   bg-gray-100 text-gray-400 cursor-not-allowed"/>
+          <input
+            [value]="student.faculty"
+            type="text"
+            readonly
+            class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
+          />
         </div>
 
         <!-- สาขา -->
@@ -316,9 +356,12 @@
             <span class="material-symbols-outlined text-[14px]">book</span>
             สาขาวิชา
           </label>
-          <input [value]="student.major" type="text" readonly
-            class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm
-                   bg-gray-100 text-gray-400 cursor-not-allowed"/>
+          <input
+            [value]="student.major"
+            type="text"
+            readonly
+            class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-100 text-gray-400 cursor-not-allowed"
+          />
         </div>
 
         <!-- อีเมล (แก้ไขได้) -->
@@ -327,10 +370,11 @@
             <span class="material-symbols-outlined text-[14px] text-[#7B4A1E]">mail</span>
             อีเมล
           </label>
-          <input [(ngModel)]="editForm.email" type="email"
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E]
-                   transition-all duration-200"/>
+          <input
+            [(ngModel)]="editForm.email"
+            type="email"
+            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E] transition-all duration-200"
+          />
         </div>
 
         <!-- เบอร์โทร (แก้ไขได้) -->
@@ -339,34 +383,36 @@
             <span class="material-symbols-outlined text-[14px] text-[#7B4A1E]">call</span>
             เบอร์โทรศัพท์
           </label>
-          <input [(ngModel)]="editForm.phone" type="tel" placeholder="กรอกเบอร์โทรศัพท์"
-            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E]
-                   transition-all duration-200"/>
+          <input
+            [(ngModel)]="editForm.phone"
+            type="tel"
+            placeholder="กรอกเบอร์โทรศัพท์"
+            class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7B4A1E]/40 focus:border-[#7B4A1E] transition-all duration-200"
+          />
         </div>
-
       </div>
 
       <!-- Buttons -->
-      <div class="px-6 pb-6 flex gap-3">
-        <button (click)="saveProfile()" [disabled]="saving"
-          class="flex-1 bg-[#7B4A1E] text-white py-2.5 rounded-xl text-sm font-medium
-                 transition-all duration-200 hover:bg-[#6a3f18] hover:-translate-y-0.5 hover:shadow-md
-                 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0
-                 flex items-center justify-center gap-2">
-          <span class="material-symbols-outlined text-[18px]">{{ saving ? 'hourglass_top' : 'save' }}</span>
+      <div class="px-6 pb-6 pt-2 flex flex-col sm:flex-row gap-3 shrink-0">
+        <button
+          (click)="saveProfile()"
+          [disabled]="saving"
+          class="flex-1 bg-[#7B4A1E] text-white py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[#6a3f18] hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
+        >
+          <span class="material-symbols-outlined text-[18px]">{{
+            saving ? 'hourglass_top' : 'save'
+          }}</span>
           {{ saving ? 'กำลังบันทึก...' : 'บันทึก' }}
         </button>
-        <button (click)="closeModal()" [disabled]="saving"
-          class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-medium
-                 transition-all duration-200 hover:bg-gray-200 hover:-translate-y-0.5
-                 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0
-                 flex items-center justify-center gap-2">
+        <button
+          (click)="closeModal()"
+          [disabled]="saving"
+          class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-gray-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-2"
+        >
           <span class="material-symbols-outlined text-[18px]">close</span>
           ยกเลิก
         </button>
       </div>
-
     </div>
   </div>
 }
