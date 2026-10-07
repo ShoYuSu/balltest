@@ -86,11 +86,11 @@
    CERTIFICATE GRID
 ========================= */
 
-.certificate-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 16px;
+.certificate-grid { 
+  display: grid; 
+  /* ใช้สูตรเดียวกับหน้ากิจกรรม เพื่อให้ Responsive อัตโนมัติและไม่ล้นจอ */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); 
+  gap: 20px; 
 }
 
 /* =========================

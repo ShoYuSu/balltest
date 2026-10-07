@@ -41,7 +41,12 @@
 .btn-primary:hover { background: #ea980c; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,.4); }
 
 /* ===== ACTIVITY GRID ===== */
-.act-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.act-grid { 
+  display: grid; 
+  /* 👇 เพิ่ม min(100%, ...) เข้าไปตรงนี้ครับ */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); 
+  gap: 20px; 
+}
 
 .act-card {
   border-radius: 20px; overflow: hidden; background: white;
