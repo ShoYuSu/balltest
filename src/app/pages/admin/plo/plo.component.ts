@@ -283,7 +283,7 @@ loadMajors() {
   initForms() {
     this.courseForm = this.fb.group({
       curriculum_id: [null], 
-      curriculum_name: ['', Validators.required],
+      curriculum_name: [''],
       dept_id: [1, Validators.required],
       major_name: [null, Validators.required],
       year: [new Date().getFullYear() + 543, Validators.required],
@@ -548,7 +548,7 @@ loadMajors() {
       type: 'curriculum',
       is_edit: this.isEditMode,
       curriculum_id: this.isEditMode ? currentId : null,
-      curriculum_name: formValue.curriculum_name,
+      curriculum_name: formValue.major_name, // ใช้ชื่อหลักสูตรที่เลือกเป็นชื่อหลักสูตร
       dept_id: Number(formValue.dept_id),
       major_name: formValue.major_name,
       year: formValue.year,

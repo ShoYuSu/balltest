@@ -160,51 +160,6 @@
       </div>
 
       <form [formGroup]="courseForm" class="space-y-6">
-        <div>
-          <label class="block text-sm font-semibold mb-2 text-slate-700">ชื่อหลักสูตร</label>
-          <input
-            type="text"
-            formControlName="curriculum_name"
-            placeholder="เช่น หลักสูตรวิทยาศาสตรบัณฑิต หลักสูตร..."
-            class="w-full border rounded-xl p-3 outline-none focus:ring-2 transition-all text-sm text-gray-700"
-            [ngClass]="
-              isInvalid(courseForm, 'curriculum_name')
-                ? 'border-red-500 ring-red-50'
-                : 'border-slate-200 focus:ring-indigo-500 focus:border-indigo-500'
-            "
-          />
-        </div>
-
-        <div class="relative w-full">
-          <label class="block text-sm font-semibold mb-2 text-slate-700">ภาควิชา</label>
-          <button
-            type="button"
-            (click)="toggleDepartmentDropdown()"
-            class="flex items-center justify-between w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm"
-          >
-            <span>{{ getSelectedDepartmentName() }}</span>
-            <span class="material-symbols-outlined text-gray-400">expand_more</span>
-          </button>
-
-          @if (isDepartmentDropdownOpen) {
-            <div class="absolute z-30 w-full mt-2 bg-white border rounded-xl shadow-xl">
-              <ul class="p-2 text-sm">
-                @for (dept of departmentsList; track dept.dept_id) {
-                  <li>
-                    <button
-                      type="button"
-                      (click)="selectDepartment(dept)"
-                      class="w-full p-2.5 hover:bg-blue-50 rounded-lg text-left"
-                    >
-                      {{ dept.dept_name_th }}
-                    </button>
-                  </li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
-
         <div class="relative w-full">
           <label class="block text-sm font-semibold mb-2 text-slate-700">หลักสูตร</label>
           <button
@@ -245,6 +200,36 @@
               <span class="material-symbols-outlined text-sm">error</span>
               กรุณาเลือกหลักสูตร
             </p>
+          }
+        </div>
+
+        <div class="relative w-full">
+          <label class="block text-sm font-semibold mb-2 text-slate-700">ภาควิชา</label>
+          <button
+            type="button"
+            (click)="toggleDepartmentDropdown()"
+            class="flex items-center justify-between w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm"
+          >
+            <span>{{ getSelectedDepartmentName() }}</span>
+            <span class="material-symbols-outlined text-gray-400">expand_more</span>
+          </button>
+
+          @if (isDepartmentDropdownOpen) {
+            <div class="absolute z-30 w-full mt-2 bg-white border rounded-xl shadow-xl">
+              <ul class="p-2 text-sm">
+                @for (dept of departmentsList; track dept.dept_id) {
+                  <li>
+                    <button
+                      type="button"
+                      (click)="selectDepartment(dept)"
+                      class="w-full p-2.5 hover:bg-blue-50 rounded-lg text-left"
+                    >
+                      {{ dept.dept_name_th }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
           }
         </div>
 

@@ -116,6 +116,15 @@ export class StudentsComponent implements OnInit {
       align: 'center',
       cell: (el) => el,
     },
+    {
+      columnDef: 'delete_student',
+      header: 'ลบ',
+      tag: 'action',
+      display: true,
+      width: 'small',
+      align: 'center',
+      cell: (el) => el,
+    },
   ];
 
   studentStats = [
@@ -164,7 +173,7 @@ export class StudentsComponent implements OnInit {
     [courseId: number]: { isChecked: boolean; grade: string; semester: number | null; year: number | null };
   } = {};
 
-  majors: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'];
+  majors: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์'];
   // 🌟 รายการหลักสูตรที่โหลดจากฐานข้อมูลจริง (curriculum_id, curriculum_name, year) ผ่าน get_courses.php
   curriculums: any[] = [];
   users: any[] = [];
@@ -280,7 +289,7 @@ export class StudentsComponent implements OnInit {
         if (res && res.success && Array.isArray(res.majors)) {
           const dbMajors: string[] = res.majors;
           this.majors = [
-            ...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors]),
+            ...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'นวัตกรรมอาหารและการเป็นผู้ประกอบการ'], ...dbMajors]),
           ];
         }
         // 🌟 majors_full มี major_id ด้วย ใช้เป็นแหล่งข้อมูลสำหรับแก้ไขหลักสูตร
@@ -295,6 +304,118 @@ export class StudentsComponent implements OnInit {
   startEditMajor(m: { major_id: number; major_name: string }) {
     this.editingMajorId = m.major_id;
     this.editMajorName = m.major_name;
+  }
+
+  // 🌟 ลบหลักสูตร (ต้องมี delete_major.php ฝั่งเซิร์ฟเวอร์)
+  async deleteMajor(m: { major_id: number; major_name: string }) {
+    // กันลบหลักสูตรที่ยังมีนักศึกษาใช้อยู่
+    const usedBy = this.students.filter((s) => s.major === m.major_name).length;
+    if (usedBy > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'ไม่สามารถลบได้',
+        text: `หลักสูตร "${m.major_name}" ยังมีนักศึกษาอยู่ ${usedBy} คน กรุณาย้ายหรือลบนักศึกษาก่อน`,
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'ยืนยันการลบหลักสูตร',
+      text: `ต้องการลบ "${m.major_name}" ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้`,
+      showCancelButton: true,
+      confirmButtonText: 'ลบ',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#d33',
+    });
+    if (!result.isConfirmed) return;
+
+    this.http
+      .post(`${environment.apiUrl}/delete_major.php`, { major_id: m.major_id })
+      .subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.majorsList = this.majorsList.filter((x) => x.major_id !== m.major_id);
+            this.majors = this.majors.filter((x) => x !== m.major_name);
+            if (this.selectedMajor === m.major_name) this.selectedMajor = '';
+            if (this.editingMajorId === m.major_id) this.cancelEditMajor();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'ลบหลักสูตรสำเร็จ',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            this.cdr.detectChanges();
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: res.message || 'ไม่สามารถลบหลักสูตรได้',
+              confirmButtonColor: '#3085d6',
+            });
+          }
+        },
+        error: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้',
+            confirmButtonColor: '#d33',
+          });
+        },
+      });
+  }
+
+  // 🌟 ลบนักศึกษา (ต้องมี delete_student.php ฝั่งเซิร์ฟเวอร์)
+  async deleteStudent(student: any) {
+    const result = await Swal.fire({
+      icon: 'warning',
+      title: 'ยืนยันการลบนักศึกษา',
+      text: `ต้องการลบ "${student.full_name}" (${student.student_code}) ใช่หรือไม่? ข้อมูลรายวิชาและเกรดของนักศึกษาจะถูกลบด้วย และไม่สามารถย้อนกลับได้`,
+      showCancelButton: true,
+      confirmButtonText: 'ลบ',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#d33',
+    });
+    if (!result.isConfirmed) return;
+
+    this.http
+      .post(`${environment.apiUrl}/delete_student.php`, { student_id: student.student_id })
+      .subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.students = this.students.filter((s) => s.student_id !== student.student_id);
+            this.updateStats();
+            // ถ้าลบคนสุดท้ายของหน้า ให้ถอยกลับหน้าก่อนหน้า
+            if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+
+            Swal.fire({
+              icon: 'success',
+              title: 'ลบนักศึกษาสำเร็จ',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            this.cdr.detectChanges();
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: res.message || 'ไม่สามารถลบนักศึกษาได้',
+              confirmButtonColor: '#3085d6',
+            });
+          }
+        },
+        error: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้',
+            confirmButtonColor: '#d33',
+          });
+        },
+      });
   }
 
   cancelEditMajor() {

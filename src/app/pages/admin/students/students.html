@@ -78,6 +78,14 @@
           >
             <span class="material-symbols-outlined text-base">edit</span>
           </button>
+          <button
+            type="button"
+            (click)="deleteMajor(m)"
+            class="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            title="ลบหลักสูตร"
+          >
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
         </ng-template>
       </li>
     </ul>
@@ -285,6 +293,16 @@
             class="text-blue-500 hover:text-blue-600 disabled:text-gray-200 disabled:cursor-not-allowed transition-colors"
           >
             <span class="material-symbols-outlined">edit</span>
+          </button>
+
+          <button
+            *ngIf="col.columnDef === 'delete_student'"
+            type="button"
+            (click)="deleteStudent(s); $event.stopPropagation()"
+            class="text-red-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+            title="ลบนักศึกษา"
+          >
+            <span class="material-symbols-outlined text-xl">delete</span>
           </button>
 
           <button
