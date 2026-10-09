@@ -120,20 +120,14 @@ export class ProfileSettingsComponent implements OnInit {
     this.profileMessage = '';
     this.profileError = '';
 
-    if (!this.fullName.trim() || !this.email.trim()) {
-      this.profileError = 'กรุณากรอกชื่อและอีเมล';
-      return;
-    }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(this.email.trim())) {
-      this.profileError = 'รูปแบบอีเมลไม่ถูกต้อง';
+    if (!this.fullName.trim()) {
+      this.profileError = 'กรุณากรอกชื่อ-นามสกุล';
       return;
     }
 
     this.saving = true;
     const formData = new FormData();
     formData.append('full_name', this.fullName.trim());
-    formData.append('email', this.email.trim());
     if (this.selectedFile) {
       formData.append('image', this.selectedFile);
     }

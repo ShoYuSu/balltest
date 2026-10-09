@@ -32,7 +32,7 @@ export class CurriculumManagementComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   curriculumData: any[] = [];
-  major: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร']; // มีค่าเริ่มต้นรอไว้
+  major: string[] = ['วิทยาการข้อมูลและคอมพิวเตอร์', 'นวัตกรรมอาหารและการเป็นผู้ประกอบการ']; // มีค่าเริ่มต้นรอไว้
   selectedMajor: string = 'วิทยาการข้อมูลและคอมพิวเตอร์'; // ล็อกสาขาเริ่มต้นที่จะใช้ค้นหา
   selectedYear: string = '2566';
 
@@ -129,7 +129,7 @@ export class CurriculumManagementComponent implements OnInit {
         // และไม่เคย merge สาขาจาก backend เข้ามาเลยสักครั้ง
         if (res && res.success && Array.isArray(res.majors)) {
           const dbMajors: string[] = res.majors;
-          this.major = [...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'เทคโนโลยีการอาหาร'], ...dbMajors])];
+          this.major = [...new Set([...['วิทยาการข้อมูลและคอมพิวเตอร์', 'นวัตกรรมอาหารและการเป็นผู้ประกอบการ'], ...dbMajors])];
 
           // ตรวจสอบว่ามีสาขาที่เลือกอยู่ในอาเรย์ไหม ถ้าไม่มีให้ล็อกตัวแรก
           if (this.major.length > 0 && !this.major.includes(this.selectedMajor)) {
