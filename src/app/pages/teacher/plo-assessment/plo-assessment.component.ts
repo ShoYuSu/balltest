@@ -57,6 +57,7 @@ export class PloAssessmentComponent implements OnInit {
   startX = 0;
   scrollLeft = 0;
 
+  // 🌟 ปรับชื่อ Tab ใหม่
   activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
   currentPage = signal(1);
   itemsPerPage = 5;
@@ -90,6 +91,11 @@ export class PloAssessmentComponent implements OnInit {
             const studentCode = s.studentId || s.student_code || '-';
             const stdName = s.name || s.full_name || 'ไม่ระบุชื่อ';
             const stdImg = s.img || s.image || s.img_profile || '';
+            
+            // 🌟 แมปสถานะเดิมให้เข้ากับข้อความใหม่
+            let mappedStatusText = 'กำลังศึกษา (ยังไม่ประเมิน)';
+            if (s.status === 'passed') mappedStatusText = 'ตามเกณฑ์ชั้นปี';
+            else if (s.status === 'failed') mappedStatusText = 'ต่ำกว่าเกณฑ์ชั้นปี';
 
             return {
               ...s,
@@ -97,6 +103,7 @@ export class PloAssessmentComponent implements OnInit {
               name: stdName,
               studentId: studentCode,
               year: s.year || '-',
+              statusText: mappedStatusText, // นำค่าที่แมปแล้วมาใช้
               img:
                 stdImg !== ''
                   ? `${environment.apiUrl}/${stdImg}`
@@ -221,24 +228,41 @@ export class PloAssessmentComponent implements OnInit {
     this.evalPLOs.set(plos);
   }
 
+  // 🌟 ปรับปรุงการคำนวณ: คิด % เฉพาะข้อที่มีการประเมิน (Passed/Failed) เท่านั้น
+  // ข้อที่สถานะเป็น null (ยังไม่ถึงชั้นปีที่ต้องประเมิน) จะไม่ถูกนำมาเป็นตัวหาร
   calculateSubPLOProgress(sub: EvalSubPLO): number {
     if (!sub.ylos || sub.ylos.length === 0) return 0;
-    const passed = sub.ylos.filter((y) => y.status === 'passed').length;
-    return Math.round((passed / sub.ylos.length) * 100);
+    
+    const evaluatedYlos = sub.ylos.filter(y => y.status !== null);
+    if (evaluatedYlos.length === 0) return 0;
+
+    const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
+    return Math.round((passed / evaluatedYlos.length) * 100);
   }
 
   calculatePLOProgress(plo: EvalPLO): number {
     if (plo.sub_plos && plo.sub_plos.length > 0) {
       let totalSubScore = 0;
+      let evaluatedSubCount = 0;
+
       plo.sub_plos.forEach((sub) => {
-        totalSubScore += this.calculateSubPLOProgress(sub);
+        // ถ้ารายวิชานั้นมีการประเมิน (มี ylo ที่ไม่ใช่ null)
+        const hasEvaluated = sub.ylos.some(y => y.status !== null);
+        if (hasEvaluated) {
+          totalSubScore += this.calculateSubPLOProgress(sub);
+          evaluatedSubCount++;
+        }
       });
-      return Math.round(totalSubScore / plo.sub_plos.length);
+      
+      return evaluatedSubCount === 0 ? 0 : Math.round(totalSubScore / evaluatedSubCount);
     }
 
     if (plo.direct_ylos && plo.direct_ylos.length > 0) {
-      const passed = plo.direct_ylos.filter((y) => y.status === 'passed').length;
-      return Math.round((passed / plo.direct_ylos.length) * 100);
+      const evaluatedYlos = plo.direct_ylos.filter(y => y.status !== null);
+      if (evaluatedYlos.length === 0) return 0;
+
+      const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
+      return Math.round((passed / evaluatedYlos.length) * 100);
     }
 
     return 0;
@@ -294,9 +318,8 @@ export class PloAssessmentComponent implements OnInit {
     });
   }
 
-  // 🌟 ฟังก์ชันโหลด Excel รายบุคคล 
   exportStudentToExcel(student: StudentAssessment, event: Event) {
-    event.stopPropagation(); // หยุดการกระทำไม่ให้คลิกทะลุไปเปิดหน้าประเมิน
+    event.stopPropagation();
     
     if (!student.plos || student.plos.length === 0) {
       alert('ไม่พบข้อมูลคะแนนสำหรับ Export');
@@ -306,13 +329,13 @@ export class PloAssessmentComponent implements OnInit {
     const bom = '\uFEFF';
     let csvContent = bom;
     
-    csvContent += `ข้อมูลคะแนน PLO รายบุคคล\n`;
+    csvContent += `ความคืบหน้าภาพรวม (รายบุคคล)\n`;
     csvContent += `ชื่อ-สกุล:, "${student.name}"\n`;
     csvContent += `รหัสนักศึกษา:, "${student.studentId}"\n`;
-    csvContent += `คะแนนเฉลี่ยรวม:, "${student.average !== null && student.average !== undefined ? student.average + '%' : '-'}"\n`;
+    csvContent += `ความคืบหน้ารวมสะสม:, "${student.average !== null && student.average !== undefined ? student.average + '%' : '-'}"\n`;
     csvContent += `สถานะ:, "${student.statusText}"\n\n`;
 
-    csvContent += `หัวข้อ PLO,คะแนนที่ได้ (%)\n`;
+    csvContent += `หัวข้อ,ความคืบหน้าสะสม (%)\n`;
 
     student.plos.forEach((plo) => {
       csvContent += `"${plo.label}","${plo.score}%"\n`;
@@ -321,7 +344,7 @@ export class PloAssessmentComponent implements OnInit {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `คะแนน_PLO_${student.studentId}_${student.name}.csv`;
+    link.download = `ความคืบหน้า_${student.studentId}_${student.name}.csv`;
     link.click();
   }
 

@@ -20,10 +20,10 @@
           <button (click)="setTab('รอประเมิน')" [class]="'shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'รอประเมิน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
             รอประเมิน ({{ countPending() }})
           </button>
-          <button (click)="setTab('ผ่าน')" [class]="'shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ผ่าน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+          <button (click)="setTab('ผ่าน')" [class]="'shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ผ่าน' ? 'bg-[#ECFDF5] text-[#10B981]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
             ผ่าน ({{ countPassed() }})
           </button>
-          <button (click)="setTab('ไม่ผ่าน')" [class]="'shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ไม่ผ่าน' ? 'bg-[#FDF3E1] text-[#D97706]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+          <button (click)="setTab('ไม่ผ่าน')" [class]="'shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ' + (activeTab() === 'ไม่ผ่าน' ? 'bg-[#FEF2F2] text-[#EF4444]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
             ไม่ผ่าน ({{ countFailed() }})
           </button>
         </div>
@@ -65,7 +65,7 @@
                 <img [src]="s.img" class="w-12 h-12 sm:w-[60px] sm:h-[60px] rounded-full object-cover shadow-sm border border-gray-100 shrink-0" alt="avatar">
                 <div class="flex flex-col items-start min-w-0">
                   <div class="font-bold text-gray-900 text-sm sm:text-[15px] truncate w-full group-hover:text-orange-600 transition-colors">{{ s.name }}</div>
-                  <div class="text-[11px] sm:text-sm text-gray-500 mt-0.5 truncate w-full">รหัส {{ s.studentId }} <span class="mx-1 text-gray-300">|</span> ปี {{ s.year }}</div>
+                  <div class="text-[11px] sm:text-sm text-gray-500 mt-0.5 truncate w-full">รหัส {{ s.studentId }} <span class="mx-1 text-gray-300">|</span> ชั้นปีที่ {{ s.year }}</div>
 
                   <span class="px-3 py-0.5 sm:px-4 sm:py-1 text-[10px] sm:text-[11px] font-extrabold rounded-full border bg-white mt-1.5 shadow-sm whitespace-nowrap"
                         [ngClass]="{
@@ -106,7 +106,7 @@
                 }
               </div>
 
-              <!-- 🌟 คะแนนเฉลี่ย และ ปุ่ม (แก้ไข / Export Excel) -->
+              <!-- คะแนนรวม และ ปุ่ม (แก้ไข / Export Excel) -->
               <div class="col-span-12 md:col-span-6 lg:col-span-3 flex flex-row lg:flex-col items-center justify-between lg:justify-center gap-2 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-4 h-full">
                 <div class="flex items-center lg:flex-col gap-3 lg:gap-2">
                   <div class="w-12 h-12 sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px] rounded-full flex items-center justify-center text-sm sm:text-xl font-bold shadow-sm"
@@ -117,7 +117,7 @@
                        }">
                     {{ s.average !== null ? s.average + '%' : '?' }}
                   </div>
-                  <div class="text-[10px] sm:text-[11px] font-extrabold text-gray-400 uppercase tracking-widest hidden lg:block">คะแนนเฉลี่ย</div>
+                  <div class="text-[10px] sm:text-[11px] font-extrabold text-gray-400 uppercase tracking-widest hidden lg:block text-center">คะแนนเฉลี่ย</div>
                   <div class="text-[10px] sm:text-[11px] font-extrabold text-gray-500 lg:hidden">คะแนนภาพรวม</div>
                 </div>
 
@@ -175,7 +175,7 @@
   }
 
   <!-- ============================================== -->
-  <!-- หน้าต่างประเมิน (Evaluation Page) -->
+  <!-- หน้าต่างประเมินผล (Evaluation Page) -->
   <!-- ============================================== -->
   @if (showEvalPage()) {
     <div class="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full mt-2 sm:mt-0">
