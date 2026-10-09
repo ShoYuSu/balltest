@@ -3,13 +3,13 @@ import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { StatCardsComponent } from '../../../shared/components/stat-cards/stat-cards.component';
 import { environment } from '../../../../environments/environment';
-import { StudentResultModalComponent } from '../student-result-modal/student-result-modal.component';
+
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, StatCardsComponent, StudentResultModalComponent, CommonModule],
+  imports: [RouterModule, StatCardsComponent,  CommonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

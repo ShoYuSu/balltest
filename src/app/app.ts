@@ -1,10 +1,10 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, } from '@angular/router';
 import { FontSizeService } from './shared/components/font-size.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet,],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

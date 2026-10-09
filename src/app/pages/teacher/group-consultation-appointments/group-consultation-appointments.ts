@@ -49,25 +49,23 @@ export class GroupConsultationAppointments implements OnInit {
   isLogModalOpen = signal(false);
   isConfirmCancelModalOpen = signal(false);
 
-  // 🌟 เพิ่ม Signal สำหรับระบบจัดการประเภท และ Dropdown
   isManageTypesModalOpen = signal(false);
   isCreateTypeOpen = signal(false);
   isEditTypeOpen = signal(false);
 
-  isCreateSemesterOpen = signal(false); // 🌟 เปิด/ปิด Dropdown ภาคเรียน (สร้าง)
-  isEditSemesterOpen = signal(false); // 🌟 เปิด/ปิด Dropdown ภาคเรียน (แก้ไข)
+  isCreateSemesterOpen = signal(false);
+  isEditSemesterOpen = signal(false);
 
   newTypeInput = signal('');
 
   activeDropdownId = signal<string | null>(null);
   isFilterDropdownOpen = signal(false);
 
-  // 🌟 เพิ่ม academicYear และ semester
   newApp = {
     date: '',
     time: '',
     endTime: '',
-    type: 'วิชาการ',
+    type: '',
     topic: '',
     details: '',
     location: '',
@@ -81,8 +79,21 @@ export class GroupConsultationAppointments implements OnInit {
   selectedStudentIds = signal<string[]>([]);
 
   ngOnInit() {
+    this.loadTypes(); // 🌟 ดึงประเภทจากฐานข้อมูลก่อน
     this.loadAppointments();
     this.loadMyStudents();
+  }
+
+  // 🌟 ฟังก์ชันโหลดประเภทนัดหมายจาก DB
+  loadTypes() {
+    this.http.get<any>(`${environment.apiUrl}/get_appointment_types.php`).subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          this.availableTypes.set(res.data);
+        }
+      },
+      error: () => console.error('ไม่สามารถโหลดประเภทการนัดหมายได้')
+    });
   }
 
   loadMyStudents() {
@@ -120,10 +131,7 @@ export class GroupConsultationAppointments implements OnInit {
           ),
         ] as string[];
 
-        // 🌟 ดึงค่าจาก Local Storage มารวมด้วย
-        const localTypes = JSON.parse(localStorage.getItem('saved_appointment_types') || '[]');
-        const mergedTypes = [...new Set([...this.availableTypes(), ...localTypes, ...typesFromDb])];
-
+        const mergedTypes = [...new Set([...this.availableTypes(), ...typesFromDb])];
         this.availableTypes.set(mergedTypes);
 
         const formattedApps = groupApps.map((app: any) => ({
@@ -132,8 +140,8 @@ export class GroupConsultationAppointments implements OnInit {
           type: app.type || '',
           status: app.status || 'นัดหมาย',
           note: app.note || '',
-          academicYear: app.academic_year || '', // 🌟 ดึงค่าปีการศึกษา
-          semester: app.semester || '', // 🌟 ดึงค่าภาคเรียน
+          academicYear: app.academic_year || '',
+          semester: app.semester || '',
           date: this.formatThaiDate(app.appointment_date),
           rawDate: app.appointment_date,
           time: this.formatTime(app.start_time, app.end_time),
@@ -202,55 +210,53 @@ export class GroupConsultationAppointments implements OnInit {
     this.isEditTypeOpen.set(false);
   }
 
+  // 🌟 เพิ่มประเภทใหม่ผ่าน API
   addCreateType() {
     const val = this.newApp.type.trim();
     if (val && !this.availableTypes().includes(val)) {
-      // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
-      this.availableTypes.update((t) => {
-        const updated = [...t, val];
-        localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
-        return updated;
+      this.http.post(`${environment.apiUrl}/add_appointment_type.php`, { type_name: val }).subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') this.availableTypes.update(t => [...t, val]);
+        }
       });
     }
     this.isCreateTypeOpen.set(false);
   }
 
+  // 🌟 เพิ่มประเภทใหม่ผ่าน API
   addEditType() {
     const val = this.editingApp?.type?.trim();
     if (val && !this.availableTypes().includes(val)) {
-      // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
-      this.availableTypes.update((t) => {
-        const updated = [...t, val];
-        localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
-        return updated;
+      this.http.post(`${environment.apiUrl}/add_appointment_type.php`, { type_name: val }).subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') this.availableTypes.update(t => [...t, val]);
+        }
       });
     }
     this.isEditTypeOpen.set(false);
   }
 
+  // 🌟 ลบประเภทผ่าน API
   deleteType(type: string, e: Event) {
     e.stopPropagation();
     const inUseCount = this.appointments().filter((a) => a.type === type).length;
     if (inUseCount > 0) {
-      if (
-        !confirm(
-          `ประเภท "${type}" ยังถูกใช้งานอยู่ใน ${inUseCount} นัดหมาย\nต้องการลบออกจากรายการประเภทหรือไม่?`,
-        )
-      )
-        return;
+      if (!confirm(`ประเภท "${type}" ยังถูกใช้งานอยู่ใน ${inUseCount} นัดหมาย\nต้องการลบออกจากรายการประเภทหรือไม่?`)) return;
     }
-    // 🌟 แก้ตรงนี้ให้อัปเดต Local Storage ตอนลบ
-    this.availableTypes.update((t) => {
-      const updated = t.filter((x) => x !== type);
-      localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
-      return updated;
+    
+    this.http.post(`${environment.apiUrl}/delete_appointment_type.php`, { type_name: type }).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.availableTypes.update((t) => t.filter((x) => x !== type));
+          if (this.newApp.type === type) this.newApp.type = '';
+          if (this.editingApp?.type === type) this.editingApp.type = '';
+          if (this.selectedFilter() === type) this.selectedFilter.set('ทั้งหมด');
+        } else alert('เกิดข้อผิดพลาด: ' + res.message);
+      }
     });
-
-    if (this.newApp.type === type) this.newApp.type = '';
-    if (this.editingApp?.type === type) this.editingApp.type = '';
-    if (this.selectedFilter() === type) this.selectedFilter.set('ทั้งหมด');
   }
 
+  // 🌟 เพิ่มประเภทจาก Modal ผ่าน API
   addNewTypeFromModal() {
     const val = this.newTypeInput().trim();
     if (!val) return;
@@ -258,13 +264,14 @@ export class GroupConsultationAppointments implements OnInit {
       alert(`ประเภท "${val}" มีอยู่แล้ว`);
       return;
     }
-    // 🌟 แก้ตรงนี้ให้เซฟลง Local Storage
-    this.availableTypes.update((t) => {
-      const updated = [...t, val];
-      localStorage.setItem('saved_appointment_types', JSON.stringify(updated));
-      return updated;
+    this.http.post(`${environment.apiUrl}/add_appointment_type.php`, { type_name: val }).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.availableTypes.update(t => [...t, val]);
+          this.newTypeInput.set('');
+        } else alert('เกิดข้อผิดพลาด: ' + res.message);
+      }
     });
-    this.newTypeInput.set('');
   }
 
   typeUsageCount(type: string): number {
@@ -284,7 +291,6 @@ export class GroupConsultationAppointments implements OnInit {
   // =====================================
   submitCreateAppointment() {
     const advisorId = localStorage.getItem('advisor_id');
-    // 🌟 ดักให้กรอกปีการศึกษาและภาคเรียนด้วย
     if (
       this.selectedStudentIds().length < 2 ||
       !this.newApp.topic ||
@@ -304,8 +310,8 @@ export class GroupConsultationAppointments implements OnInit {
       end_time: this.newApp.endTime,
       type: this.newApp.type,
       location: this.newApp.location,
-      academic_year: this.newApp.academicYear, // 🌟 ส่งค่า
-      semester: this.newApp.semester, // 🌟 ส่งค่า
+      academic_year: this.newApp.academicYear,
+      semester: this.newApp.semester,
       student_ids: this.selectedStudentIds(),
     };
     this.http.post(`${environment.apiUrl}/create_appointment.php`, payload).subscribe({
@@ -320,7 +326,6 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   submitEditAppointment() {
-    // 🌟 ดักให้กรอกปีการศึกษาและภาคเรียนด้วย
     if (
       !this.editingApp.topic ||
       !this.editingApp.rawDate ||
@@ -339,8 +344,8 @@ export class GroupConsultationAppointments implements OnInit {
       end_time: this.editingApp.rawEndTime,
       type: this.editingApp.type,
       location: this.editingApp.location,
-      academic_year: this.editingApp.academicYear, // 🌟 ส่งค่า
-      semester: this.editingApp.semester, // 🌟 ส่งค่า
+      academic_year: this.editingApp.academicYear,
+      semester: this.editingApp.semester,
       student_ids: this.selectedStudentIds(),
     };
     this.http.post(`${environment.apiUrl}/update_appointment.php`, payload).subscribe({
@@ -447,8 +452,8 @@ export class GroupConsultationAppointments implements OnInit {
     this.isFilterDropdownOpen.set(false);
     this.isCreateTypeOpen.set(false);
     this.isEditTypeOpen.set(false);
-    this.isCreateSemesterOpen.set(false); // 🌟 ปิด dropdown
-    this.isEditSemesterOpen.set(false); // 🌟 ปิด dropdown
+    this.isCreateSemesterOpen.set(false);
+    this.isEditSemesterOpen.set(false);
   }
 
   closeModals() {
@@ -465,12 +470,11 @@ export class GroupConsultationAppointments implements OnInit {
     this.editingApp = null;
     this.appointmentToCancelId.set(null);
     this.newTypeInput.set('');
-    // 🌟 รีเซ็ต
     this.newApp = {
       date: '',
       time: '',
       endTime: '',
-      type: 'วิชาการ',
+      type: '',
       topic: '',
       details: '',
       location: '',
@@ -500,6 +504,7 @@ export class GroupConsultationAppointments implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
+  // 🌟 แก้ Syntax error ที่เกิดจากการตัดบรรทัดผิด (เปลี่ยนมาใช้ ' - ')
   formatTime(start: string, end?: string): string {
     let str = start ? start.substring(0, 5) : '';
     if (end) {
@@ -545,7 +550,7 @@ export class GroupConsultationAppointments implements OnInit {
         `"${app.topic}"`,
         `"${app.type}"`,
         `"${app.status}"`,
-        `"=""${app.date}"""`, // 🌟 บังคับให้วันที่เป็นข้อความ ป้องกันการแสดงผล ######
+        `"=""${app.date}"""`,
         `"${app.time}"`,
         `"${app.details}"`,
         `"${app.students.length}"`,
@@ -564,12 +569,11 @@ export class GroupConsultationAppointments implements OnInit {
   }
 
   openCreateModal() {
-    // รีเซ็ตค่าฟอร์มให้ว่าง
     this.newApp = {
       date: '',
       time: '',
       endTime: '',
-      type: 'วิชาการ',
+      type: '',
       topic: '',
       details: '',
       location: '',
@@ -579,13 +583,11 @@ export class GroupConsultationAppointments implements OnInit {
     this.selectedStudentIds.set([]);
     this.selectionMode.set('group');
 
-    // ปิด dropdown อื่นๆ ก่อนเปิด
     this.isCreateTypeOpen.set(false);
     this.isManageTypesModalOpen.set(false);
     this.isCreateSemesterOpen.set(false);
     this.newTypeInput.set('');
 
-    // เปิดหน้าต่าง Modal สร้างนัดหมาย
     this.isCreateModalOpen.set(true);
   }
 }

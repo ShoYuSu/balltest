@@ -1,6 +1,6 @@
 <div class="bg-gray-50 min-h-screen pt-4" (click)="closeDropdowns()">
   <!-- Header -->
-  <div class="flex justify-between items-start mb-4 sm:mb-6">
+  <div class="flex justify-between items-start mb-4 sm:mb-6 px-4 sm:px-6">
     <div>
       <h1 class="text-xl sm:text-2xl font-bold text-gray-800">การนัดหมายปรึกษา — รายกลุ่ม</h1>
       <p class="text-xs sm:text-sm text-gray-500 mt-1">จัดการตารางนัดหมายและบันทึกประวัติการให้คำปรึกษาแบบกลุ่ม</p>
@@ -8,13 +8,13 @@
   </div>
 
   <!-- Toolbar: Search, Filter, Buttons -->
-  <div class="flex flex-col lg:flex-row gap-3 mb-6 items-start lg:items-center">
+  <div class="flex flex-col lg:flex-row gap-3 mb-6 items-start lg:items-center px-4 sm:px-6">
 
     <!-- Search -->
     <div class="relative w-full lg:flex-grow lg:max-w-md">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px] sm:text-[24px]">search</span>
       <input type="text" [(ngModel)]="searchQuery" placeholder="ค้นหาหัวข้อ หรือชื่อนักศึกษา..."
-             class="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
+             class="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
     </div>
 
     <!-- Filter Dropdown -->
@@ -26,7 +26,7 @@
       </button>
 
       @if (isFilterDropdownOpen()) {
-        <div class="absolute left-0 mt-2 w-full bg-white border-2 border-gray-100 rounded-lx shadow-lg py-1.5 z-20 animate-fadeIn">
+        <div class="absolute left-0 mt-2 w-full bg-white border-2 border-gray-100 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn max-h-64 overflow-y-auto custom-scrollbar">
           @for (option of filterOptions(); track option) {
             <button (click)="selectFilter(option, $event)"
                     class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
@@ -62,7 +62,7 @@
   </div>
 
   <!-- Appointments List -->
-  <div class="space-y-3 sm:space-y-4">
+  <div class="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-6">
     @for (app of filteredAppointments(); track app.id) {
       <div [id]="'appointment-' + app.id" class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-500">
 
@@ -134,15 +134,16 @@
         <p class="text-xs sm:text-sm">ไม่พบข้อมูลการนัดหมายกลุ่ม</p>
       </div>
     }
-  </div>
 
-  <div class="mt-6 sm:mt-8 flex justify-center sm:justify-start items-center text-xs sm:text-sm text-gray-500">
-    <p>แสดง {{ filteredAppointments().length }} จากทั้งหมด</p>
+    <div class="mt-6 sm:mt-8 flex justify-center sm:justify-start items-center text-xs sm:text-sm text-gray-500">
+      <p>แสดง {{ filteredAppointments().length }} จากทั้งหมด</p>
+    </div>
   </div>
 </div>
 
 <!-- ================= Modals ================= -->
 
+<!-- Modal: Create Appointment -->
 @if (isCreateModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" (click)="closeDropdowns()">
     <div class="bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
@@ -154,6 +155,7 @@
       </div>
 
       <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 grow overscroll-contain custom-scrollbar">
+        <!-- Student Selection -->
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">รูปแบบการเลือกนักศึกษา</label>
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-4">
@@ -201,7 +203,6 @@
           <input type="date" [(ngModel)]="newApp.date" class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 text-sm sm:text-base">
         </div>
 
-        <!-- 🌟 ย้ายมาต่อจากวันที่ -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
@@ -257,10 +258,12 @@
                    (click)="$event.stopPropagation(); isCreateTypeOpen.set(true)"
                    (focus)="isCreateTypeOpen.set(true)"
                    (input)="isCreateTypeOpen.set(true)"
-                   placeholder="พิมพ์เพื่อค้นหา หรือเพิ่มประเภทใหม่..."
-                   class="w-full pl-3 pr-4 py-3 bg-white border border-gray-200  border-2  rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
+                   (keydown.enter)="addCreateType(); $event.preventDefault()"
+                   placeholder="พิมพ์เพื่อค้นหา หรือกด Enter เพื่อเพิ่มประเภทใหม่..."
+                   class="w-full pl-3 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium placeholder-gray-400">
             @if (isCreateTypeOpen()) {
-              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain flex flex-col">
+                
                 @for (t of filteredCreateTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="newApp.type === t ? 'bg-orange-50' : ''">
@@ -268,6 +271,16 @@
                             class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm"
                             [ngClass]="newApp.type === t ? 'text-orange-600 font-bold' : 'text-gray-700'">
                       {{ t }}
+                    </button>
+                  </div>
+                }
+
+                @if (newApp.type && !availableTypes().includes(newApp.type.trim())) {
+                  <div class="p-1.5 border-t border-gray-100 bg-gray-50 sticky bottom-0">
+                    <button (click)="addCreateType()" 
+                            class="w-full text-left px-3 py-2 text-sm text-orange-600 bg-orange-100/50 rounded-lg hover:bg-orange-200 font-bold flex items-center gap-2 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                      เพิ่มประเภท "{{ newApp.type.trim() }}"
                     </button>
                   </div>
                 }
@@ -305,6 +318,7 @@
   </div>
 }
 
+<!-- Modal: Edit Appointment -->
 @if (isEditModalOpen() && editingApp) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" (click)="closeDropdowns()">
     <div class="bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]" (click)="$event.stopPropagation()">
@@ -366,7 +380,6 @@
           <div class="hidden sm:block"></div>
         </div>
 
-        <!-- 🌟 ย้ายมาต่อจากวันที่ -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-800 mb-1">ปีการศึกษา</label>
@@ -422,15 +435,28 @@
                    (click)="$event.stopPropagation(); isEditTypeOpen.set(true)"
                    (focus)="isEditTypeOpen.set(true)"
                    (input)="isEditTypeOpen.set(true)"
-                   class="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white text-sm sm:text-base">
+                   (keydown.enter)="addEditType(); $event.preventDefault()"
+                   placeholder="พิมพ์เพื่อค้นหา หรือกด Enter เพื่อเพิ่มประเภทใหม่..."
+                   class="w-full p-2.5 sm:p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-gray-600 bg-white text-sm sm:text-base">
             @if (isEditTypeOpen()) {
-              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain">
+              <div class="absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto overscroll-contain flex flex-col">
+                
                 @for (t of filteredEditTypes; track t) {
                   <div class="flex items-center group border-b border-gray-50 last:border-0 hover:bg-orange-50 transition-colors"
                        [ngClass]="editingApp.type === t ? 'bg-orange-50' : ''">
                     <button (click)="selectEditType(t)"
                             class="flex-1 text-left px-3 sm:px-4 py-2.5 text-xs sm:text-sm">
                       {{ t }}
+                    </button>
+                  </div>
+                }
+
+                @if (editingApp.type && !availableTypes().includes(editingApp.type.trim())) {
+                  <div class="p-1.5 border-t border-gray-100 bg-gray-50 sticky bottom-0">
+                    <button (click)="addEditType()" 
+                            class="w-full text-left px-3 py-2 text-sm text-orange-600 bg-orange-100/50 rounded-lg hover:bg-orange-200 font-bold flex items-center gap-2 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                      เพิ่มประเภท "{{ editingApp.type.trim() }}"
                     </button>
                   </div>
                 }
@@ -468,6 +494,7 @@
   </div>
 }
 
+<!-- Modal: Log Consultation -->
 @if (isLogModalOpen() && editingApp) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -485,13 +512,11 @@
           </p>
         </div>
 
-        <!-- 1. หัวข้อ (เทียบเท่านักศึกษาในรายบุคคล) -->
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">หัวข้อ</label>
           <input type="text" [value]="editingApp.topic" readonly class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm sm:text-base">
         </div>
 
-        <!-- 2. ปีการศึกษา และ ภาคเรียน -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ปีการศึกษา</label>
@@ -503,7 +528,6 @@
           </div>
         </div>
 
-        <!-- 3. วันที่ และ เวลา -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">วันที่</label>
@@ -515,7 +539,6 @@
           </div>
         </div>
 
-        <!-- 4. ประเภทหัวข้อ และ สถานที่ -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1">ประเภทหัวข้อ</label>
@@ -527,7 +550,6 @@
           </div>
         </div>
 
-        <!-- 5. รายละเอียดผลการปรึกษา -->
         <div>
           <label class="block text-xs sm:text-sm font-bold text-gray-700 mb-1 text-orange-600">รายละเอียดผลการปรึกษา</label>
           <textarea [(ngModel)]="editingApp.note" placeholder="กรอกผลการให้คำปรึกษาสำหรับกลุ่มนี้..." rows="4" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none text-sm sm:text-base"></textarea>
@@ -540,6 +562,8 @@
     </div>
   </div>
 }
+
+<!-- Modal: Confirm Cancel -->
 @if (isConfirmCancelModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 sm:p-8 text-center">
@@ -556,7 +580,7 @@
   </div>
 }
 
-<!-- ================= Modal จัดการประเภทหัวข้อ ================= -->
+<!-- Modal: จัดการประเภทหัวข้อ -->
 @if (isManageTypesModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
