@@ -57,7 +57,6 @@ export class PloAssessmentComponent implements OnInit {
   startX = 0;
   scrollLeft = 0;
 
-  // 🌟 ปรับชื่อ Tab ใหม่
   activeTab = signal<'ทั้งหมด' | 'รอประเมิน' | 'ผ่าน' | 'ไม่ผ่าน'>('ทั้งหมด');
   currentPage = signal(1);
   itemsPerPage = 5;
@@ -91,11 +90,20 @@ export class PloAssessmentComponent implements OnInit {
             const studentCode = s.studentId || s.student_code || '-';
             const stdName = s.name || s.full_name || 'ไม่ระบุชื่อ';
             const stdImg = s.img || s.image || s.img_profile || '';
+
+            let mappedStatusText = 'รอประเมิน';
+            if (s.status === 'passed') mappedStatusText = 'ผ่าน';
+            else if (s.status === 'failed') mappedStatusText = 'ไม่ผ่าน';
+
+            const validPlos = s.plos ? s.plos : [];
             
-            // 🌟 แมปสถานะเดิมให้เข้ากับข้อความใหม่
-            let mappedStatusText = 'กำลังศึกษา (ยังไม่ประเมิน)';
-            if (s.status === 'passed') mappedStatusText = 'ตามเกณฑ์ชั้นปี';
-            else if (s.status === 'failed') mappedStatusText = 'ต่ำกว่าเกณฑ์ชั้นปี';
+            let recalculatedAverage = 0;
+            if (validPlos.length > 0) {
+              const totalScore = validPlos.reduce((acc: number, curr: any) => acc + curr.score, 0);
+              recalculatedAverage = Math.round(totalScore / validPlos.length);
+            } else {
+              recalculatedAverage = s.average || 0; 
+            }
 
             return {
               ...s,
@@ -103,7 +111,9 @@ export class PloAssessmentComponent implements OnInit {
               name: stdName,
               studentId: studentCode,
               year: s.year || '-',
-              statusText: mappedStatusText, // นำค่าที่แมปแล้วมาใช้
+              statusText: mappedStatusText,
+              plos: validPlos,
+              average: recalculatedAverage,
               img:
                 stdImg !== ''
                   ? `${environment.apiUrl}/${stdImg}`
@@ -228,12 +238,71 @@ export class PloAssessmentComponent implements OnInit {
     this.evalPLOs.set(plos);
   }
 
-  // 🌟 ปรับปรุงการคำนวณ: คิด % เฉพาะข้อที่มีการประเมิน (Passed/Failed) เท่านั้น
-  // ข้อที่สถานะเป็น null (ยังไม่ถึงชั้นปีที่ต้องประเมิน) จะไม่ถูกนำมาเป็นตัวหาร
+  // ==========================================
+  // 🌟 ฟังก์ชันจัดการการล็อกปุ่มตามชั้นปี (Case 2)
+  // ==========================================
+  
+  getYloYear(yloName: string): number {
+    const match = yloName.match(/YLO\s*(\d+)/i);
+    if (match) {
+      return parseInt(match[1], 10);
+    }
+    return 1;
+  }
+
+  canEvaluate(yloName: string): boolean {
+    const student = this.selectedStudent();
+    if (!student || !student.year) return false;
+    
+    let studentYear = 1;
+    if (typeof student.year === 'string') {
+      const parsed = parseInt(student.year, 10);
+      if (!isNaN(parsed)) studentYear = parsed;
+    } else if (typeof student.year === 'number') {
+      studentYear = student.year;
+    }
+    
+    const yloYear = this.getYloYear(yloName);
+    return studentYear >= yloYear; 
+  }
+
+  // ==========================================
+  // 🌟 ฟังก์ชันจัดการ กรณีที่ไม่มี YLO ในระบบเลย (Case 1)
+  // ==========================================
+
+  hasAnySubYLOs(plo: EvalPLO): boolean {
+    if (!plo.sub_plos || plo.sub_plos.length === 0) return false;
+    return plo.sub_plos.some(sub => sub.ylos && sub.ylos.length > 0);
+  }
+
+  isExempt(plo: EvalPLO): boolean {
+    return !this.hasAnySubYLOs(plo) && (!plo.direct_ylos || plo.direct_ylos.length === 0);
+  }
+
+  // 🌟 ฟังก์ชันตรวจสอบว่า PLO นี้มี YLO ที่ประเมินได้ในปีนี้หรือไม่
+  hasEvaluableYLOs(plo: EvalPLO): boolean {
+    let evaluable = false;
+    if (plo.sub_plos) {
+      plo.sub_plos.forEach(sub => {
+        if (sub.ylos && sub.ylos.some(y => this.canEvaluate(y.ylo_name))) {
+          evaluable = true;
+        }
+      });
+    }
+    if (plo.direct_ylos && plo.direct_ylos.some(y => this.canEvaluate(y.ylo_name))) {
+      evaluable = true;
+    }
+    return evaluable;
+  }
+
   calculateSubPLOProgress(sub: EvalSubPLO): number {
     if (!sub.ylos || sub.ylos.length === 0) return 0;
     
-    const evaluatedYlos = sub.ylos.filter(y => y.status !== null);
+    // คำนวณเฉพาะข้อที่ถึงชั้นปีที่ประเมินได้แล้ว
+    const evaluableYlos = sub.ylos.filter(y => this.canEvaluate(y.ylo_name));
+    if (evaluableYlos.length === 0) return 0;
+
+    const evaluatedYlos = evaluableYlos.filter(y => y.status !== null);
     if (evaluatedYlos.length === 0) return 0;
 
     const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
@@ -241,13 +310,16 @@ export class PloAssessmentComponent implements OnInit {
   }
 
   calculatePLOProgress(plo: EvalPLO): number {
+    // 🌟 ถ้าโดนยกเว้น หรือ ไม่มี YLO ให้ประเมินได้ในปีนี้เลย ให้ค่าเป็น 0 ไว้ก่อน
+    if (this.isExempt(plo) || !this.hasEvaluableYLOs(plo)) return 0;
+
     if (plo.sub_plos && plo.sub_plos.length > 0) {
       let totalSubScore = 0;
       let evaluatedSubCount = 0;
 
       plo.sub_plos.forEach((sub) => {
-        // ถ้ารายวิชานั้นมีการประเมิน (มี ylo ที่ไม่ใช่ null)
-        const hasEvaluated = sub.ylos.some(y => y.status !== null);
+        const evaluableYlos = sub.ylos.filter(y => this.canEvaluate(y.ylo_name));
+        const hasEvaluated = evaluableYlos.some(y => y.status !== null);
         if (hasEvaluated) {
           totalSubScore += this.calculateSubPLOProgress(sub);
           evaluatedSubCount++;
@@ -258,7 +330,8 @@ export class PloAssessmentComponent implements OnInit {
     }
 
     if (plo.direct_ylos && plo.direct_ylos.length > 0) {
-      const evaluatedYlos = plo.direct_ylos.filter(y => y.status !== null);
+      const evaluableYlos = plo.direct_ylos.filter(y => this.canEvaluate(y.ylo_name));
+      const evaluatedYlos = evaluableYlos.filter(y => y.status !== null);
       if (evaluatedYlos.length === 0) return 0;
 
       const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
@@ -274,22 +347,26 @@ export class PloAssessmentComponent implements OnInit {
 
     this.isSaving.set(true);
 
-    const evaluatedPLOs = this.evalPLOs().map((p) => ({
-      code: p.plo_name,
-      score: this.calculatePLOProgress(p),
-    }));
+    // 🌟 กรองก่อนส่ง! ส่งไปบันทึก "เฉพาะ" PLO ที่มี YLO ให้กดได้ในปีนี้เท่านั้น
+    const evaluatedPLOs = this.evalPLOs()
+      .filter(p => !this.isExempt(p) && this.hasEvaluableYLOs(p))
+      .map((p) => ({
+        code: p.plo_name,
+        score: this.calculatePLOProgress(p),
+      }));
 
     const evaluatedYLOs: any[] = [];
     this.evalPLOs().forEach((p) => {
       p.sub_plos?.forEach((s) => {
         s.ylos?.forEach((y) => {
-          if (y.status !== null) {
+          // บันทึกเฉพาะข้อที่ผ่าน/ไม่ผ่าน และ "ถึงชั้นปีที่ต้องประเมินแล้ว" เท่านั้น
+          if (y.status !== null && this.canEvaluate(y.ylo_name)) {
             evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
           }
         });
       });
       p.direct_ylos?.forEach((y) => {
-        if (y.status !== null) {
+        if (y.status !== null && this.canEvaluate(y.ylo_name)) {
           evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
         }
       });
@@ -318,6 +395,8 @@ export class PloAssessmentComponent implements OnInit {
     });
   }
 
+  // ==========================================
+
   exportStudentToExcel(student: StudentAssessment, event: Event) {
     event.stopPropagation();
     
@@ -329,13 +408,13 @@ export class PloAssessmentComponent implements OnInit {
     const bom = '\uFEFF';
     let csvContent = bom;
     
-    csvContent += `ความคืบหน้าภาพรวม (รายบุคคล)\n`;
+    csvContent += `ข้อมูลคะแนน PLO รายบุคคล\n`;
     csvContent += `ชื่อ-สกุล:, "${student.name}"\n`;
     csvContent += `รหัสนักศึกษา:, "${student.studentId}"\n`;
-    csvContent += `ความคืบหน้ารวมสะสม:, "${student.average !== null && student.average !== undefined ? student.average + '%' : '-'}"\n`;
+    csvContent += `คะแนนเฉลี่ยรวม:, "${student.average !== null && student.average !== undefined ? student.average + '%' : '-'}"\n`;
     csvContent += `สถานะ:, "${student.statusText}"\n\n`;
 
-    csvContent += `หัวข้อ,ความคืบหน้าสะสม (%)\n`;
+    csvContent += `หัวข้อ PLO,คะแนนที่ได้ (%)\n`;
 
     student.plos.forEach((plo) => {
       csvContent += `"${plo.label}","${plo.score}%"\n`;
@@ -344,7 +423,7 @@ export class PloAssessmentComponent implements OnInit {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `ความคืบหน้า_${student.studentId}_${student.name}.csv`;
+    link.download = `คะแนน_PLO_${student.studentId}_${student.name}.csv`;
     link.click();
   }
 
