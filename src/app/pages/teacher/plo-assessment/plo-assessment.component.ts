@@ -295,47 +295,48 @@ export class PloAssessmentComponent implements OnInit {
     return evaluable;
   }
 
-  calculateSubPLOProgress(sub: EvalSubPLO): number {
+ calculateSubPLOProgress(sub: EvalSubPLO): number {
     if (!sub.ylos || sub.ylos.length === 0) return 0;
     
-    // คำนวณเฉพาะข้อที่ถึงชั้นปีที่ประเมินได้แล้ว
+    // หาจำนวน YLO ที่ถึงชั้นปีที่ประเมินได้ (ตัวหารทั้งหมด)
     const evaluableYlos = sub.ylos.filter(y => this.canEvaluate(y.ylo_name));
     if (evaluableYlos.length === 0) return 0;
 
-    const evaluatedYlos = evaluableYlos.filter(y => y.status !== null);
-    if (evaluatedYlos.length === 0) return 0;
-
-    const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
-    return Math.round((passed / evaluatedYlos.length) * 100);
+    // 🌟 แก้ไข: หารด้วยจำนวน YLO ทั้งหมดที่กดได้ (ไม่ใช่แค่ข้อที่ถูกกด)
+    const passed = evaluableYlos.filter(y => y.status === 'passed').length;
+    return Math.round((passed / evaluableYlos.length) * 100);
   }
 
   calculatePLOProgress(plo: EvalPLO): number {
-    // 🌟 ถ้าโดนยกเว้น หรือ ไม่มี YLO ให้ประเมินได้ในปีนี้เลย ให้ค่าเป็น 0 ไว้ก่อน
+    // ถ้าโดนยกเว้น หรือ ไม่มี YLO ให้ประเมินได้ในปีนี้เลย ให้ค่าเป็น 0
     if (this.isExempt(plo) || !this.hasEvaluableYLOs(plo)) return 0;
 
+    // กรณีมี SubPLO
     if (plo.sub_plos && plo.sub_plos.length > 0) {
       let totalSubScore = 0;
-      let evaluatedSubCount = 0;
+      let evaluableSubCount = 0; 
 
       plo.sub_plos.forEach((sub) => {
-        const evaluableYlos = sub.ylos.filter(y => this.canEvaluate(y.ylo_name));
-        const hasEvaluated = evaluableYlos.some(y => y.status !== null);
-        if (hasEvaluated) {
+        const evaluableYlos = sub.ylos?.filter(y => this.canEvaluate(y.ylo_name)) || [];
+        
+        // 🌟 แก้ไข: ถ้า SubPLO นี้มี YLO ให้ประเมินได้ ต้องจับมาเป็นตัวหารเสมอ ไม่ว่าจะกดติ๊กแล้วหรือถูกปล่อยว่าง
+        if (evaluableYlos.length > 0) {
           totalSubScore += this.calculateSubPLOProgress(sub);
-          evaluatedSubCount++;
+          evaluableSubCount++;
         }
       });
       
-      return evaluatedSubCount === 0 ? 0 : Math.round(totalSubScore / evaluatedSubCount);
+      return evaluableSubCount === 0 ? 0 : Math.round(totalSubScore / evaluableSubCount);
     }
 
+    // กรณีไม่มี SubPLO (ยิงตรงมาที่ YLO)
     if (plo.direct_ylos && plo.direct_ylos.length > 0) {
       const evaluableYlos = plo.direct_ylos.filter(y => this.canEvaluate(y.ylo_name));
-      const evaluatedYlos = evaluableYlos.filter(y => y.status !== null);
-      if (evaluatedYlos.length === 0) return 0;
+      if (evaluableYlos.length === 0) return 0;
 
-      const passed = evaluatedYlos.filter(y => y.status === 'passed').length;
-      return Math.round((passed / evaluatedYlos.length) * 100);
+      // 🌟 แก้ไข: หารด้วยจำนวน YLO ทั้งหมดที่กดได้
+      const passed = evaluableYlos.filter(y => y.status === 'passed').length;
+      return Math.round((passed / evaluableYlos.length) * 100);
     }
 
     return 0;
@@ -347,24 +348,41 @@ export class PloAssessmentComponent implements OnInit {
 
     this.isSaving.set(true);
 
-    // 🌟 กรองก่อนส่ง! ส่งไปบันทึก "เฉพาะ" PLO ที่มี YLO ให้กดได้ในปีนี้เท่านั้น
+    // 🌟 1. กรองและคำนวณคะแนนระดับ PLO
     const evaluatedPLOs = this.evalPLOs()
-      .filter(p => !this.isExempt(p) && this.hasEvaluableYLOs(p))
+      .filter((p) => !this.isExempt(p) && this.hasEvaluableYLOs(p))
       .map((p) => ({
         code: p.plo_name,
         score: this.calculatePLOProgress(p),
       }));
 
     const evaluatedYLOs: any[] = [];
+    const evaluatedSubPLOs: any[] = []; // 🌟 เพิ่มตัวแปรเก็บ SubPLO
+
     this.evalPLOs().forEach((p) => {
+      
+      // 🌟 กรณีหลักสูตรที่มี SubPLO (เช่น PLO -> SubPLO -> YLO)
       p.sub_plos?.forEach((s) => {
+        let subPloHasEvaluation = false;
+
         s.ylos?.forEach((y) => {
-          // บันทึกเฉพาะข้อที่ผ่าน/ไม่ผ่าน และ "ถึงชั้นปีที่ต้องประเมินแล้ว" เท่านั้น
           if (y.status !== null && this.canEvaluate(y.ylo_name)) {
             evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
+            subPloHasEvaluation = true;
           }
         });
+
+        // ถ้า SubPLO นี้มีการติ๊กประเมิน YLO ข้างในไปแล้ว ให้บันทึกสถานะของ SubPLO ลง DB ด้วย
+        if (subPloHasEvaluation) {
+          const subProgress = this.calculateSubPLOProgress(s);
+          evaluatedSubPLOs.push({
+            id: s.sub_plo_id,
+            is_passed: subProgress >= 50 ? 1 : 0 // กำหนดให้ SubPLO สถานะผ่าน(1) เมื่อเปอร์เซ็นต์ >= 50%
+          });
+        }
       });
+
+      // 🌟 กรณีหลักสูตรที่ไม่มี SubPLO (มี YLO ตรงๆ)
       p.direct_ylos?.forEach((y) => {
         if (y.status !== null && this.canEvaluate(y.ylo_name)) {
           evaluatedYLOs.push({ id: y.ylo_id, is_passed: y.status === 'passed' ? 1 : 0 });
@@ -372,9 +390,11 @@ export class PloAssessmentComponent implements OnInit {
       });
     });
 
+    // 🌟 เอา sub_plos ยัดใส่ Payload เพื่อส่งให้ PHP API
     const payload = {
       student_id: student.id,
       plos: evaluatedPLOs,
+      sub_plos: evaluatedSubPLOs, 
       ylos: evaluatedYLOs,
     };
 
