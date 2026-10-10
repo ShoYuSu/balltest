@@ -101,10 +101,12 @@ export class ProfileSettingsComponent implements OnInit {
 
     if (!allowed.includes(file.type)) {
       this.profileError = 'รองรับเฉพาะไฟล์ JPG, PNG หรือ WEBP เท่านั้น';
+      this.cdr.detectChanges(); // บังคับอัปเดตแจ้งเตือน
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
       this.profileError = 'ขนาดไฟล์ต้องไม่เกิน 2MB';
+      this.cdr.detectChanges(); // บังคับอัปเดตแจ้งเตือน
       return;
     }
 
@@ -112,7 +114,12 @@ export class ProfileSettingsComponent implements OnInit {
     this.selectedFile = file;
 
     const reader = new FileReader();
-    reader.onload = () => (this.previewUrl = reader.result as string);
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+      
+      //  บังคับให้ Angular อัปเดต UI โชว์รูปใหม่ทันที!
+      this.cdr.detectChanges(); 
+    };
     reader.readAsDataURL(file);
   }
 
