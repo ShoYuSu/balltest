@@ -79,7 +79,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
             this.userImageUrl = imgProfile;
           } else {
             const cleanPath = imgProfile.startsWith('/') ? imgProfile.substring(1) : imgProfile;
-            this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
+            // 🌟 แก้ไข: ใช้ environment.apiUrl ดึงภาพจาก Backend ตัวจริง
+            this.userImageUrl = `${environment.apiUrl}/${cleanPath}`;
           }
         } else {
           this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
@@ -185,17 +186,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    //  1. ดึงรหัสผ่านทั้ง 2 ฝั่งออกมาพักไว้ก่อน
     const savedEmailStudent = localStorage.getItem('savedEmail_student');
     const savedPasswordStudent = localStorage.getItem('savedPassword_student');
     const savedEmailTeacher = localStorage.getItem('savedEmail_teacher');
     const savedPasswordTeacher = localStorage.getItem('savedPassword_teacher');
 
-    //  2. ล้างบางทุกอย่างทิ้ง
     localStorage.clear();
     sessionStorage.clear();
 
-    //  3. ยัดรหัสผ่านกลับเข้าไปใหม่ให้ครบทั้ง 2 ฝั่ง
     if (savedEmailStudent && savedPasswordStudent) {
       localStorage.setItem('savedEmail_student', savedEmailStudent);
       localStorage.setItem('savedPassword_student', savedPasswordStudent);
@@ -205,7 +203,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       localStorage.setItem('savedPassword_teacher', savedPasswordTeacher);
     }
 
-    // 4. ใช้ Angular Router พาไปหน้า Login แล้ว "บังคับรีเฟรชล้าง Memory" 1 รอบ!
     this.router.navigate(['/login']).then(() => {
       window.location.reload();
     });
