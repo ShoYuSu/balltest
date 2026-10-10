@@ -1,7 +1,7 @@
 <div class=" bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeAllDropdowns()">
 
   <div class="max-w-6xl mx-auto animate-fadeIn pb-12">
-    <div class="mb-8">
+    <div class="mb-8 mt-6">
       <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">บันทึกการปรึกษา — รายกลุ่ม</h1>
       <p class="text-gray-500 mt-2 text-sm md:text-base">ตรวจสอบประวัติและผลการให้คำปรึกษานักศึกษาแบบกลุ่มที่ได้ดำเนินการไปแล้ว</p>
     </div>
@@ -13,8 +13,6 @@
         <!-- 🌟 ส่วนค้นหา -->
         <div class="relative w-full sm:max-w-md group flex-grow">
           <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
-
-          <!-- แก้ไข: ใส่ h-12 แทน py-3 และแก้ border ให้เหลือแค่ border-gray-200 -->
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
                  placeholder="ค้นหาหัวข้อ, บันทึก หรือชื่อนักศึกษา..."
                  class="w-full h-12 pl-12 pr-10 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm font-medium">
@@ -28,8 +26,6 @@
 
         <!-- 🌟 ส่วน Dropdown -->
         <div class="relative min-w-[170px]">
-
-          <!-- แก้ไข: ใส่ h-12 เหมือนกัน และเอา py-3 ออก เพื่อให้ความสูงเท่ากันเป๊ะ -->
           <button (click)="toggleFilterDropdown($event)"
                   class="w-full h-12 flex items-center justify-between bg-white border-2 border-gray-200 text-gray-700 px-4 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm font-medium">
             {{ selectedFilter() }}
@@ -64,7 +60,7 @@
       @for (app of paginatedAppointments(); track app.id) {
         <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 relative group transition-all duration-300 hover:shadow-md">
 
-          <div class="absolute top-6 right-6">
+          <div class="absolute top-6 right-6 z-10">
             <button (click)="toggleDropdown(app.id, $event)"
                     class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
               <span class="material-symbols-outlined">more_vert</span>
@@ -85,35 +81,69 @@
             }
           </div>
 
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 pr-10">
-            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-              <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
-              <span class="text-sm font-bold text-gray-700">{{ app.date }}</span>
+          <!-- 🌟 Header Tags -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5 pr-10">
+            <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ app.type }}</span>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-extrabold rounded-lg border border-purple-100">
+              <span class="material-symbols-outlined text-[14px]">groups</span>
+              รายกลุ่ม ({{ app.students.length }} คน)
             </div>
-            <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-              <span class="material-symbols-outlined text-gray-400 text-sm">schedule</span>
-              <span class="text-sm font-bold text-gray-700">{{ app.time }}</span>
-            </div>
-            <span class="px-3 py-1.5 bg-cyan-50 text-cyan-700 text-xs font-extrabold rounded-lg border border-cyan-100">{{ app.type }}</span>
           </div>
 
-          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ app.topic }}</h3>
+          <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-5">{{ app.topic }}</h3>
+
+          <!-- 🌟 Grid ข้อมูลการนัดหมาย (วันที่, เวลา, เทอม, สถานที่) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 mb-6 bg-gray-50/70 p-4 rounded-xl border border-gray-100">
+            <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+              <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">calendar_month</span>
+              <span class="truncate">{{ app.date }}</span>
+            </div>
+            
+            <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+              <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">schedule</span>
+              <span class="truncate">
+                {{ app.time }} @if(app.endTime){- {{ app.endTime }} น.} @else{น.}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+              <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">school</span>
+              <span class="truncate">ปีการศึกษา {{ app.academicYear }} / ภาคเรียนที่ {{ app.semester }}</span>
+            </div>
+
+            <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+              <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">location_on</span>
+              <span class="truncate">{{ app.location }}</span>
+            </div>
+          </div>
+
+          <!-- 🌟 โชว์รายละเอียดเพิ่มเติมแบบแยกส่วน -->
           @if (app.details) {
-            <p class="text-sm text-gray-500 mb-4">{{ app.details }}</p>
+            <div class="mb-5">
+              <label class="block text-[13px] font-bold text-gray-700 mb-2">รายละเอียดเพิ่มเติม</label>
+              <div class="w-full p-4 bg-gray-50/80 border border-gray-200 rounded-xl text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">
+                {{ app.details }}
+              </div>
+            </div>
           }
 
-          <div class="relative bg-orange-50/50 p-5 rounded-2xl border border-orange-100 mb-6">
-            <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-orange-200 rotate-180 bg-white rounded-full">format_quote</span>
-            <p class="relative z-10 pt-1 text-gray-800 text-sm leading-relaxed whitespace-pre-wrap font-medium">{{ app.note }}</p>
+          <!-- 🌟 โชว์บันทึกผลการปรึกษาแบบแยกส่วน -->
+          <div class="mb-6">
+            <label class="block text-[13px] font-bold text-gray-700 mb-2">บันทึกผลการปรึกษา</label>
+            <div class="relative bg-orange-50/50 p-5 sm:p-6 rounded-2xl border border-orange-100">
+              <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-orange-200 rotate-180 bg-white rounded-full shadow-sm">format_quote</span>
+              <p class="relative z-10 pt-1 text-gray-800 text-sm leading-relaxed whitespace-pre-wrap font-medium">{{ app.note || 'ไม่มีรายละเอียดผลการให้คำปรึกษา' }}</p>
+            </div>
           </div>
 
+          <!-- 🌟 รายชื่อนักศึกษา -->
           <div class="pt-5 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <span class="text-sm font-bold text-gray-500">นักศึกษาที่เข้าร่วมกลุ่ม ({{ app.students.length }} คน):</span>
+            <span class="text-sm font-bold text-gray-500">นักศึกษาที่เข้าร่วมกลุ่ม:</span>
             <div class="flex items-center flex-wrap gap-2">
               @for (student of app.students; track student.id) {
-                <div class="flex items-center gap-2 bg-white border border-gray-200 px-2 py-1 rounded-full shadow-sm">
-                  <img [src]="student.img" (error)="onImgError($event, student.name)" class="w-6 h-6 rounded-full object-cover">
-                  <span class="text-xs font-bold text-gray-700 pr-1">{{ student.name }}</span>
+                <div class="flex items-center gap-2 bg-white border border-gray-200 px-2.5 py-1.5 rounded-full shadow-sm">
+                  <img [src]="student.img" (error)="onImgError($event, student.name)" class="w-6 h-6 rounded-full object-cover shrink-0">
+                  <span class="text-[11px] sm:text-xs font-bold text-gray-700 pr-1">{{ student.name }}</span>
                 </div>
               }
             </div>
@@ -184,12 +214,21 @@
             {{ editingLog.topic }}
           </div>
         </div>
+
+        <!-- 🌟 โชว์รายละเอียดเพิ่มเติมให้ดู (Readonly) -->
+        <div>
+          <label class="block text-[13px] font-bold text-gray-700 mb-1.5">รายละเอียดเพิ่มเติม</label>
+          <div class="w-full p-3 bg-gray-50/80 border border-gray-200 rounded-xl text-gray-600 text-sm whitespace-pre-wrap min-h-[60px]">
+            {{ editingLog.details || 'ไม่มีรายละเอียดเพิ่มเติม' }}
+          </div>
+        </div>
+
         <div>
           <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between">
-            รายละเอียดผลการปรึกษา
+            ผลการปรึกษา
             <span class="text-xs font-normal text-gray-400">แก้ไขข้อความด้านล่าง</span>
           </label>
-          <textarea [(ngModel)]="editingLog.note" rows="6" placeholder="พิมพ์รายละเอียดที่ต้องการแก้ไข..."
+          <textarea [(ngModel)]="editingLog.note" rows="5" placeholder="พิมพ์แก้ไขผลการให้คำปรึกษา..."
                     class="w-full p-4 bg-white border border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all resize-none text-sm leading-relaxed"></textarea>
         </div>
       </div>

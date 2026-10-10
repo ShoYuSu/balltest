@@ -79,12 +79,11 @@ export class GroupConsultationAppointments implements OnInit {
   selectedStudentIds = signal<string[]>([]);
 
   ngOnInit() {
-    this.loadTypes(); // 🌟 ดึงประเภทจากฐานข้อมูลก่อน
+    this.loadTypes();
     this.loadAppointments();
     this.loadMyStudents();
   }
 
-  // 🌟 ฟังก์ชันโหลดประเภทนัดหมายจาก DB
   loadTypes() {
     this.http.get<any>(`${environment.apiUrl}/get_appointment_types.php`).subscribe({
       next: (res) => {
@@ -210,7 +209,6 @@ export class GroupConsultationAppointments implements OnInit {
     this.isEditTypeOpen.set(false);
   }
 
-  // 🌟 เพิ่มประเภทใหม่ผ่าน API
   addCreateType() {
     const val = this.newApp.type.trim();
     if (val && !this.availableTypes().includes(val)) {
@@ -223,7 +221,6 @@ export class GroupConsultationAppointments implements OnInit {
     this.isCreateTypeOpen.set(false);
   }
 
-  // 🌟 เพิ่มประเภทใหม่ผ่าน API
   addEditType() {
     const val = this.editingApp?.type?.trim();
     if (val && !this.availableTypes().includes(val)) {
@@ -236,7 +233,6 @@ export class GroupConsultationAppointments implements OnInit {
     this.isEditTypeOpen.set(false);
   }
 
-  // 🌟 ลบประเภทผ่าน API
   deleteType(type: string, e: Event) {
     e.stopPropagation();
     const inUseCount = this.appointments().filter((a) => a.type === type).length;
@@ -256,7 +252,6 @@ export class GroupConsultationAppointments implements OnInit {
     });
   }
 
-  // 🌟 เพิ่มประเภทจาก Modal ผ่าน API
   addNewTypeFromModal() {
     const val = this.newTypeInput().trim();
     if (!val) return;
@@ -416,6 +411,7 @@ export class GroupConsultationAppointments implements OnInit {
     }
   }
 
+  // 🌟 ฟังก์ชันเปิด Modal แก้ไขรายละเอียด (แยกตัวแปรรายละเอียดให้ชัดเจน)
   openLogModal(app: any) {
     this.editingApp = { ...app, note: app.note || '' };
     this.isLogModalOpen.set(true);
@@ -504,7 +500,6 @@ export class GroupConsultationAppointments implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
   }
 
-  // 🌟 แก้ Syntax error ที่เกิดจากการตัดบรรทัดผิด (เปลี่ยนมาใช้ ' - ')
   formatTime(start: string, end?: string): string {
     let str = start ? start.substring(0, 5) : '';
     if (end) {
@@ -531,43 +526,6 @@ export class GroupConsultationAppointments implements OnInit {
     this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
   }
 
-  exportToExcel() {
-    const data = this.filteredAppointments();
-    if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
-
-    const headers = [
-      'หัวข้อ',
-      'ประเภท',
-      'สถานะ',
-      'วันที่',
-      'เวลา',
-      'รายละเอียด',
-      'จำนวนนักศึกษา(คน)',
-    ];
-
-    const csvRows = data.map((app) =>
-      [
-        `"${app.topic}"`,
-        `"${app.type}"`,
-        `"${app.status}"`,
-        `"=""${app.date}"""`,
-        `"${app.time}"`,
-        `"${app.details}"`,
-        `"${app.students.length}"`,
-      ].join(','),
-    );
-
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
-      type: 'text/csv;charset=utf-8;',
-    });
-
-    const link = document.createElement('a');
-    link.setAttribute('href', URL.createObjectURL(blob));
-    link.setAttribute('download', 'ข้อมูลนัดหมายกลุ่ม.csv');
-    link.click();
-  }
-
   openCreateModal() {
     this.newApp = {
       date: '',
@@ -589,5 +547,64 @@ export class GroupConsultationAppointments implements OnInit {
     this.newTypeInput.set('');
 
     this.isCreateModalOpen.set(true);
+  }
+
+  // 🌟 ฟังก์ชัน Export ให้ครอบคลุมทุก Field และกัน CSV พัง
+  exportToExcel() {
+    const data = this.filteredAppointments();
+    if (data.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
+
+    // 1. เพิ่มคอลัมน์ให้ครบใน Headers
+    const headers = [
+      'หัวข้อ',
+      'ประเภท',
+      'สถานะ',
+      'วันที่',
+      'เวลาเริ่ม-สิ้นสุด',
+      'ปีการศึกษา',
+      'ภาคเรียน',
+      'สถานที่',
+      'รายละเอียดเพิ่มเติม',
+      'บันทึกผลการปรึกษา',
+      'จำนวนนักศึกษา(คน)',
+    ];
+
+    const csvRows = data.map((app) => {
+      // 2. ดึงข้อมูลใหม่มาใส่ตัวแปร
+      const timeDisplay = app.rawEndTime ? `${app.rawTime} - ${app.rawEndTime}` : app.rawTime;
+      const acaYear = app.academicYear || '-';
+      const term = app.semester || '-';
+      const loc = app.location || '-';
+
+      // 3. ป้องกันไฟล์ CSV พังด้วยการแทนที่ " ด้วย ""
+      const safeTopic = app.topic ? app.topic.replace(/"/g, '""') : '';
+      const safeDetails = app.details ? app.details.replace(/"/g, '""') : '';
+      const safeNote = app.note ? app.note.replace(/"/g, '""') : '';
+
+      // 4. เรียงข้อมูลลง CSV ให้ตรงกับ Headers
+      return [
+        `"${safeTopic}"`,
+        `"${app.type}"`,
+        `"${app.status}"`,
+        `"=""${app.date}"""`,
+        `"${timeDisplay}"`,
+        `"${acaYear}"`,
+        `"${term}"`,
+        `"${loc}"`,
+        `"${safeDetails}"`,
+        `"${safeNote}"`,
+        `"${app.students.length}"`,
+      ].join(',');
+    });
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
+      type: 'text/csv;charset=utf-8;',
+    });
+
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', 'ข้อมูลนัดหมายกลุ่ม.csv');
+    link.click();
   }
 }

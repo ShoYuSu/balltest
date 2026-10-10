@@ -68,7 +68,7 @@ export class GroupRecord implements OnInit {
   }
 
   loadGroupRecords() {
-    // ✅ ลบการเรียก advisor_id จาก localStorage และ URL ออก ปล่อยให้ Interceptor จัดการ Token
+    // ใช้ API เดิมที่รองรับ Token แล้ว
     const url = `${this.apiUrl}/get_appointments.php?t=${new Date().getTime()}`;
 
     this.http.get<any[]>(url).subscribe({
@@ -92,10 +92,16 @@ export class GroupRecord implements OnInit {
           type: app.type || '',
           status: app.status,
           note: app.note || '',
-          details: app.description || '',
+          details: app.description || '', // 🌟 แมปฟิลด์รายละเอียดเพิ่มเติมมาใช้งาน
           date: this.formatThaiDate(app.appointment_date),
-          time: app.start_time ? app.start_time.substring(0, 5) + ' น.' : '',
           rawDate: app.appointment_date,
+          // 🌟 แมปเวลา ปีการศึกษา สถานที่ ให้ครบ
+          time: app.start_time ? app.start_time.substring(0, 5) : '',
+          endTime: app.end_time ? app.end_time.substring(0, 5) : null,
+          academicYear: app.academic_year || '-',
+          semester: app.semester || '-',
+          location: app.location || '-',
+          
           students: (app.students || []).map((s: any) => ({
             id: s.id,
             name: s.name,
@@ -238,31 +244,48 @@ export class GroupRecord implements OnInit {
     this.currentPage.set(page);
   }
 
+  // 🌟 อัปเดตฟังก์ชัน Export ให้ครบถ้วน
   exportToExcel() {
     const data = this.filteredAppointments();
     if (!data.length) return alert('ไม่มีข้อมูลสำหรับ Export');
 
+    // 1. เพิ่ม Headers ให้ครบ
     const headers = [
       'หัวข้อ',
       'ประเภท',
       'วันที่',
-      'เวลา',
-      'สิ่งที่นักศึกษาปรึกษา',
+      'เวลาเริ่ม-สิ้นสุด',
+      'ปีการศึกษา',
+      'ภาคเรียน',
+      'สถานที่',
+      'รายละเอียดเพิ่มเติม',
       'บันทึกผลการปรึกษา',
       'จำนวนนักศึกษา(คน)',
     ];
 
-    const csvRows = data.map((app) =>
-      [
-        `"${app.topic}"`,
+    const csvRows = data.map((app) => {
+      // 2. จัดการการแสดงผลเวลา
+      const timeDisplay = app.endTime ? `${app.time} - ${app.endTime} น.` : `${app.time} น.`;
+      
+      // 3. ป้องกันไฟล์ CSV พังด้วยการ replace " เป็น "" สำหรับข้อความยาวๆ
+      const safeTopic = app.topic ? app.topic.replace(/"/g, '""') : '';
+      const safeDetails = app.details ? app.details.replace(/"/g, '""') : '';
+      const safeNote = app.note ? app.note.replace(/"/g, '""') : '';
+
+      // 4. เรียงข้อมูลลง CSV
+      return [
+        `"${safeTopic}"`,
         `"${app.type}"`,
-        `"=""${app.date}"""`, // 🌟 บังคับให้วันที่เป็นข้อความ ป้องกันการแสดงผล ###### ใน Excel
-        `"${app.time}"`,
-        `"${app.details}"`,
-        `"${app.note}"`,
+        `"=""${app.date}"""`, 
+        `"${timeDisplay}"`,
+        `"${app.academicYear}"`,
+        `"${app.semester}"`,
+        `"${app.location}"`,
+        `"${safeDetails}"`,
+        `"${safeNote}"`,
         `"${app.students.length}"`,
-      ].join(','),
-    );
+      ].join(',');
+    });
 
     const bom = '\uFEFF';
     const blob = new Blob([bom + [headers.join(','), ...csvRows].join('\n')], {
