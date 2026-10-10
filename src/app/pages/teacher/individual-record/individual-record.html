@@ -1,7 +1,7 @@
-<div class=" bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeDropdowns()">
+<div class="bg-[#f8fafc] min-h-screen font-sans text-gray-800" (click)="closeDropdowns()">
 
   @if (!selectedStudent()) {
-    <div class="max-w-6xl mx-auto animate-fadeIn">
+    <div class="max-w-6xl mx-auto animate-fadeIn p-4 md:p-8">
 
       <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">บันทึกการปรึกษา</h1>
@@ -13,7 +13,7 @@
           <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300">search</span>
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="currentPage.set(1)"
                  placeholder="ค้นหาด้วยชื่อ หรือ รหัสนักศึกษา..."
-                 class="w-full pl-12 pr-10 py-3 bg-white  border-2 order border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
+                 class="w-full pl-12 pr-10 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm font-medium">
           @if (searchQuery()) {
             <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
               <span class="material-symbols-outlined text-sm">close</span>
@@ -100,7 +100,7 @@
   }
 
   @else {
-    <div class="max-w-4xl mx-auto animate-fadeIn pb-12">
+    <div class="max-w-4xl mx-auto animate-fadeIn pb-12 p-4 md:p-8">
 
       <button (click)="goBack()" class="mb-6 flex items-center gap-2 text-gray-500 hover:text-orange-600 font-bold transition-colors group">
         <span class="material-symbols-outlined bg-white rounded-full p-1 shadow-sm border border-gray-100 group-hover:border-orange-200 transition-colors">arrow_back</span>
@@ -196,30 +196,13 @@
                     }
                   </div>
 
-                  <div class="flex flex-col flex-wrap sm:flex-row sm:items-center gap-3 mb-4 pr-8">
-                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                      <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
-                      <span class="text-sm font-bold text-gray-700">{{ formatThaiDate(log.date) }}</span>
-                    </div>
-
-                    <!-- 🌟 เพิ่มจุดแสดงเวลาสิ้นสุดตรงนี้ครับ -->
-                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                      <span class="material-symbols-outlined text-gray-400 text-sm">schedule</span>
-                      <span class="text-sm font-bold text-gray-700">
-                        {{ log.time ? log.time.substring(0, 5) : '' }}
-                        @if (log.end_time) {
-                          - {{ log.end_time.substring(0, 5) }}
-                        }
-                        น.
-                      </span>
-                    </div>
-
-                    <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ log.type }}</span>
-
+                  <!-- 🌟 ส่วน Header Tag (ประเภท และ รายเดี่ยว/กลุ่ม) -->
+                  <div class="flex items-center gap-2 mb-4 pr-8">
+                    <span class="px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-extrabold rounded-lg border border-orange-100">{{ log.type || 'ทั่วไป' }}</span>
                     @if (log.isGroup) {
                       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-extrabold rounded-lg border border-purple-100" title="ให้คำปรึกษาแบบกลุ่ม">
                         <span class="material-symbols-outlined text-[14px]">groups</span>
-                        รายกลุ่ม ({{ log.memberCount }} คน)
+                        รายกลุ่ม ({{ log.memberCount || 0 }} คน)
                       </div>
                     } @else {
                       <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-extrabold rounded-lg border border-blue-100" title="ให้คำปรึกษาแบบเดี่ยว">
@@ -229,11 +212,60 @@
                     }
                   </div>
 
-                  <h3 class="text-xl font-bold text-gray-800 mb-3">{{ log.title }}</h3>
+                  <h3 class="text-xl font-bold text-gray-800 mb-4">{{ log.title }}</h3>
 
-                  <div class="relative bg-blue-50/50 p-5 rounded-xl border border-blue-100/50 text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                    <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-blue-200 rotate-180 bg-white rounded-full">format_quote</span>
-                    <span class="relative z-10 block pt-1">{{ log.note }}</span>
+                  <!-- 🌟 Grid ข้อมูลการนัดหมายแบบละเอียด (วันที่, เวลา, เทอม, สถานที่) -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 mb-5 bg-gray-50/70 p-4 rounded-xl border border-gray-100">
+                    <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+                      <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">calendar_month</span>
+                      <span class="truncate">{{ formatThaiDate(log.date) }}</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+                      <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">schedule</span>
+                      <span class="truncate">
+                        {{ log.time ? log.time.substring(0, 5) : '--:--' }} 
+                        @if (log.end_time) {
+                          - {{ log.end_time.substring(0, 5) }} 
+                        }
+                        น.
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+                      <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">school</span>
+                      <span class="truncate">
+                        @if (log.academic_year || log.semester) {
+                          ปีการศึกษา {{ log.academic_year || '-' }} / ภาคเรียนที่ {{ log.semester || '-' }}
+                        } @else {
+                          ไม่ระบุปีการศึกษา
+                        }
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-2.5 text-sm font-medium text-gray-600">
+                      <span class="material-symbols-outlined text-[18px] text-gray-400 shrink-0">location_on</span>
+                      <span class="truncate">{{ log.location || 'ไม่ระบุสถานที่' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- 🌟 กล่องโชว์รายละเอียดเพิ่มเติม (ดึงจาก log.details ตามที่แก้ใหม่) -->
+                  @if (log.details) {
+                    <div class="mb-4">
+                      <label class="block text-[13px] font-bold text-gray-700 mb-1.5">รายละเอียดเพิ่มเติม</label>
+                      <div class="w-full p-3 bg-gray-50/80 border border-gray-200 rounded-xl text-gray-600 text-sm whitespace-pre-wrap min-h-[60px]">
+                        {{ log.details }}
+                      </div>
+                    </div>
+                  }
+
+                  <!-- 🌟 บันทึกผลการปรึกษา (ดึงจาก log.note อันนี้ของจริง ไม่ซ้ำแล้ว) -->
+                  <div>
+                    <label class="block text-[13px] font-bold text-gray-700 mb-1.5">บันทึกผลการปรึกษา</label>
+                    <div class="relative bg-blue-50/50 p-5 rounded-xl border border-blue-100/50 text-gray-700 text-sm leading-relaxed whitespace-pre-wrap mt-2">
+                      <span class="material-symbols-outlined absolute -top-3 -left-2 text-3xl text-blue-200 rotate-180 bg-white rounded-full">format_quote</span>
+                      <span class="relative z-10 block pt-1">{{ log.note || 'ไม่มีรายละเอียดการบันทึก...' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -274,9 +306,18 @@
             {{ editingLog.title }}
           </div>
         </div>
+        
+        <!-- 🌟 แทรกรายละเอียดเพิ่มเติมที่นี่ครับ -->
         <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1.5 flex justify-between">
-            รายละเอียดที่บันทึก
+          <label class="block text-[13px] font-bold text-gray-700 mb-1.5">รายละเอียดเพิ่มเติม</label>
+          <div class="w-full p-3 bg-gray-50/80 border border-gray-200 rounded-xl text-gray-600 text-sm whitespace-pre-wrap min-h-[60px]">
+            {{ editingLog.details || 'ไม่มีรายละเอียดเพิ่มเติม' }}
+          </div>
+        </div>
+        
+        <div>
+          <label class=" text-sm font-bold text-gray-700 mb-1.5 flex justify-between">
+            ผลการให้คำปรึกษา
             <span class="text-xs font-normal text-gray-400">แก้ไขข้อความด้านล่าง</span>
           </label>
           <textarea [(ngModel)]="editingLog.note" rows="6" placeholder="พิมพ์รายละเอียด..."

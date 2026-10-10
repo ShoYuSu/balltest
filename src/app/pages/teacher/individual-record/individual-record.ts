@@ -35,7 +35,7 @@ export class IndividualRecord implements OnInit {
   });
 
   paginatedStudents = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize(); // 🌟 แก้ไขโค้ดที่บรรทัดขาดให้สมบูรณ์
+    const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredStudents().slice(start, start + this.pageSize());
   });
 
@@ -100,9 +100,7 @@ export class IndividualRecord implements OnInit {
   viewStudentLogs(student: any) {
     this.selectedStudent.set(student);
     this.http
-      .get<
-        any[]
-      >(`${this.apiUrl}/get_student_consultation_logs.php?student_id=${student.student_id}&t=${Date.now()}`)
+      .get<any[]>(`${this.apiUrl}/get_student_consultation_logs.php?student_id=${student.student_id}&t=${Date.now()}`)
       .subscribe({
         next: (data) => this.studentLogs.set(data || []),
         error: () => this.studentLogs.set([]),
@@ -245,7 +243,6 @@ export class IndividualRecord implements OnInit {
 
     const csvRows = data.map(
       (s) =>
-        // 🌟 บังคับรหัสนักศึกษาและวันที่ให้เป็นข้อความ
         `"=""${s.student_code}""","${s.full_name}","${s.year}","${s.total_records}","=""${s.formattedLatestDate}"""`,
     );
     this.downloadCSV(headers, csvRows, 'สรุปประวัติการปรึกษารวม.csv');
@@ -256,16 +253,27 @@ export class IndividualRecord implements OnInit {
     const student = this.selectedStudent();
     if (!data.length) return alert('ไม่มีข้อมูล');
 
-    const headers = ['วันที่', 'เวลา', 'ประเภท', 'รูปแบบ', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
+    // 🌟 1. เพิ่มคอลัมน์ให้ครบใน Headers
+    const headers = ['วันที่', 'เวลา', 'ปีการศึกษา', 'ภาคเรียน', 'สถานที่', 'ประเภท', 'รูปแบบ', 'หัวข้อ', 'รายละเอียดการปรึกษา'];
+    
     const csvRows = data.map((l) => {
       const startTime = l.time ? l.time.substring(0, 5) : '';
       const endTime = l.end_time ? l.end_time.substring(0, 5) : '';
-
-      // 🌟 แก้ไขโค้ดที่บรรทัดขาดให้สมบูรณ์ (ใช้ขีดกลางคั่นเวลา)
       const timeDisplay = endTime ? `${startTime} - ${endTime}` : startTime;
 
-      // 🌟 บังคับวันที่ให้เป็นข้อความ
-      return `"=""${this.formatThaiDate(l.date)}""","${timeDisplay}","${l.type}","${l.isGroup ? 'กลุ่ม' : 'เดี่ยว'}","${l.title}","${l.note}"`;
+      // 🌟 2. ดึงข้อมูลใหม่มาใส่ตัวแปร
+      const acaYear = l.academic_year || '-';
+      const term = l.semester || '-';
+      const loc = l.location || '-';
+      const type = l.type || '-';
+      const format = l.isGroup ? 'กลุ่ม' : 'เดี่ยว';
+
+      // 🌟 3. ป้องกันไฟล์ CSV พังด้วยการแทนที่ " ด้วย "" สำหรับข้อมูลที่มีสิทธิ์พิมพ์ยาวๆ หรือขึ้นบรรทัดใหม่
+      const safeTitle = l.title ? l.title.replace(/"/g, '""') : '';
+      const safeNote = l.note ? l.note.replace(/"/g, '""') : '';
+
+      // 🌟 4. เรียงข้อมูลลง CSV ให้ตรงกับ Headers
+      return `"=""${this.formatThaiDate(l.date)}""","${timeDisplay}","${acaYear}","${term}","${loc}","${type}","${format}","${safeTitle}","${safeNote}"`;
     });
 
     this.downloadCSV(headers, csvRows, `ประวัติการปรึกษา_${student.student_code}.csv`);
