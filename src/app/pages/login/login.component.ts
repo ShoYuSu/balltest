@@ -41,13 +41,14 @@ export class LoginComponent implements OnInit {
         localStorage.removeItem('must_change_password');
         window.history.replaceState({}, document.title, window.location.pathname);
       }
-      this.loadSavedCredentials();
     });
   }
 
+  // ฟังก์ชันดึงรหัสผ่านแบบแยกตาม Role
   loadSavedCredentials() {
-    const savedEmail = localStorage.getItem('savedEmail');
-    const savedPassword = localStorage.getItem('savedPassword');
+    const roleKey = this.isStudentPage ? 'student' : 'teacher';
+    const savedEmail = localStorage.getItem(`savedEmail_${roleKey}`);
+    const savedPassword = localStorage.getItem(`savedPassword_${roleKey}`);
 
     if (savedEmail && savedPassword) {
       try {
@@ -58,21 +59,33 @@ export class LoginComponent implements OnInit {
         });
       } catch (e) {
         console.error('รหัสผ่านเก่าอ่านไม่ได้ ล้างทิ้งซะเลย', e);
-        localStorage.removeItem('savedEmail');
-        localStorage.removeItem('savedPassword');
+        localStorage.removeItem(`savedEmail_${roleKey}`);
+        localStorage.removeItem(`savedPassword_${roleKey}`);
       }
+    } else {
+      this.loginForm.reset({ email: '', password: '', rememberMe: false });
     }
   }
 
   setStep(step: 'select' | 'student' | 'teacher') {
     this.loginStep = step;
-    this.isStudentPage = step === 'student';
+    
+    if (step !== 'select') {
+      this.isStudentPage = step === 'student';
+      //  สั่งให้ Angular วาดฟอร์มให้เสร็จก่อน
+      this.cdr.detectChanges(); 
+      
+      //  หน่วงเวลา 50ms แล้วค่อยดึงข้อมูลมายัดใส่ฟอร์ม (กันปัญหาฟอร์มล้างค่าตัวเอง)
+      setTimeout(() => {
+        this.loadSavedCredentials();
+        this.cdr.detectChanges();
+      }, 50);
 
-    this.loadSavedCredentials();
-    if (!localStorage.getItem('savedEmail')) {
+    } else {
+      // กลับหน้าเลือก ให้ล้างฟอร์ม
       this.loginForm.reset({ email: '', password: '', rememberMe: false });
+      this.cdr.detectChanges();
     }
-    this.cdr.detectChanges();
   }
 
   closeModal() {
@@ -89,6 +102,7 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     const { email, password, rememberMe } = this.loginForm.value;
+    const roleKey = this.isStudentPage ? 'student' : 'teacher';
 
     this.http
       .post(`${environment.apiUrl}/login.php`, {
@@ -105,30 +119,28 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('token', tokenToSave);
             localStorage.setItem('img_profile', res.img_profile || '');
 
+            //  บันทึกรหัสผ่านแยกลง LocalStorage
             if (rememberMe) {
-              localStorage.setItem('savedEmail', email as string);
-              localStorage.setItem('savedPassword', btoa(password as string));
+              localStorage.setItem(`savedEmail_${roleKey}`, email as string);
+              localStorage.setItem(`savedPassword_${roleKey}`, btoa(password as string));
             } else {
-              localStorage.removeItem('savedEmail');
-              localStorage.removeItem('savedPassword');
+              localStorage.removeItem(`savedEmail_${roleKey}`);
+              localStorage.removeItem(`savedPassword_${roleKey}`);
             }
 
-            // บันทึกสถานะการเปลี่ยนรหัสผ่านลง LocalStorage
             if (res.must_change_password) {
               localStorage.setItem('must_change_password', 'true');
             } else {
               localStorage.removeItem('must_change_password');
             }
 
-            // เช็คการนำทางแยกตาม Role และสถานะเปลี่ยนรหัสผ่าน
+            // นำทาง
             if (role === 'student') {
               if (res.must_change_password) {
-                // 🌟 วิธี B: ไปหน้า personal-data พร้อมส่งค่าบอกให้เปิด Modal ลอยทับ
                 this.router.navigate(['/personal-data'], {
                   queryParams: { showPasswordModal: 'true' },
                 });
               } else {
-                // ถ้าเปลี่ยนรหัสแล้ว ให้พาไปหน้าประวัติตามปกติ
                 this.router.navigate(['/personal-data']);
               }
             } else {

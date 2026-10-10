@@ -73,24 +73,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.studentCode = payload.student_code || '';
         this.userName = payload.full_name || 'ผู้ใช้งาน';
 
-        // 🌟 แก้ไข: ดึง URL รูปภาพจาก Token แทน Local Storage
         const imgProfile = payload.img_profile || '';
         if (imgProfile && imgProfile !== 'null') {
-          // ดักกรณีรูปเป็นลิงก์ http อยู่แล้ว
           if (imgProfile.startsWith('http')) {
             this.userImageUrl = imgProfile;
           } else {
-            // ดักกรณีเป็น path ธรรมดา
             const cleanPath = imgProfile.startsWith('/') ? imgProfile.substring(1) : imgProfile;
             this.userImageUrl = `http://localhost:8080/api/${cleanPath}`;
           }
         } else {
-          // ถ้าไม่มีรูป ให้ใช้รูปตัวอักษรจาก ui-avatars ตามเดิม
           this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
         }
       }
     } else {
-      // กรณีไม่มี Token กันพัง
       this.userImageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=fff7ed&color=ea580c`;
     }
 
@@ -175,9 +170,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/advisor-record']);
   }
 
- goToProfileSettings() {
+  goToProfileSettings() {
     this.isDropdownOpen = false;
-    // ใช้ Router นำทางไปยัง Path ที่ตั้งไว้ใน app.routes.ts
     this.router.navigate(['/profile-settings']); 
   }
 
@@ -191,18 +185,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    // 1. ดึงรหัสผ่านที่จำไว้ออกมาพักไว้
-    const savedEmail = localStorage.getItem('savedEmail');
-    const savedPassword = localStorage.getItem('savedPassword');
+    //  1. ดึงรหัสผ่านทั้ง 2 ฝั่งออกมาพักไว้ก่อน
+    const savedEmailStudent = localStorage.getItem('savedEmail_student');
+    const savedPasswordStudent = localStorage.getItem('savedPassword_student');
+    const savedEmailTeacher = localStorage.getItem('savedEmail_teacher');
+    const savedPasswordTeacher = localStorage.getItem('savedPassword_teacher');
 
-    // 2. ล้างบางทุกอย่างทิ้ง (Token หาย 100%)
+    //  2. ล้างบางทุกอย่างทิ้ง
     localStorage.clear();
-    sessionStorage.clear(); // กันเหนียวเผื่อมีขยะค้าง
+    sessionStorage.clear();
 
-    // 3. ยัดรหัสผ่านกลับเข้าไปใหม่
-    if (savedEmail && savedPassword) {
-      localStorage.setItem('savedEmail', savedEmail);
-      localStorage.setItem('savedPassword', savedPassword);
+    //  3. ยัดรหัสผ่านกลับเข้าไปใหม่ให้ครบทั้ง 2 ฝั่ง
+    if (savedEmailStudent && savedPasswordStudent) {
+      localStorage.setItem('savedEmail_student', savedEmailStudent);
+      localStorage.setItem('savedPassword_student', savedPasswordStudent);
+    }
+    if (savedEmailTeacher && savedPasswordTeacher) {
+      localStorage.setItem('savedEmail_teacher', savedEmailTeacher);
+      localStorage.setItem('savedPassword_teacher', savedPasswordTeacher);
     }
 
     // 4. ใช้ Angular Router พาไปหน้า Login แล้ว "บังคับรีเฟรชล้าง Memory" 1 รอบ!
