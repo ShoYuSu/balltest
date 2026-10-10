@@ -83,13 +83,14 @@ export class ProfileSettingsComponent implements OnInit {
       });
   }
 
-  private resolveImageUrl(img: string | null): string {
+ private resolveImageUrl(img: string | null): string {
     if (!img || img === 'null') {
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.fullName || 'U')}&background=fff7ed&color=ea580c`;
     }
     if (img.startsWith('http')) return img;
     const cleanPath = img.startsWith('/') ? img.substring(1) : img;
-    return `http://localhost:8080/api/${cleanPath}`;
+    
+    return `${environment.apiUrl}/${cleanPath}`;
   }
 
   onFileSelected(event: Event) {
