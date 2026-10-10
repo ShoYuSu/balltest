@@ -153,6 +153,11 @@ export class ProfileSettingsComponent implements OnInit {
         this.previewUrl = null;
         this.profileMessage = 'บันทึกข้อมูลโปรไฟล์เรียบร้อยแล้ว';
         this.cdr.detectChanges();
+
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000); 
       });
   }
 
