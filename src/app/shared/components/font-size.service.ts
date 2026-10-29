@@ -7,9 +7,9 @@ export class FontSizeService {
   private readonly sizes: FontSize[] = ['font-small', 'font-medium', 'font-large'];
   current: FontSize = 'font-medium';
 
-  /** เรียกครั้งเดียวตอนแอปเริ่มทำงาน (ใน app.ts) เพื่อโหลดค่าที่จำไว้ */
   init() {
-    const saved = (localStorage.getItem('fontSize') as FontSize) || 'font-medium';
+    const raw = localStorage.getItem('fontSize') as FontSize | null;
+    const saved: FontSize = raw && this.sizes.includes(raw) ? raw : 'font-medium';
     this.setSize(saved);
   }
 

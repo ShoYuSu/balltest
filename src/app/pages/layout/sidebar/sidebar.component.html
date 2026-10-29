@@ -17,7 +17,7 @@
 }
 
 <div
-  class="bg-white h-[100dvh] border-r border-gray-100 flex flex-col transition-transform duration-300 select-none z-50 fixed lg:relative top-0 left-0 w-[260px]"
+  class="bg-white h-[100dvh] border-r border-gray-100 flex flex-col transition-transform duration-300 select-none z-50 fixed lg:relative top-0 left-0 w-[280px] max-w-[85vw]"
   [class.translate-x-0]="isSidebarOpen"
   [class.-translate-x-full]="!isSidebarOpen"
   [class.lg:w-[84px]]="!isSidebarOpen"
@@ -28,7 +28,7 @@
     @if (isSidebarOpen) {
       <div class="flex items-center gap-3 transition-opacity duration-300 animate-fadeIn pl-2">
         <div
-          class="flex items-center justify-center w-10 h-10 bg-[#F39C12] rounded-xl shrink-0 shadow-md shadow-primary/30 text-white"
+          class="flex items-center justify-center w-[40px] h-[40px] bg-[#F39C12] rounded-xl shrink-0 shadow-md shadow-primary/30 text-white"
         >
           <span
             class="material-symbols-outlined icon-filled text-[24px]"
@@ -48,7 +48,7 @@
     <!-- ปุ่มเปิด/ปิด ภายใน Sidebar -->
     <button
       (click)="toggleSidebar()"
-      class="flex items-center justify-center w-10 h-10 text-gray-400 hover:bg-primary/10 hover:text-primary rounded-xl transition-all duration-200 shrink-0 mx-auto"
+      class="flex items-center justify-center w-[40px] h-[40px] text-gray-400 hover:bg-primary/10 hover:text-primary rounded-xl transition-all duration-200 shrink-0 mx-auto"
       [class.mx-auto]="!isSidebarOpen"
     >
       <span class="material-symbols-outlined text-[26px] leading-none">{{
@@ -70,8 +70,8 @@
             class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
             [class.px-4]="isSidebarOpen"
             [class.py-3]="isSidebarOpen"
-            [class.w-12]="!isSidebarOpen"
-            [class.h-12]="!isSidebarOpen"
+            [class.w-[48px]]="!isSidebarOpen"
+            [class.h-[48px]]="!isSidebarOpen"
             [class.justify-center]="!isSidebarOpen"
             [class.mx-auto]="!isSidebarOpen"
           >
@@ -81,7 +81,7 @@
               >home</span
             >
             @if (isSidebarOpen) {
-              <span class="text-[15px] font-medium tracking-wide">หน้าหลัก</span>
+              <span class="text-[0.9375rem] font-medium tracking-wide">หน้าหลัก</span>
             }
           </li>
 
@@ -92,8 +92,8 @@
             class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
             [class.px-4]="isSidebarOpen"
             [class.py-3]="isSidebarOpen"
-            [class.w-12]="!isSidebarOpen"
-            [class.h-12]="!isSidebarOpen"
+            [class.w-[48px]]="!isSidebarOpen"
+            [class.h-[48px]]="!isSidebarOpen"
             [class.justify-center]="!isSidebarOpen"
             [class.mx-auto]="!isSidebarOpen"
           >
@@ -103,7 +103,7 @@
               >group</span
             >
             @if (isSidebarOpen) {
-              <span class="text-[15px] font-medium tracking-wide">นักศึกษาทั้งหมด</span>
+              <span class="text-[0.9375rem] font-medium tracking-wide">นักศึกษาทั้งหมด</span>
             }
           </li>
 
@@ -114,8 +114,8 @@
             class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
             [class.px-4]="isSidebarOpen"
             [class.py-3]="isSidebarOpen"
-            [class.w-12]="!isSidebarOpen"
-            [class.h-12]="!isSidebarOpen"
+            [class.w-[48px]]="!isSidebarOpen"
+            [class.h-[48px]]="!isSidebarOpen"
             [class.justify-center]="!isSidebarOpen"
             [class.mx-auto]="!isSidebarOpen"
           >
@@ -125,7 +125,7 @@
               >assignment</span
             >
             @if (isSidebarOpen) {
-              <span class="text-[15px] font-medium tracking-wide">ประเมิน PLO</span>
+              <span class="text-[0.9375rem] font-medium tracking-wide">ประเมิน PLO</span>
             }
           </li>
 
@@ -142,8 +142,8 @@
               [class.px-4]="isSidebarOpen"
               [class.py-3]="isSidebarOpen"
               [class.justify-between]="isSidebarOpen"
-              [class.w-12]="!isSidebarOpen"
-              [class.h-12]="!isSidebarOpen"
+              [class.w-[48px]]="!isSidebarOpen"
+              [class.h-[48px]]="!isSidebarOpen"
               [class.justify-center]="!isSidebarOpen"
               [class.mx-auto]="!isSidebarOpen"
             >
@@ -154,7 +154,7 @@
                   >calendar_month</span
                 >
                 @if (isSidebarOpen) {
-                  <span class="text-[15px] font-medium tracking-wide">การนัดหมาย</span>
+                  <span class="text-[0.9375rem] font-medium tracking-wide">การนัดหมาย</span>
                 }
               </div>
               @if (isSidebarOpen) {
@@ -173,7 +173,7 @@
                 <a
                   routerLink="/individual"
                   routerLinkActive="!text-primary !font-bold bg-primary/10"
-                  class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
+                  class="py-2.5 px-4 text-sm font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined icon-filled text-[18px]">person</span>
                   รายบุคคล
@@ -181,7 +181,7 @@
                 <a
                   routerLink="/group"
                   routerLinkActive="!text-primary !font-bold bg-primary/10"
-                  class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
+                  class="py-2.5 px-4 text-sm font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined icon-filled text-[18px]">group</span>
                   รายกลุ่ม
@@ -203,8 +203,8 @@
               [class.px-4]="isSidebarOpen"
               [class.py-3]="isSidebarOpen"
               [class.justify-between]="isSidebarOpen"
-              [class.w-12]="!isSidebarOpen"
-              [class.h-12]="!isSidebarOpen"
+              [class.w-[48px]]="!isSidebarOpen"
+              [class.h-[48px]]="!isSidebarOpen"
               [class.justify-center]="!isSidebarOpen"
               [class.mx-auto]="!isSidebarOpen"
             >
@@ -215,7 +215,7 @@
                   >chat</span
                 >
                 @if (isSidebarOpen) {
-                  <span class="text-[15px] font-medium tracking-wide">บันทึกการปรึกษา</span>
+                  <span class="text-[0.9375rem] font-medium tracking-wide">บันทึกการปรึกษา</span>
                 }
               </div>
               @if (isSidebarOpen) {
@@ -234,7 +234,7 @@
                 <a
                   routerLink="/individual-record"
                   routerLinkActive="!text-primary !font-bold bg-primary/10"
-                  class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
+                  class="py-2.5 px-4 text-sm font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined icon-filled text-[18px]">person</span>
                   บันทึกรายบุคคล
@@ -242,7 +242,7 @@
                 <a
                   routerLink="/group-record"
                   routerLinkActive="!text-primary !font-bold bg-primary/10"
-                  class="py-2.5 px-4 text-[14px] font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
+                  class="py-2.5 px-4 text-sm font-medium text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined icon-filled text-[18px]">group</span>
                   บันทึกรายกลุ่ม
@@ -278,8 +278,8 @@
               class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
               [class.px-4]="isSidebarOpen"
               [class.py-3]="isSidebarOpen"
-              [class.w-12]="!isSidebarOpen"
-              [class.h-12]="!isSidebarOpen"
+              [class.w-[48px]]="!isSidebarOpen"
+              [class.h-[48px]]="!isSidebarOpen"
               [class.justify-center]="!isSidebarOpen"
               [class.mx-auto]="!isSidebarOpen"
             >
@@ -289,7 +289,7 @@
                 >{{ menu.icon }}</span
               >
               @if (isSidebarOpen) {
-                <span class="text-[15px] font-medium tracking-wide">{{ menu.label }}</span>
+                <span class="text-[0.9375rem] font-medium tracking-wide">{{ menu.label }}</span>
               }
             </li>
           }
@@ -320,8 +320,8 @@
               class="text-black rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 flex items-center group"
               [class.px-4]="isSidebarOpen"
               [class.py-3]="isSidebarOpen"
-              [class.w-12]="!isSidebarOpen"
-              [class.h-12]="!isSidebarOpen"
+              [class.w-[48px]]="!isSidebarOpen"
+              [class.h-[48px]]="!isSidebarOpen"
               [class.justify-center]="!isSidebarOpen"
               [class.mx-auto]="!isSidebarOpen"
             >
@@ -331,7 +331,7 @@
                 >{{ menu.icon }}</span
               >
               @if (isSidebarOpen) {
-                <span class="text-[15px] font-medium tracking-wide">{{ menu.label }}</span>
+                <span class="text-[0.9375rem] font-medium tracking-wide">{{ menu.label }}</span>
               }
             </li>
           }
@@ -341,7 +341,7 @@
   </div>
 
   <!-- ================= ปุ่มกลับไประบบหลัก ================= -->
-  @if (userRole === 'admin' || userRole === 'teacher') {
+  @if (userRole === 'admin' || userRole === 'teacher' || userRole === 'advisor') {
     <div class="px-5 mt-2 mb-4 shrink-0">
       <div class="h-px w-full bg-gray-100 mb-4"></div>
 
@@ -377,7 +377,7 @@
             @if (isSidebarOpen) {
               <div class="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
                 <span
-                  class="text-[10px] text-gray-400 font-semibold whitespace-nowrap uppercase tracking-widest leading-tight"
+                  class="text-xs text-gray-400 font-semibold whitespace-nowrap uppercase tracking-widest leading-tight"
                   >ไปยังระบบอื่น</span
                 >
                 <span

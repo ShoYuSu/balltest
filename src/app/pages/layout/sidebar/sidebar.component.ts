@@ -1,6 +1,8 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit, HostListener, inject, DestroyRef } from '@angular/core';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,22 +12,21 @@ import { CommonModule } from '@angular/common';
   styleUrl: './sidebar.component.css',
 })
 export class SidebarComponent implements OnInit {
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+
   userRole: string = '';
 
-  // เปลี่ยนจาก boolean เป็น string เพื่อเก็บชื่อเมนูที่เปิดอยู่
+  // เก็บชื่อเมนูที่เปิดอยู่
   activeMenu: string | null = null;
   isSidebarOpen = true;
 
-  // จอกว้างน้อยกว่านี้ (px) ให้เริ่มต้นแบบยุบเหลือแค่ไอคอน
+  // ตรงกับ lg: ของ Tailwind (1024px)
   private readonly collapseBreakpoint = 1024;
+  private wasDesktop = true;
 
-  // ฟังก์ชันเดียวจัดการเปิด-ปิด โดยเช็คชื่อเมนู
   toggleMenu(menuName: string) {
-    if (this.activeMenu === menuName) {
-      this.activeMenu = null; // ถ้ากดซ้ำเมนูเดิม ให้ปิด
-    } else {
-      this.activeMenu = menuName; // เปิดเมนูที่เลือก
-    }
+    this.activeMenu = this.activeMenu === menuName ? null : menuName;
   }
 
   toggleSidebar() {
@@ -35,26 +36,41 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  // ทำงานเฉพาะตอน "ข้ามเส้น" 1024px เท่านั้น
+  // (กัน address bar มือถือ / การหมุนเครื่อง / เปิด DevTools มารีเซ็ต Sidebar)
   @HostListener('window:resize')
   onResize() {
-    this.applyResponsiveDefault();
+    const desktop = this.isDesktop();
+    if (desktop === this.wasDesktop) return;
+    this.wasDesktop = desktop;
+    this.isSidebarOpen = desktop;
+    if (!desktop) this.activeMenu = null;
   }
 
   ngOnInit() {
     this.userRole = this.getRoleFromToken();
-    this.applyResponsiveDefault();
+    this.wasDesktop = this.isDesktop();
+    this.isSidebarOpen = this.wasDesktop;
+
+    // จอเล็ก (มือถือ / iPad แนวตั้ง): ปิดแผงหลังเปลี่ยนหน้า
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (!this.isDesktop()) {
+          this.isSidebarOpen = false;
+          this.activeMenu = null;
+        }
+      });
   }
 
-  // ตั้งค่าเริ่มต้นตามขนาดจอ: จอเล็ก (มือถือ/แท็บเล็ต) ให้ยุบเป็นไอคอนอย่างเดียว
-  private applyResponsiveDefault() {
-    if (typeof window === 'undefined') return;
-    this.isSidebarOpen = window.innerWidth >= this.collapseBreakpoint;
-    if (!this.isSidebarOpen) {
-      this.activeMenu = null;
-    }
+  private isDesktop(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth >= this.collapseBreakpoint;
   }
 
-  //  ดึง role จาก payload ของ JWT token โดยตรง (ไม่ต้องพึ่ง localStorage.setItem('role', ...))
+  // ดึง role จาก payload ของ JWT token โดยตรง
   private getRoleFromToken(): string {
     const token = localStorage.getItem('token');
     if (!token) return '';
@@ -72,7 +88,9 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  // ส่ง token กลับไประบบหลัก (คนละ origin จึงไม่แชร์ localStorage)
   goBack() {
-    window.location.href = 'http://localhost:4201/dashboard';
+    const token = localStorage.getItem('token') || '';
+    window.location.href = `http://localhost:4201/dashboard?token=${encodeURIComponent(token)}`;
   }
 }
